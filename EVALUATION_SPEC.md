@@ -1,137 +1,120 @@
-# CLEAR-LeWM Evaluation Specification v0.1
+# CLEAR-LeWM Evaluation Specification v0.2
 
-This document is normative. Implementations may add diagnostics, but a result
-may use a CLEAR-LeWM track name only if it follows the corresponding rules.
+This document is normative. A result may use a CLEAR-LeWM tier name only when
+it follows the corresponding rules below.
 
 ## 1. Shared task setup
 
-All tracks use a future state from the same offline episode as the visual goal.
-The default goal offset is 25 environment steps and the evaluation budget is 50
-steps. A manifest fixes every `(episode_id, start_step, goal_step)` tuple before
-any model is evaluated.
+Every tier uses a future state from the same offline episode as the visual goal.
+The default goal offset is 25 environment steps and the control budget is 50
+steps. A versioned manifest fixes every
+`(episode_id, start_step, goal_step)` tuple before any policy is evaluated.
 
-All methods, random baselines, and ablations in one comparison must use:
+All methods and baselines in one comparison must use the same:
 
-1. the same manifest;
-2. the same environment and dataset fingerprints;
-3. the same action bounds and planning budget;
-4. explicitly recorded policy, solver, and environment seeds;
-5. the same success criterion.
+1. manifest and dataset fingerprint;
+2. environment, action bounds, and evaluation budget;
+3. policy, solver, and environment seeds;
+4. planning horizon, samples, iterations, and top-k;
+5. task success tier.
 
-## 2. Dataset split
+## 2. Three success tiers
 
-`official-compat` samples from all episodes, matching the upstream protocol.
+### Official
 
-`clear-id` also uses all episodes. It is intended for difficulty-controlled
-evaluation of released checkpoints that were trained on the complete dataset,
-and its results must be labeled in-distribution.
+`official` reproduces upstream LeWM evaluation for historical comparison:
 
-`clear-standard` and `clear-hard` assign exactly 20% of episode IDs to a
-held-out split. Episode IDs are ranked by the first 64 bits of:
+- row-uniform sampling over all valid start rows;
+- initially successful pairs retained;
+- the upstream `N - 1` sampling range retained;
+- original task thresholds and first-hit termination;
+- deterministic policy seeding added and recorded.
 
-```text
-SHA256("clear-lewm:{seed}:{episode_id}")
-```
+This tier is compatibility evidence, not a strict benchmark.
 
-The lowest-ranked IDs form the held-out split. The split is deterministic and
-independent of Python's process-randomized hash function. Training must exclude
-these episodes for a held-out-generalization claim.
+### Moderate
 
-## 3. Pair construction and sampling
+`moderate` samples episodes uniformly, removes pairs already successful at the
+start, and requires a task-calibrated stable target predicate. Hold duration is
+two steps for dynamic Reacher and three for the other tasks.
 
-A start row is valid only when a row from the same episode exists exactly
-`goal_offset` steps later.
+### Strict
 
-`official-compat` samples uniformly without replacement over valid rows.
-For exact upstream seed compatibility, it reproduces the upstream `N - 1`
-choice range and therefore excludes the final valid global row. This behavior
-is documented rather than silently repaired.
+`strict` uses episode-balanced sampling, removes initially successful pairs,
+requires a larger start-goal displacement, and applies tighter task tolerances
+and task-specific hold durations.
 
-`clear-id`, `clear-standard`, and `clear-hard` first sample episode IDs uniformly
-without replacement, then
-sample one valid start row from each chosen episode. This prevents long episodes
-from dominating evaluation. If more pairs than episodes are requested, episodes
-are traversed in independently shuffled cycles.
+| Task | Official | Moderate | Strict |
+|---|---|---|---|
+| PushT | position `<20`, angle `<20 deg`, first hit | same geometry, hold 3 | position `<15`, angle `<15 deg`, hold 3 |
+| Reacher | every joint `<0.05 rad`, first hit | every joint `<0.10 rad`, hold 2 | every joint `<0.075 rad`, hold 2 |
+| TwoRoom | distance `<16`, first hit | distance `<12`, hold 3 | distance `<8`, hold 5 |
+| Cube | position `<=0.04 m`, first hit | position `<=0.04 m`, orientation `<=30 deg`, hold 3 | position `<=0.03 m`, orientation `<=15 deg`, hold 5 |
 
-These three tracks remove every pair satisfying the task's success condition at
-the initial state. `clear-hard` additionally requires the following minimum
-start-goal displacement:
+Cube orientation uses quaternion geodesic distance
+`2 * acos(abs(dot(q, q_goal)))`, which is invariant to the equivalent
+representations `q` and `-q`. The criterion tests stable target-pose attainment;
+it is not called grasp success because contact is not required.
 
-| Task | Difficulty statistic | Minimum |
+## 3. Pair construction
+
+A start row is valid only when a row from the same episode exists exactly 25
+steps later. `official` samples valid rows without replacement. `moderate` and
+`strict` sample episode IDs uniformly, then one valid start per selected
+episode. When more pairs than episodes are requested, independently shuffled
+episode cycles are used.
+
+Strict minimum start-goal displacement is:
+
+| Task | Statistic | Minimum |
 |---|---|---:|
 | PushT | norm over the first four official state coordinates | 50.0 |
 | Reacher | maximum absolute joint-angle difference | 0.25 rad |
 | TwoRoom | Euclidean position distance | 32.0 |
 | Cube | cube position distance | 0.08 m |
 
-## 4. Success criteria
+## 4. Data split is orthogonal
 
-### PushT
+Success rigor and trajectory generalization answer different questions.
 
-Compatibility success follows the environment implementation: position-state
-difference below 20 and block-angle difference below pi/9.
+- `--split all` is the default in-distribution setting and is valid for released
+  official checkpoints trained on the full public dataset.
+- `--split heldout` deterministically assigns 20% of episode IDs to evaluation.
+  It is a held-out claim only if those IDs were excluded from training.
 
-### Reacher
+Episode IDs are ranked by the first 64 bits of
+`SHA256("clear-lewm:{seed}:{episode_id}")`; the lowest-ranked IDs are held out.
+An official full-data checkpoint may be measured on those rows, but that number
+must not be labeled held-out generalization.
 
-Compatibility success requires every target joint angle to be within 0.05 rad.
-
-### TwoRoom
-
-Compatibility success requires agent-goal Euclidean distance below 16 in the
-environment's native coordinate system. Reports should also stratify same-room
-and cross-room goals when wall metadata are available.
-
-### OGBench-Cube
-
-`official-compat` uses the upstream first-hit position test:
-
-```text
-norm(cube_position - target_position) <= 0.04 m
-```
-
-The CLEAR tracks require all of the following for five consecutive environment
-steps:
-
-```text
-position error <= 0.04 m
-quaternion geodesic error <= 15 degrees
-```
-
-Quaternion distance is `2 * acos(abs(dot(q, q_goal)))`; the absolute dot makes
-the metric invariant to the equivalent representations `q` and `-q`.
-
-The strict criterion evaluates stable target-pose attainment. It should not be
-described as grasp success unless a separate grasp/contact requirement is added.
+The physical training reader is governed by [`DATA_SPEC.md`](DATA_SPEC.md).
+Evaluation manifests always reference the canonical HDF5 row space.
 
 ## 5. Metrics
 
 The primary report contains:
 
-- raw success rate and a 95% episode-bootstrap confidence interval;
-- deterministic random-policy SR on the same manifest;
+- raw success rate and 95% episode-bootstrap confidence interval;
+- deterministic random-policy SR on the identical manifest;
 - excess over random in percentage points;
-- paired bootstrap confidence interval for method minus random;
+- paired bootstrap interval for method minus random;
 - normalized success `(method - random) / (100 - random)`;
-- per-difficulty-bin SR;
-- individual episode outcomes.
+- per-difficulty-bin SR and individual episode outcomes.
 
-Training seeds and evaluation episodes are distinct uncertainty sources.
-Aggregate across training seeds, but retain paired episode outcomes for each
-seed.
+Random normalization does not replace a meaningful success predicate. Report
+all three tiers separately; never mix their numbers in one ranking column.
 
 ## 6. Reproducibility record
 
-A published result must retain:
+A published result retains the manifest JSON, dataset revision or SHA-256,
+training-data record, LeWM/stable-worldmodel/CLEAR-LeWM commits, checkpoint
+SHA-256, solver parameters, package lock, and every random seed.
 
-- the manifest JSON;
-- full dataset SHA256 or a publicly resolvable immutable dataset revision;
-- LeWM, stable-worldmodel, and CLEAR-LeWM commits;
-- Python and package lock files;
-- checkpoint hash;
-- solver parameters and all random seeds.
+Training-seed and evaluation-episode uncertainty are different. Aggregate
+across training seeds, while retaining paired per-episode outcomes per seed.
 
-## 7. Compatibility statement
+## 7. v0.1 compatibility
 
-`official-compat` is intentionally not called a strict benchmark. It exists so
-that prior LeWM-family results remain comparable. CLEAR tracks must be reported
-separately and must never silently replace an official-compat number.
+`official-compat`, `clear-id`, `clear-standard`, and `clear-hard` remain accepted
+so v0.1 manifests are executable. New reports should use `official`, `moderate`,
+and `strict`; old names are not silently reinterpreted.

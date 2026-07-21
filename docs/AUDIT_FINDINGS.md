@@ -20,23 +20,25 @@ floor. The current TwoRoom stack does not reproduce the paper's zero random
 baseline, indicating dependency, data, environment, or protocol drift that
 should be resolved with immutable version records.
 
-## CLEAR-ID reference floor
+## v0.2 calibrated reference
 
-The checked-in `clear-id` manifests use 100 distinct episodes, remove initially
-solved pairs, and seed both manifest selection and random actions with 42. Cube
-additionally requires position within 0.04 m, quaternion error within 15 degrees,
-and five consecutive successful steps.
+The checked-in v0.2 manifests use 100 fixed pairs and deterministic policy seed
+42. Moderate and Strict sample episodes uniformly and remove pairs already
+successful under their task criterion.
 
-| Task | CLEAR-ID Random SR | 95% episode-bootstrap CI |
-|---|---:|---:|
-| PushT | 3% | [0%, 7%] |
-| Reacher | 9% | [4%, 15%] |
-| TwoRoom | 22% | [14%, 30%] |
-| OGBench-Cube | 1% | [0%, 3%] |
+| Task | Official LeWM/random | Moderate LeWM/random | Strict LeWM/random |
+|---|---:|---:|---:|
+| PushT | 89% / 7% | 74% / 0% | 42% / 0% |
+| Reacher | 87% / 16% | 63% / 6% | 22% / 0% |
+| TwoRoom | 85% / 30% | 70% / 17% | 41% / 1% |
+| OGBench-Cube | 62% / 47% | 36% / 3% | 17% / 2% |
 
-The Cube floor falls from approximately 49% under the original setup to 1%
-under the strict in-distribution track. TwoRoom retains a material random-walk
-floor even after initially solved pairs are removed.
+The random floor falls sharply without making converged official checkpoints
+score zero. TwoRoom Moderate deliberately remains a mild correction and still
+has a 17% random floor; reports should use its paired 53pp model gain or select
+Strict when a near-zero floor is required. Reacher and PushT hold durations were
+calibrated against both official checkpoints and random policies; see
+[`PROTOCOL_CALIBRATION.md`](PROTOCOL_CALIBRATION.md).
 
 ## Cube mechanism
 

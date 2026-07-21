@@ -21,6 +21,26 @@ from .tasks import pair_diagnostics
 SCHEMA_VERSION = "clear-lewm-manifest-v1"
 
 
+def _criterion_initial_success(diagnostics, task: str, spec: ProtocolSpec):
+    if spec.success_mode != "task-sustained":
+        return diagnostics.initial_success
+    extras = diagnostics.extras
+    if task == "cube":
+        position_ok = extras["position_distance_m"] <= spec.cube_position_threshold_m
+        if spec.cube_orientation_threshold_deg is None:
+            return position_ok
+        return position_ok & (
+            extras["orientation_distance_deg"] <= spec.cube_orientation_threshold_deg
+        )
+    if task == "pusht":
+        return (extras["position_distance"] < spec.pusht_position_threshold) & (
+            extras["angle_distance_deg"] < spec.pusht_angle_threshold_deg
+        )
+    if task == "reacher":
+        return extras["max_joint_distance_rad"] < spec.reacher_joint_threshold_rad
+    return extras["euclidean_distance"] < spec.tworoom_distance_threshold
+
+
 def _json_scalar(value):
     return value.item() if isinstance(value, np.generic) else value
 
@@ -61,10 +81,14 @@ def generate_manifest(
         goals = goals[split_mask]
 
         diagnostics = pair_diagnostics(dataset, task, starts, goals)
-        initial_success_rate = float(diagnostics.initial_success.mean() * 100.0)
+        criterion_initial = _criterion_initial_success(diagnostics, task, spec)
+        initial_success_rate = float(criterion_initial.mean() * 100.0)
+        upstream_initial_success_rate = float(
+            diagnostics.initial_success.mean() * 100.0
+        )
         keep = np.ones(len(starts), dtype=bool)
         if spec.exclude_initial_success:
-            keep &= ~diagnostics.initial_success
+            keep &= ~criterion_initial
         min_difficulty = spec.min_difficulty.get(task)
         if min_difficulty is not None:
             keep &= diagnostics.difficulty >= min_difficulty
@@ -82,6 +106,7 @@ def generate_manifest(
         )
         chosen_goals = chosen + spec.goal_offset
         chosen_diag = pair_diagnostics(dataset, task, chosen, chosen_goals)
+        chosen_initial = _criterion_initial_success(chosen_diag, task, spec)
         ep_key = episode_column(dataset)
 
         pairs = []
@@ -94,7 +119,8 @@ def generate_manifest(
                 "start_row": int(start_row),
                 "goal_row": int(goal_row),
                 "difficulty": float(chosen_diag.difficulty[index]),
-                "initial_success": bool(chosen_diag.initial_success[index]),
+                "initial_success": bool(chosen_initial[index]),
+                "upstream_initial_success": bool(chosen_diag.initial_success[index]),
             }
             for name, values in chosen_diag.extras.items():
                 pair[name] = float(values[index])
@@ -124,6 +150,7 @@ def generate_manifest(
             "valid_pairs_all_splits": valid_count,
             "pairs_in_selected_split": int(len(starts)),
             "initial_success_rate_percent": initial_success_rate,
+            "upstream_initial_success_rate_percent": (upstream_initial_success_rate),
             "pairs_after_filters": int(len(filtered_starts)),
             "pairs_available_to_sampler": int(len(sampling_candidates)),
             "num_eval": num_eval,

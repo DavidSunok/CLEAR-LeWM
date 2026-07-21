@@ -43,7 +43,7 @@ def build_parser() -> argparse.ArgumentParser:
     )
     manifest.add_argument("dataset")
     manifest.add_argument("--task", required=True, choices=TASKS)
-    manifest.add_argument("--protocol", default="clear-standard", choices=PROTOCOLS)
+    manifest.add_argument("--protocol", default="moderate", choices=PROTOCOLS)
     manifest.add_argument("--num-eval", type=int, default=100)
     manifest.add_argument("--seed", type=int, default=42)
     manifest.add_argument("--split", choices=("all", "train", "heldout"))
@@ -63,9 +63,11 @@ def build_parser() -> argparse.ArgumentParser:
     )
     evaluate.add_argument("--manifest", required=True)
     evaluate.add_argument("--policy", default="random")
+    evaluate.add_argument("--policy-label")
     evaluate.add_argument("--output", required=True)
     evaluate.add_argument("--cache-dir")
     evaluate.add_argument("--dataset-name")
+    evaluate.add_argument("--dataset-path")
     evaluate.add_argument("--upstream-dir")
     evaluate.add_argument("--policy-seed", type=int)
     evaluate.add_argument("--num-samples", type=int)
@@ -121,6 +123,7 @@ def main(argv: list[str] | None = None) -> int:
             output=args.output,
             cache_dir=args.cache_dir,
             dataset_name=args.dataset_name,
+            dataset_path=args.dataset_path,
             upstream_dir=args.upstream_dir,
             policy_seed=args.policy_seed,
             num_samples=args.num_samples,
@@ -128,6 +131,7 @@ def main(argv: list[str] | None = None) -> int:
             topk=args.topk,
             random_results=args.random_results,
             video_dir=args.video_dir,
+            policy_label=args.policy_label,
         )
         print(json.dumps(result["metrics"], indent=2, sort_keys=True))
         return 0

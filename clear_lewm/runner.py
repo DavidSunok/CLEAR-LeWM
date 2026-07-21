@@ -11,9 +11,10 @@ from types import MethodType
 
 import numpy as np
 
+from .datasets import file_sha256, metadata_fingerprint
 from .manifests import load_manifest
 from .metrics import load_success_trace, summarize_success
-from .protocols import get_protocol, normalize_task
+from .protocols import ProtocolSpec, normalize_task, protocol_from_dict
 from .tasks import quaternion_angle_deg
 
 OFFICIAL_DATASETS = {
@@ -49,6 +50,8 @@ def _seed_everything(seed: int) -> None:
     try:
         import torch
 
+        cpu_threads = int(os.environ.get("CLEAR_LEWM_CPU_THREADS", "1"))
+        torch.set_num_threads(max(cpu_threads, 1))
         torch.manual_seed(seed)
         if torch.cuda.is_available():
             torch.cuda.manual_seed_all(seed)
@@ -61,6 +64,39 @@ def _package_version(name: str) -> str:
         return version(name)
     except PackageNotFoundError:
         return "unknown"
+
+
+def _portable_manifest_path(path: Path) -> str:
+    parts = path.parts
+    if "manifests" in parts:
+        index = parts.index("manifests")
+        return Path(*parts[index:]).as_posix()
+    return path.name
+
+
+def _checkpoint_record(policy: str, data_root: Path) -> dict | None:
+    if policy == "random":
+        return None
+    checkpoint_root = data_root / "checkpoints"
+    candidate = checkpoint_root / policy
+    if candidate.is_file():
+        weights = candidate
+        directory = candidate.parent
+    elif candidate.is_dir():
+        files = sorted(candidate.glob("*.pt"))
+        weights = files[0] if len(files) == 1 else None
+        directory = candidate
+    else:
+        weights = None
+        directory = candidate
+    record = {"policy_id": policy}
+    if weights is not None:
+        record["runtime_file"] = weights.name
+        record["runtime_sha256"] = file_sha256(weights)
+    source = directory / "source.json"
+    if source.exists():
+        record["source"] = json.loads(source.read_text())
+    return record
 
 
 def _image_transform(image_size: int):
@@ -88,7 +124,7 @@ def _compose_config(task: str, upstream_dir: Path):
         return compose(config_name=task)
 
 
-def _install_strict_cube_success(
+def _install_cube_success(
     world,
     position_threshold_m: float,
     orientation_threshold_deg: float,
@@ -128,12 +164,134 @@ def _install_strict_cube_success(
         patch_environment(wrapped.unwrapped)
 
 
+def _install_pusht_success(world, protocol: ProtocolSpec) -> None:
+    def patch_environment(env) -> None:
+        original_step = env.step
+        original_set_goal = env._set_goal_state
+        env._clear_lewm_hold_count = 0
+
+        def set_goal_state(self, goal_state):
+            result = original_set_goal(goal_state)
+            self._clear_lewm_hold_count = 0
+            return result
+
+        def step(self, action):
+            observation, reward, _, truncated, info = original_step(action)
+            state = np.asarray(observation["state"])
+            goal = np.asarray(self.goal_state)
+            position_error = float(np.linalg.norm(goal[:4] - state[:4]))
+            angle_error = abs(float(goal[4] - state[4]))
+            angle_error = min(angle_error, 2.0 * np.pi - angle_error)
+            success = (
+                position_error < protocol.pusht_position_threshold
+                and np.degrees(angle_error) < protocol.pusht_angle_threshold_deg
+            )
+            self._clear_lewm_hold_count = (
+                self._clear_lewm_hold_count + 1 if success else 0
+            )
+            terminated = self._clear_lewm_hold_count >= protocol.hold_steps("pusht")
+            info["clear_lewm_hold_count"] = self._clear_lewm_hold_count
+            return observation, reward, terminated, truncated, info
+
+        env._set_goal_state = MethodType(set_goal_state, env)
+        env.step = MethodType(step, env)
+
+    for wrapped in world.envs.envs:
+        patch_environment(wrapped.unwrapped)
+
+
+def _install_tworoom_success(world, protocol: ProtocolSpec) -> None:
+    def patch_environment(env) -> None:
+        original_step = env.step
+        original_set_goal = env._set_goal_state
+        env._clear_lewm_hold_count = 0
+
+        def set_goal_state(self, goal_state):
+            result = original_set_goal(goal_state)
+            self._clear_lewm_hold_count = 0
+            return result
+
+        def step(self, action):
+            observation, reward, _, truncated, info = original_step(action)
+            distance = float(
+                np.linalg.norm(
+                    np.asarray(self.agent_position) - np.asarray(self.target_position)
+                )
+            )
+            success = distance < protocol.tworoom_distance_threshold
+            self._clear_lewm_hold_count = (
+                self._clear_lewm_hold_count + 1 if success else 0
+            )
+            terminated = self._clear_lewm_hold_count >= protocol.hold_steps("tworoom")
+            info["clear_lewm_hold_count"] = self._clear_lewm_hold_count
+            return observation, reward, terminated, truncated, info
+
+        env._set_goal_state = MethodType(set_goal_state, env)
+        env.step = MethodType(step, env)
+
+    for wrapped in world.envs.envs:
+        patch_environment(wrapped.unwrapped)
+
+
+def _install_reacher_success(world, protocol: ProtocolSpec) -> None:
+    def patch_environment(env) -> None:
+        original_step = env.step
+        original_set_target = env.set_target_qpos
+        env._clear_lewm_hold_count = 0
+
+        def suppress_upstream_termination(self, step):
+            return False
+
+        def set_target_qpos(self, target_qpos):
+            result = original_set_target(target_qpos)
+            self._clear_lewm_hold_count = 0
+            return result
+
+        def step(self, action):
+            observation, reward, _, truncated, info = original_step(action)
+            qpos = np.asarray(self.env.physics.data.qpos)
+            target = np.asarray(self.env.task.target_qpos)
+            joint_error = float(np.max(np.abs(qpos - target)))
+            success = joint_error < protocol.reacher_joint_threshold_rad
+            self._clear_lewm_hold_count = (
+                self._clear_lewm_hold_count + 1 if success else 0
+            )
+            terminated = self._clear_lewm_hold_count >= protocol.hold_steps("reacher")
+            info["clear_lewm_hold_count"] = self._clear_lewm_hold_count
+            return observation, reward, terminated, truncated, info
+
+        env._is_terminated = MethodType(suppress_upstream_termination, env)
+        env.set_target_qpos = MethodType(set_target_qpos, env)
+        env.step = MethodType(step, env)
+
+    for wrapped in world.envs.envs:
+        patch_environment(wrapped.unwrapped)
+
+
+def _install_task_success(world, task: str, protocol: ProtocolSpec) -> None:
+    if task == "cube":
+        assert protocol.cube_orientation_threshold_deg is not None
+        _install_cube_success(
+            world,
+            position_threshold_m=protocol.cube_position_threshold_m,
+            orientation_threshold_deg=protocol.cube_orientation_threshold_deg,
+            sustained_steps=protocol.hold_steps("cube"),
+        )
+    elif task == "pusht":
+        _install_pusht_success(world, protocol)
+    elif task == "reacher":
+        _install_reacher_success(world, protocol)
+    else:
+        _install_tworoom_success(world, protocol)
+
+
 def evaluate_manifest(
     manifest_path: str | Path,
     policy: str,
     output: str | Path,
     cache_dir: str | Path | None = None,
     dataset_name: str | None = None,
+    dataset_path: str | Path | None = None,
     upstream_dir: str | Path | None = None,
     policy_seed: int | None = None,
     num_samples: int | None = None,
@@ -141,13 +299,14 @@ def evaluate_manifest(
     topk: int | None = None,
     random_results: str | Path | None = None,
     video_dir: str | Path | None = None,
+    policy_label: str | None = None,
 ) -> dict:
     os.environ.setdefault("MUJOCO_GL", "egl")
     manifest_path = Path(manifest_path)
     manifest = load_manifest(manifest_path)
     manifest_sha256 = hashlib.sha256(manifest_path.read_bytes()).hexdigest()
     task = normalize_task(manifest["task"])
-    protocol = get_protocol(manifest["protocol"]["name"])
+    protocol = protocol_from_dict(manifest["protocol"])
     upstream_dir = Path(
         upstream_dir or Path(__file__).resolve().parents[1] / "third_party" / "le-wm"
     ).resolve()
@@ -188,26 +347,33 @@ def evaluate_manifest(
         if topk is not None:
             cfg.solver.topk = int(topk)
 
-    world = swm.World(**cfg.world, image_shape=(224, 224))
-    if task == "cube" and protocol.cube_orientation_threshold_deg is not None:
-        _install_strict_cube_success(
-            world,
-            position_threshold_m=protocol.cube_position_threshold_m,
-            orientation_threshold_deg=protocol.cube_orientation_threshold_deg,
-            sustained_steps=protocol.sustained_steps,
-        )
-
     transform = {
         "pixels": _image_transform(cfg.eval.img_size),
         "goal": _image_transform(cfg.eval.img_size),
     }
     data_root = Path(cfg.cache_dir or swm.data.utils.get_cache_dir())
     resolved_dataset_name = dataset_name or OFFICIAL_DATASETS[task]
-    dataset = swm.data.HDF5Dataset(
-        resolved_dataset_name,
-        keys_to_cache=cfg.dataset.keys_to_cache,
-        cache_dir=data_root,
-    )
+    dataset_kwargs = {
+        "keys_to_cache": cfg.dataset.keys_to_cache,
+        "cache_dir": data_root,
+    }
+    if dataset_path is not None:
+        dataset_kwargs["path"] = Path(dataset_path).resolve()
+        dataset = swm.data.HDF5Dataset(**dataset_kwargs)
+    else:
+        dataset = swm.data.HDF5Dataset(resolved_dataset_name, **dataset_kwargs)
+
+    expected_fingerprint = manifest["dataset"]["fingerprint"]
+    dataset_file = Path(dataset.h5_path)
+    if expected_fingerprint["kind"] == "file-sha256":
+        actual_fingerprint = file_sha256(dataset_file)
+    else:
+        actual_fingerprint = metadata_fingerprint(dataset_file)
+    if actual_fingerprint != expected_fingerprint["value"]:
+        raise ValueError(
+            "Evaluation dataset does not match the manifest fingerprint: "
+            f"{actual_fingerprint} != {expected_fingerprint['value']}"
+        )
 
     process = {}
     for column in cfg.dataset.keys_to_cache:
@@ -223,6 +389,7 @@ def evaluate_manifest(
 
     if policy == "random":
         attached_policy = swm.policy.RandomPolicy(seed=seed)
+        checkpoint = None
     else:
         try:
             model = swm.wm.utils.load_pretrained(policy, cache_dir=data_root)
@@ -239,11 +406,23 @@ def evaluate_manifest(
             process=process,
             transform=transform,
         )
+        checkpoint = _checkpoint_record(policy, data_root)
 
     episodes = [pair["episode_id"] for pair in manifest["pairs"]]
     start_steps = [pair["start_step"] for pair in manifest["pairs"]]
-    world.set_policy(attached_policy)
+    world = swm.World(**cfg.world, image_shape=(224, 224))
     try:
+        if protocol.success_mode == "task-sustained":
+            _install_task_success(world, task, protocol)
+        elif task == "cube" and protocol.success_mode == "cube-pose":
+            assert protocol.cube_orientation_threshold_deg is not None
+            _install_cube_success(
+                world,
+                position_threshold_m=protocol.cube_position_threshold_m,
+                orientation_threshold_deg=protocol.cube_orientation_threshold_deg,
+                sustained_steps=protocol.hold_steps("cube"),
+            )
+        world.set_policy(attached_policy)
         raw_metrics = world.evaluate(
             dataset=dataset,
             start_steps=start_steps,
@@ -271,15 +450,22 @@ def evaluate_manifest(
         "schema_version": "clear-lewm-result-v1",
         "task": task,
         "protocol": protocol.to_dict(),
-        "policy": policy,
+        "policy": policy_label or policy,
+        "checkpoint": checkpoint,
         "policy_seed": seed,
         "dataset_name": resolved_dataset_name,
-        "manifest": manifest_path.as_posix(),
+        "dataset_file": (Path(dataset_path).name if dataset_path is not None else None),
+        "dataset_fingerprint": expected_fingerprint,
+        "manifest": _portable_manifest_path(manifest_path),
         "manifest_sha256": manifest_sha256,
         "criterion": {
             "cube_position_threshold_m": protocol.cube_position_threshold_m,
             "cube_orientation_threshold_deg": protocol.cube_orientation_threshold_deg,
-            "sustained_steps": protocol.sustained_steps,
+            "pusht_position_threshold": protocol.pusht_position_threshold,
+            "pusht_angle_threshold_deg": protocol.pusht_angle_threshold_deg,
+            "reacher_joint_threshold_rad": protocol.reacher_joint_threshold_rad,
+            "tworoom_distance_threshold": protocol.tworoom_distance_threshold,
+            "sustained_steps": protocol.hold_steps(task),
         },
         "solver": {
             "num_samples": OmegaConf.select(cfg, "solver.num_samples"),
@@ -292,6 +478,9 @@ def evaluate_manifest(
         "versions": {
             "torch": torch.__version__,
             "stable_worldmodel": _package_version("stable-worldmodel"),
+        },
+        "runtime": {
+            "cpu_threads": int(os.environ.get("CLEAR_LEWM_CPU_THREADS", "1")),
         },
     }
     output = Path(output)

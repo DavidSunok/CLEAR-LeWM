@@ -1,21 +1,22 @@
 # Reference manifests
 
-This directory contains the first versioned CLEAR-LeWM evaluation manifests:
+The primary v0.2 suite contains four tasks, three tiers, 100 pairs per manifest,
+and manifest/policy seed 42:
 
-- four tasks: PushT, Reacher, TwoRoom, and OGBench-Cube;
-- four tracks: `official-compat`, `clear-id`, `clear-standard`, and `clear-hard`;
-- 100 pairs per manifest;
-- manifest and policy seed 42.
+```text
+manifests/{pusht,cube,reacher,tworoom}/{official,moderate,strict}-seed42-n100.json
+```
 
-`official-compat` start rows exactly reproduce the upstream
-`rng.choice(len(valid_indices) - 1, ...)` behavior for `num_eval=100`.
+`official` reproduces upstream `rng.choice(len(valid_indices) - 1, ...)`
+row sampling. `moderate` and `strict` use 100 episode-balanced pairs and remove
+every pair already satisfying that tier's success geometry. Strict also applies
+the task-specific minimum displacement in `EVALUATION_SPEC.md`.
 
-All three CLEAR tracks contain 100 distinct episode IDs and no pair that meets
-the task's success threshold at the initial state. The JSON files include the
-dataset metadata fingerprint used during generation. A final archival release
-should additionally publish full dataset SHA256 values or immutable dataset
-revision identifiers.
+The v0.1 `official-compat`, `clear-id`, `clear-standard`, and `clear-hard`
+manifests remain checked in for reproducibility. They are legacy artifacts and
+are not aliases for the new three-tier manifests.
 
-Released full-data checkpoints may use `official-compat` and `clear-id`.
-`clear-standard` and `clear-hard` support held-out claims only when their
-episode split was excluded from model training.
+Each JSON embeds protocol parameters and a dataset metadata fingerprint. Final
+archival results should also cite the immutable public dataset revision or full
+dataset SHA-256. Released full-data checkpoints are in-distribution even when a
+manifest happens to select the deterministic held-out episode IDs.
