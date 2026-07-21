@@ -104,6 +104,37 @@ generator inside its batch loop; changing batch size reorders the random draws
 assigned to each environment. Small batched floating-point differences can
 further change elite selection. Use batch 1 for comparable tables.
 
+### Four-task trajectory-equivalence check
+
+A second controlled check used one LeWM-compatible custom checkpoint per task,
+the fixed Strict seed-0 manifests, 100 episodes per task, and the same `300 x 30`
+CEM budget. Each batch-1/batch-16 pair ran on the same H20-3e and differed only
+in solver batch size. Times below cover evaluation after setup, not only the two
+CEM calls.
+
+| Task | Batch 1 SR | Batch 16 SR | Delta | Outcome flips | Evaluation speedup |
+|---|---:|---:|---:|---:|---:|
+| PushT | 49% | 41% | -8pp | 28/100 | 1.52x |
+| Cube | 50% | 48% | -2pp | 10/100 | 1.47x |
+| Reacher | 25% | 25% | 0pp | 40/100 | 1.47x |
+| TwoRoom | 19% | 14% | -5pp | 21/100 | 1.62x |
+| Macro / total | 35.75% | 32.00% | -3.75pp | 99/400 | 1.51x |
+
+The Reacher totals are the sharpest warning: 20 successes became failures and
+20 failures became successes, so equal aggregate SR concealed 40 changed
+outcomes. Across all tasks, 57 successes became failures and 42 failures became
+successes. The net SR shift can therefore look modest while the underlying
+planner trajectories are substantially different.
+
+This follows directly from the upstream loop order. One shared Torch generator
+is consumed inside the environment-batch loop; changing batch size changes which
+environment and CEM iteration receives each random draw. Batched kernels can
+then add small floating-point differences before top-k elite selection. Batch 16
+is useful for rapid screening, but it defines a different stochastic planner
+trace and must never replace batch 1 in reference or model-selection tables.
+The machine-readable aggregate is
+[`benchmarks/cem_batch_four_task_20260722.json`](benchmarks/cem_batch_four_task_20260722.json).
+
 `--matmul-precision high` or `medium` is available for cross-hardware tests and
 is recorded in `runtime.float32_matmul_precision`, but it is not recommended on
 the measured H20-3e setup. `high` took 116.9 s at batch 1 and 81.1 s at batch

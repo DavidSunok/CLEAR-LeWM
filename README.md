@@ -57,8 +57,17 @@
 > `official` reproduces upstream behavior; `moderate` and `strict` make stronger
 > completion claims measurable without silently rewriting the historical track.
 
+> [!WARNING]
+> **Reference runs require `--solver-batch-size 1`.** Batch 16 is a labeled
+> throughput mode, not a numerically equivalent switch. A fixed four-task audit
+> gained 1.51x throughput but flipped 99/400 episode outcomes and changed macro
+> SR by -3.75pp. Never mix batch-1 and batch-16 results in one comparison.
+
 ## Latest
 
+- **2026-07-22 · Reference batch contract.** Published and model-selection runs use
+  solver batch 1; batch 16 is explicitly development-only, with cross-task SR and
+  per-episode divergence recorded in the performance audit.
 - **2026-07-21 · Evaluator source integrity.** Reference runs now fail fast when the
   installed `stable-worldmodel` source differs from its published wheel, even if the
   package version string is unchanged.
@@ -166,6 +175,7 @@ clear-lewm evaluate \
   --manifest manifests/tworoom/moderate-seed42-n100.json \
   --policy official/tworoom --policy-label official-lewm \
   --cache-dir "$STABLEWM_HOME" --dataset-path /path/to/tworoom.h5 \
+  --solver-batch-size 1 \
   --random-results results/tworoom-random.json \
   --output results/tworoom-lewm.json
 ```
@@ -256,11 +266,14 @@ python scripts/benchmark_fast_dataset.py \
 
 </details>
 
-For development sweeps, `--solver-batch-size 16` reduces the two PushT Strict
-CEM calls from 112.8 s to 75.6 s. It also reorders CEM random draws and changes
-SR, so **published reference tables must remain at upstream batch 1**. The full
-safe/throughput boundary, TF32 negative result, CPU-thread audit, and raw records
-live in [`PERFORMANCE.md`](PERFORMANCE.md) and [`benchmarks/`](benchmarks).
+For development sweeps, `--solver-batch-size 16` reduces the two official
+PushT Strict CEM calls from 112.8 s to 75.6 s. It also reorders CEM random
+draws and changes SR. In a separate four-task stress test it sped up complete
+evaluation by 1.51x while flipping 99/400 episode outcomes; even Reacher's
+unchanged 25% SR hid 40 flips. **Published reference tables and model selection
+must remain at upstream batch 1.** The full safe/throughput boundary, TF32
+negative result, CPU-thread audit, and records live in
+[`PERFORMANCE.md`](PERFORMANCE.md) and [`benchmarks/`](benchmarks).
 
 MuJoCo is part of the metric, not an interchangeable backend. New result files
 record separate physics, numerical, and execution fingerprints covering MuJoCo,
