@@ -18,6 +18,11 @@ All methods and baselines in one comparison must use the same:
 4. planning horizon, samples, iterations, and top-k;
 5. task success tier.
 
+For matched paper comparisons, they must also share the per-task physics and
+numerical fingerprints defined in
+[`docs/RUNTIME_REPRODUCIBILITY.md`](docs/RUNTIME_REPRODUCIBILITY.md). An
+environment directory name is not a version record.
+
 ## 2. Three success tiers
 
 ### Official
@@ -109,6 +114,10 @@ all three tiers separately; never mix their numbers in one ranking column.
 A published result retains the manifest JSON, dataset revision or SHA-256,
 training-data record, LeWM/stable-worldmodel/CLEAR-LeWM commits, checkpoint
 SHA-256, solver parameters, package lock, and every random seed.
+
+When reporting paired gain over random, the random result must carry the same
+manifest SHA-256, task, protocol, and policy seed. The runner rejects a random
+trace whose identity differs even when its episode count happens to match.
 
 Training-seed and evaluation-episode uncertainty are different. Aggregate
 across training seeds, while retaining paired per-episode outcomes per seed.

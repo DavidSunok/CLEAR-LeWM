@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import json
+import sys
 from types import SimpleNamespace
 
 import numpy as np
@@ -7,18 +9,32 @@ import pytest
 
 from clear_lewm.protocols import get_protocol
 from clear_lewm.runner import (
+    _audit_checkpoint_state,
     _checkpoint_record,
     _install_batched_lewm_criterion,
     _install_pusht_success,
     _install_reacher_success,
     _install_tworoom_success,
+    _load_paired_random_trace,
     _portable_manifest_path,
 )
+from clear_lewm.runtime import audit_hydra_targets, configure_import_paths
 
 
 def _world(env):
     wrapped = SimpleNamespace(unwrapped=env)
     return SimpleNamespace(envs=SimpleNamespace(envs=[wrapped]))
+
+
+@pytest.fixture
+def isolated_legacy_module():
+    original = sys.modules.pop("module", None)
+    try:
+        yield
+    finally:
+        sys.modules.pop("module", None)
+        if original is not None:
+            sys.modules["module"] = original
 
 
 class FakePushT:
@@ -106,3 +122,102 @@ def test_batched_lewm_criterion_adds_the_missing_sample_axis():
     costs = model.criterion({"predicted_emb": predicted, "goal_emb": goal})
     assert costs.shape == (4, 3)
     assert torch.equal(costs, torch.full((4, 3), 5.0))
+
+
+def test_strict_checkpoint_audit_rejects_missing_keys(tmp_path):
+    torch = pytest.importorskip("torch")
+    directory = tmp_path / "checkpoints" / "run"
+    directory.mkdir(parents=True)
+    torch.save({"weight": torch.ones(1, 1)}, directory / "weights.pt")
+    model = torch.nn.Linear(1, 1)
+    with pytest.raises(RuntimeError, match="Strict checkpoint audit failed"):
+        _audit_checkpoint_state(model, "run", tmp_path, strict=True)
+
+
+def test_custom_runtime_has_priority_and_target_provenance(
+    tmp_path, monkeypatch, isolated_legacy_module
+):
+    runtime = tmp_path / "runtime"
+    upstream = tmp_path / "upstream"
+    runtime.mkdir()
+    upstream.mkdir()
+    (runtime / "module.py").write_text("class InverseTransitionActor:\n    pass\n")
+    (upstream / "module.py").write_text("class OldActor:\n    pass\n")
+    config = tmp_path / "config.json"
+    config.write_text(json.dumps({"_target_": "module.InverseTransitionActor"}))
+
+    monkeypatch.setattr(sys, "path", list(sys.path))
+    paths = configure_import_paths(upstream, runtime)
+    audit = audit_hydra_targets(config, upstream, runtime)
+
+    assert paths["custom_runtime"] is True
+    assert sys.path[0] == str(runtime)
+    assert sys.path[-1] == str(upstream)
+    assert audit["custom_runtime_verified"] is True
+    assert audit["targets"][0]["source"]["scope"] == "runtime"
+    assert len(audit["targets"][0]["source"]["sha256"]) == 64
+
+
+def test_target_audit_rejects_cached_module_outside_runtime(
+    tmp_path, monkeypatch, isolated_legacy_module
+):
+    runtime = tmp_path / "runtime"
+    upstream = tmp_path / "upstream"
+    runtime.mkdir()
+    upstream.mkdir()
+    for directory in (runtime, upstream):
+        (directory / "module.py").write_text(
+            "class InverseTransitionActor:\n    pass\n"
+        )
+    config = tmp_path / "config.json"
+    config.write_text(json.dumps({"_target_": "module.InverseTransitionActor"}))
+
+    monkeypatch.setattr(sys, "path", [str(upstream), *sys.path])
+    __import__("module")
+    configure_import_paths(upstream, runtime)
+    with pytest.raises(RuntimeError, match="resolved outside the requested runtime"):
+        audit_hydra_targets(config, upstream, runtime)
+
+
+def test_paired_random_result_requires_the_same_manifest(tmp_path):
+    result = {
+        "schema_version": "clear-lewm-result-v1",
+        "manifest_sha256": "wrong",
+        "task": "pusht",
+        "protocol": {"name": "moderate"},
+        "policy_seed": 42,
+        "checkpoint": None,
+        "episode_successes": [False, True],
+    }
+    path = tmp_path / "random.json"
+    path.write_text(json.dumps(result))
+    with pytest.raises(ValueError, match="manifest_sha256"):
+        _load_paired_random_trace(
+            path,
+            manifest_sha256="expected",
+            task="pusht",
+            protocol_name="moderate",
+            policy_seed=42,
+        )
+
+
+def test_paired_random_result_accepts_an_identical_run_identity(tmp_path):
+    result = {
+        "schema_version": "clear-lewm-result-v1",
+        "manifest_sha256": "same",
+        "task": "cube",
+        "protocol": {"name": "strict"},
+        "policy_seed": 7,
+        "checkpoint": None,
+        "episode_successes": [False, True],
+    }
+    path = tmp_path / "random.json"
+    path.write_text(json.dumps(result))
+    trace = _load_paired_random_trace(
+        path,
+        manifest_sha256="same",
+        task="cube",
+        protocol_name="strict",
+        policy_seed=7,
+    )
+    assert trace == [False, True]

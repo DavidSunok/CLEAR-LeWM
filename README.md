@@ -6,21 +6,32 @@
   <a href="https://github.com/DavidSunok/CLEAR-LeWM/releases"><img src="https://img.shields.io/github/v/release/DavidSunok/CLEAR-LeWM?color=37b5a5&label=release" alt="Release"></a>
   <a href="pyproject.toml"><img src="https://img.shields.io/badge/python-3.10%2B-3776ab" alt="Python 3.10+"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-101828" alt="MIT License"></a>
-  <a href="tests"><img src="https://img.shields.io/badge/tests-17%20passed-15803d" alt="17 tests passed"></a>
+  <a href="tests"><img src="https://img.shields.io/badge/tests-22%20passed-15803d" alt="22 tests passed"></a>
   <a href="manifests"><img src="https://img.shields.io/badge/tasks-4-f97066" alt="4 tasks"></a>
   <a href="results/reference"><img src="https://img.shields.io/badge/reference%20runs-24-f4c95d" alt="24 reference runs"></a>
 </p>
 
 <p align="center">
-  <strong>Controlled · Leakage-aware · Episode-balanced · Auditable · Reproducible</strong>
+  <strong>A reference evaluation layer for LeWM-compatible latent world models.</strong><br>
+  Fixed start-goal pairs, task-complete success, paired random controls, and
+  verifiable checkpoint runtimes across PushT, Cube, Reacher, and TwoRoom.
+</p>
+
+<p align="center">
+  <a href="EVALUATION_SPEC.md"><strong>Evaluation Spec</strong></a> ·
+  <a href="manifests"><strong>Fixed Manifests</strong></a> ·
+  <a href="results/reference"><strong>Reference Results</strong></a> ·
+  <a href="docs/RUNTIME_REPRODUCIBILITY.md"><strong>Runtime Safety</strong></a>
 </p>
 
 <p align="center">
   <a href="#why-clear-lewm">Why CLEAR-LeWM</a> ·
   <a href="#headline-results">Results</a> ·
+  <a href="#start-here">Start Here</a> ·
   <a href="#quick-start">Quick Start</a> ·
   <a href="#three-explicit-tiers">Protocols</a> ·
   <a href="#fast-and-runtime">FAST & Runtime</a> ·
+  <a href="docs/RUNTIME_REPRODUCIBILITY.md">Reproducibility</a> ·
   <a href="PERFORMANCE.md">Performance Audit</a>
 </p>
 
@@ -46,6 +57,15 @@
 > `official` reproduces upstream behavior; `moderate` and `strict` make stronger
 > completion claims measurable without silently rewriting the historical track.
 
+## Latest
+
+- **2026-07-21 · Runtime-safe custom checkpoints.** Hydra targets are resolved before rollout;
+  legacy `jepa.*` and `module.*` classes are source-bounded and hashed.
+- **2026-07-21 · Environment-complete results.** Every new run records task-source, physics,
+  PyTorch, CUDA, cuDNN, and accelerator fingerprints.
+- **2026-07-21 · Calibrated reference suite.** Twenty-four checked outputs cover four tasks,
+  three protocol tiers, official LeWM, and deterministic random controls.
+
 ## Why CLEAR-LeWM
 
 LeWM selects a goal 25 dataset steps into the future and gives the controller a
@@ -61,6 +81,12 @@ on TwoRoom**. A high number is not automatically a capable planner.
 <p align="center">
   <img src="assets/headline_results.png" width="100%" alt="CLEAR-LeWM headline results: strict evaluation suppresses random baselines while preserving official LeWM success">
 </p>
+
+Read each task from top to bottom: **gray to teal** compares the deterministic
+random control across the complete Official and Strict protocols, including pair
+selection and success semantics; **coral versus teal** then compares LeWM and
+random on the exact same Strict manifest. Cube is the clearest case: the random
+floor falls from **47% to 2%**, while LeWM still reaches **17%**.
 
 <table>
   <tr>
@@ -91,6 +117,16 @@ All 24 JSON outputs, per-episode traces, manifests, and source checkpoint hashes
 are checked into [`results/reference/`](results/reference). Calibration choices
 and rejected alternatives are documented in
 [`docs/PROTOCOL_CALIBRATION.md`](docs/PROTOCOL_CALIBRATION.md).
+
+## Start Here
+
+| Goal | Entry point | Auditable output |
+|---|---|---|
+| Diagnose an evaluation dataset | `clear-lewm audit` | trivial-pair and difficulty report |
+| Freeze a comparable test set | `clear-lewm manifest` | versioned start-goal manifest |
+| Evaluate a model or random floor | `clear-lewm evaluate` | paired SR, hashes, versions, outcomes |
+| Verify a result directory | `scripts/audit_result_environments.py` | physics and numerical fingerprint groups |
+| Accelerate training input | `FastMemmapDataset` | source-bound FAST snapshot and audit |
 
 ## Quick Start
 
@@ -134,6 +170,11 @@ clear-lewm evaluate \
 The output includes the manifest hash, embedded protocol, task criterion,
 checkpoint provenance, solver budget, runtime settings, package versions,
 confidence interval, paired gain, and every episode outcome.
+
+Custom checkpoints whose Hydra config uses `jepa.*` or `module.*` must also pass
+`--runtime-dir /path/to/runtime --strict-checkpoint`. CLEAR verifies that every
+legacy target resolves inside that runtime and records its source hash, preventing
+an upstream `module.py` from silently shadowing the checkpoint implementation.
 
 ## Three Explicit Tiers
 
@@ -218,6 +259,14 @@ SR, so **published reference tables must remain at upstream batch 1**. The full
 safe/throughput boundary, TF32 negative result, CPU-thread audit, and raw records
 live in [`PERFORMANCE.md`](PERFORMANCE.md) and [`benchmarks/`](benchmarks).
 
+MuJoCo is part of the metric, not an interchangeable backend. New result files
+record separate physics and numerical fingerprints covering MuJoCo, Pymunk,
+dm-control, Gymnasium, OGBench, task source, PyTorch, CUDA, cuDNN, and GPU. Matched
+comparisons should pass both checks in
+[`docs/RUNTIME_REPRODUCIBILITY.md`](docs/RUNTIME_REPRODUCIBILITY.md); a known-good
+CUDA 12.4 stack is pinned in
+[`requirements/reference-cu124.txt`](requirements/reference-cu124.txt).
+
 ## Data Contract
 
 | PushT | Cube | Reacher | TwoRoom |
@@ -238,6 +287,7 @@ tensors pass the format-equivalence contract in [`DATA_SPEC.md`](DATA_SPEC.md).
 | [`results/reference/`](results/reference) | 24 random and official-LeWM reference outputs |
 | [`benchmarks/`](benchmarks) | FAST and CEM performance measurements |
 | [`scripts/`](scripts) | checkpoint preparation, conversion, audit, and asset builders |
+| [`requirements/`](requirements) | pinned reference evaluation environments |
 | [`third_party/le-wm/`](third_party/le-wm) | pinned upstream LeWM submodule |
 
 ## Scope and Attribution

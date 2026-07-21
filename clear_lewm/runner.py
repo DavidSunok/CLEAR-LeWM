@@ -4,7 +4,6 @@ import hashlib
 import json
 import os
 import random
-import sys
 import time
 from importlib.metadata import PackageNotFoundError, version
 from pathlib import Path
@@ -13,9 +12,11 @@ from types import MethodType
 import numpy as np
 
 from .datasets import file_sha256, metadata_fingerprint
+from .environment import collect_environment
 from .manifests import load_manifest
 from .metrics import load_success_trace, summarize_success
 from .protocols import ProtocolSpec, normalize_task, protocol_from_dict
+from .runtime import audit_hydra_targets, configure_import_paths
 from .tasks import quaternion_angle_deg
 
 OFFICIAL_DATASETS = {
@@ -81,29 +82,102 @@ def _portable_manifest_path(path: Path) -> str:
     return path.name
 
 
+def _checkpoint_file(policy: str, data_root: Path) -> tuple[Path | None, Path]:
+    candidate = data_root / "checkpoints" / policy
+    if candidate.is_file():
+        return candidate, candidate.parent
+    if candidate.is_dir():
+        files = sorted(candidate.glob("*.pt"))
+        return (files[0] if len(files) == 1 else None), candidate
+    return None, candidate
+
+
 def _checkpoint_record(policy: str, data_root: Path) -> dict | None:
     if policy == "random":
         return None
-    checkpoint_root = data_root / "checkpoints"
-    candidate = checkpoint_root / policy
-    if candidate.is_file():
-        weights = candidate
-        directory = candidate.parent
-    elif candidate.is_dir():
-        files = sorted(candidate.glob("*.pt"))
-        weights = files[0] if len(files) == 1 else None
-        directory = candidate
-    else:
-        weights = None
-        directory = candidate
+    weights, directory = _checkpoint_file(policy, data_root)
     record = {"policy_id": policy}
     if weights is not None:
         record["runtime_file"] = weights.name
         record["runtime_sha256"] = file_sha256(weights)
+    config = directory / "config.json"
+    if config.exists():
+        record["config_sha256"] = file_sha256(config)
     source = directory / "source.json"
     if source.exists():
         record["source"] = json.loads(source.read_text())
     return record
+
+
+def _audit_checkpoint_targets(
+    policy: str,
+    data_root: Path,
+    upstream_dir: Path,
+    runtime_dir: Path | None,
+) -> dict:
+    _, directory = _checkpoint_file(policy, data_root)
+    config = directory / "config.json"
+    if not config.is_file():
+        return {"available": False, "custom_runtime_verified": False, "targets": []}
+    audit = audit_hydra_targets(config, upstream_dir, runtime_dir)
+    audit["available"] = True
+    return audit
+
+
+def _audit_checkpoint_state(model, policy: str, data_root: Path, strict: bool) -> dict:
+    import torch
+
+    checkpoint, _ = _checkpoint_file(policy, data_root)
+    if checkpoint is None:
+        if strict:
+            raise RuntimeError(f"Cannot audit an ambiguous checkpoint: {policy}")
+        return {"available": False, "strict_required": strict}
+    state = torch.load(checkpoint, map_location="cpu", weights_only=True)
+    incompatible = model.load_state_dict(state, strict=False)
+    audit = {
+        "available": True,
+        "strict_required": strict,
+        "checkpoint_tensors": len(state),
+        "model_tensors": len(model.state_dict()),
+        "missing_keys": list(incompatible.missing_keys),
+        "unexpected_keys": list(incompatible.unexpected_keys),
+    }
+    if strict and (audit["missing_keys"] or audit["unexpected_keys"]):
+        raise RuntimeError(
+            "Strict checkpoint audit failed: "
+            f"missing={audit['missing_keys']}, unexpected={audit['unexpected_keys']}"
+        )
+    return audit
+
+
+def _load_paired_random_trace(
+    path: str | Path,
+    *,
+    manifest_sha256: str,
+    task: str,
+    protocol_name: str,
+    policy_seed: int,
+):
+    path = Path(path)
+    payload = json.loads(path.read_text())
+    if not isinstance(payload, dict):
+        raise ValueError("Paired random results must be a CLEAR result JSON object")
+    expected = {
+        "schema_version": "clear-lewm-result-v1",
+        "manifest_sha256": manifest_sha256,
+        "task": task,
+        "policy_seed": policy_seed,
+    }
+    mismatches = [key for key, value in expected.items() if payload.get(key) != value]
+    if payload.get("protocol", {}).get("name") != protocol_name:
+        mismatches.append("protocol")
+    if payload.get("checkpoint") is not None:
+        mismatches.append("checkpoint")
+    if mismatches:
+        raise ValueError(
+            "Paired random result identity mismatch: " + ", ".join(mismatches)
+        )
+    return load_success_trace(path)
 
 
 def _install_batched_lewm_criterion(model) -> None:
@@ -319,6 +393,7 @@ def evaluate_manifest(
     dataset_name: str | None = None,
     dataset_path: str | Path | None = None,
     upstream_dir: str | Path | None = None,
+    runtime_dir: str | Path | None = None,
     policy_seed: int | None = None,
     num_samples: int | None = None,
     n_steps: int | None = None,
@@ -329,6 +404,7 @@ def evaluate_manifest(
     solver_batch_size: int | None = None,
     cpu_threads: int | None = None,
     matmul_precision: str | None = None,
+    strict_checkpoint: bool = False,
 ) -> dict:
     run_started = time.perf_counter()
     os.environ.setdefault("MUJOCO_GL", "egl")
@@ -340,8 +416,8 @@ def evaluate_manifest(
     upstream_dir = Path(
         upstream_dir or Path(__file__).resolve().parents[1] / "third_party" / "le-wm"
     ).resolve()
-    if str(upstream_dir) not in sys.path:
-        sys.path.insert(0, str(upstream_dir))
+    runtime_dir = Path(runtime_dir).resolve() if runtime_dir is not None else None
+    import_paths = configure_import_paths(upstream_dir, runtime_dir)
 
     try:
         import hydra
@@ -356,6 +432,17 @@ def evaluate_manifest(
         ) from exc
 
     seed = int(policy_seed if policy_seed is not None else manifest["policy_seed"])
+    random_trace = (
+        _load_paired_random_trace(
+            random_results,
+            manifest_sha256=manifest_sha256,
+            task=task,
+            protocol_name=protocol.name,
+            policy_seed=seed,
+        )
+        if random_results
+        else None
+    )
     _seed_everything(seed, cpu_threads=cpu_threads)
     if matmul_precision is not None:
         torch.set_float32_matmul_precision(matmul_precision)
@@ -428,6 +515,9 @@ def evaluate_manifest(
         checkpoint = None
         batched_criterion_patch = False
     else:
+        target_audit = _audit_checkpoint_targets(
+            policy, data_root, upstream_dir, runtime_dir
+        )
         try:
             model = swm.wm.utils.load_pretrained(policy, cache_dir=data_root)
         except TypeError:
@@ -443,6 +533,11 @@ def evaluate_manifest(
         if int(cfg.solver.batch_size) > 1 and canonical_lewm:
             _install_batched_lewm_criterion(model)
             batched_criterion_patch = True
+        checkpoint = _checkpoint_record(policy, data_root)
+        checkpoint["target_audit"] = target_audit
+        checkpoint["state_dict_audit"] = _audit_checkpoint_state(
+            model, policy, data_root, strict=strict_checkpoint
+        )
         plan_config = swm.PlanConfig(**cfg.plan_config)
         solver = hydra.utils.instantiate(cfg.solver, model=model)
         attached_policy = swm.policy.WorldModelPolicy(
@@ -451,7 +546,6 @@ def evaluate_manifest(
             process=process,
             transform=transform,
         )
-        checkpoint = _checkpoint_record(policy, data_root)
 
     episodes = [pair["episode_id"] for pair in manifest["pairs"]]
     start_steps = [pair["start_step"] for pair in manifest["pairs"]]
@@ -483,7 +577,6 @@ def evaluate_manifest(
         world.close()
 
     episode_successes = np.asarray(raw_metrics["episode_successes"], dtype=bool)
-    random_trace = load_success_trace(random_results) if random_results else None
     summary = summarize_success(
         episode_successes,
         random_trace=random_trace,
@@ -523,6 +616,7 @@ def evaluate_manifest(
         "metrics": summary,
         "episode_successes": episode_successes.tolist(),
         "raw_world_metrics": _json_safe(raw_metrics),
+        "environment": collect_environment(torch, task=task),
         "versions": {
             "torch": torch.__version__,
             "stable_worldmodel": _package_version("stable-worldmodel"),
@@ -530,6 +624,7 @@ def evaluate_manifest(
         "runtime": {
             "batched_lewm_criterion_patch": batched_criterion_patch,
             "cpu_threads": torch.get_num_threads(),
+            "custom_runtime": import_paths["custom_runtime"],
             "evaluation_seconds": evaluation_seconds,
             "float32_matmul_precision": torch.get_float32_matmul_precision(),
             "total_before_serialization_seconds": time.perf_counter() - run_started,
@@ -537,5 +632,14 @@ def evaluate_manifest(
     }
     output = Path(output)
     output.parent.mkdir(parents=True, exist_ok=True)
-    output.write_text(json.dumps(_json_safe(result), indent=2, sort_keys=True) + "\n")
+    temporary = output.with_name(f".{output.name}.{os.getpid()}.tmp")
+    try:
+        with temporary.open("w") as handle:
+            json.dump(_json_safe(result), handle, indent=2, sort_keys=True)
+            handle.write("\n")
+            handle.flush()
+            os.fsync(handle.fileno())
+        os.replace(temporary, output)
+    finally:
+        temporary.unlink(missing_ok=True)
     return result

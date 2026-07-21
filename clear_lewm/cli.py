@@ -69,6 +69,10 @@ def build_parser() -> argparse.ArgumentParser:
     evaluate.add_argument("--dataset-name")
     evaluate.add_argument("--dataset-path")
     evaluate.add_argument("--upstream-dir")
+    evaluate.add_argument(
+        "--runtime-dir",
+        help="directory containing custom jepa.py/module.py implementations",
+    )
     evaluate.add_argument("--policy-seed", type=int)
     evaluate.add_argument("--num-samples", type=int)
     evaluate.add_argument("--n-steps", type=int)
@@ -87,6 +91,11 @@ def build_parser() -> argparse.ArgumentParser:
         "--matmul-precision",
         choices=("highest", "high", "medium"),
         help="PyTorch float32 matmul mode; unset preserves the runtime default",
+    )
+    evaluate.add_argument(
+        "--strict-checkpoint",
+        action="store_true",
+        help="fail when checkpoint keys are missing or unexpected",
     )
     evaluate.add_argument("--random-results")
     evaluate.add_argument("--video-dir")
@@ -140,6 +149,7 @@ def main(argv: list[str] | None = None) -> int:
             dataset_name=args.dataset_name,
             dataset_path=args.dataset_path,
             upstream_dir=args.upstream_dir,
+            runtime_dir=args.runtime_dir,
             policy_seed=args.policy_seed,
             num_samples=args.num_samples,
             n_steps=args.n_steps,
@@ -150,6 +160,7 @@ def main(argv: list[str] | None = None) -> int:
             solver_batch_size=args.solver_batch_size,
             cpu_threads=args.cpu_threads,
             matmul_precision=args.matmul_precision,
+            strict_checkpoint=args.strict_checkpoint,
         )
         print(json.dumps(result["metrics"], indent=2, sort_keys=True))
         return 0
