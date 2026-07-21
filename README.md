@@ -6,7 +6,7 @@
   <a href="https://github.com/DavidSunok/CLEAR-LeWM/releases"><img src="https://img.shields.io/github/v/release/DavidSunok/CLEAR-LeWM?color=37b5a5&label=release" alt="Release"></a>
   <a href="pyproject.toml"><img src="https://img.shields.io/badge/python-3.10%2B-3776ab" alt="Python 3.10+"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-101828" alt="MIT License"></a>
-  <a href="tests"><img src="https://img.shields.io/badge/tests-22%20passed-15803d" alt="22 tests passed"></a>
+  <a href="tests"><img src="https://img.shields.io/badge/tests-26%20passed-15803d" alt="26 tests passed"></a>
   <a href="manifests"><img src="https://img.shields.io/badge/tasks-4-f97066" alt="4 tasks"></a>
   <a href="results/reference"><img src="https://img.shields.io/badge/reference%20runs-24-f4c95d" alt="24 reference runs"></a>
 </p>
@@ -59,6 +59,9 @@
 
 ## Latest
 
+- **2026-07-21 · Evaluator source integrity.** Reference runs now fail fast when the
+  installed `stable-worldmodel` source differs from its published wheel, even if the
+  package version string is unchanged.
 - **2026-07-21 · Runtime-safe custom checkpoints.** Hydra targets are resolved before rollout;
   legacy `jepa.*` and `module.*` classes are source-bounded and hashed.
 - **2026-07-21 · Environment-complete results.** Every new run records task-source, physics,
@@ -260,9 +263,9 @@ safe/throughput boundary, TF32 negative result, CPU-thread audit, and raw record
 live in [`PERFORMANCE.md`](PERFORMANCE.md) and [`benchmarks/`](benchmarks).
 
 MuJoCo is part of the metric, not an interchangeable backend. New result files
-record separate physics and numerical fingerprints covering MuJoCo, Pymunk,
-dm-control, Gymnasium, OGBench, task source, PyTorch, CUDA, cuDNN, and GPU. Matched
-comparisons should pass both checks in
+record separate physics, numerical, and execution fingerprints covering MuJoCo,
+Pymunk, dm-control, Gymnasium, OGBench, task source, PyTorch, CUDA, cuDNN, GPU,
+and evaluator source. Matched comparisons should pass all three checks in
 [`docs/RUNTIME_REPRODUCIBILITY.md`](docs/RUNTIME_REPRODUCIBILITY.md); a known-good
 CUDA 12.4 stack is pinned in
 [`requirements/reference-cu124.txt`](requirements/reference-cu124.txt).

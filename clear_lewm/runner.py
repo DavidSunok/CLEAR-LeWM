@@ -12,7 +12,7 @@ from types import MethodType
 import numpy as np
 
 from .datasets import file_sha256, metadata_fingerprint
-from .environment import collect_environment
+from .environment import collect_environment, require_official_stable_worldmodel
 from .manifests import load_manifest
 from .metrics import load_success_trace, summarize_success
 from .protocols import ProtocolSpec, normalize_task, protocol_from_dict
@@ -405,6 +405,7 @@ def evaluate_manifest(
     cpu_threads: int | None = None,
     matmul_precision: str | None = None,
     strict_checkpoint: bool = False,
+    allow_modified_stable_worldmodel: bool = False,
 ) -> dict:
     run_started = time.perf_counter()
     os.environ.setdefault("MUJOCO_GL", "egl")
@@ -430,6 +431,9 @@ def evaluate_manifest(
             "LeWM evaluation dependencies are missing. Install with "
             "`pip install -e '.[lewm]'`."
         ) from exc
+
+    if not allow_modified_stable_worldmodel:
+        require_official_stable_worldmodel()
 
     seed = int(policy_seed if policy_seed is not None else manifest["policy_seed"])
     random_trace = (
@@ -627,6 +631,9 @@ def evaluate_manifest(
             "custom_runtime": import_paths["custom_runtime"],
             "evaluation_seconds": evaluation_seconds,
             "float32_matmul_precision": torch.get_float32_matmul_precision(),
+            "modified_stable_worldmodel_allowed": (
+                allow_modified_stable_worldmodel
+            ),
             "total_before_serialization_seconds": time.perf_counter() - run_started,
         },
     }

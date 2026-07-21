@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Group CLEAR result files by physics and numerical runtime fingerprints."""
+"""Group CLEAR results by physics, numerical, and execution fingerprints."""
 
 from __future__ import annotations
 
@@ -35,11 +35,18 @@ def main() -> int:
         action="store_true",
         help="fail unless every result has one common numerical fingerprint",
     )
+    parser.add_argument(
+        "--strict-execution",
+        action="store_true",
+        help="fail unless every result has one common execution fingerprint",
+    )
     args = parser.parse_args()
 
     groups = {"physics": defaultdict(lambda: defaultdict(list))}
     groups["numerics"] = defaultdict(lambda: defaultdict(list))
+    groups["execution"] = defaultdict(lambda: defaultdict(list))
     missing = []
+    missing_execution = []
     parsed = 0
     for path in result_files(args.inputs):
         try:
@@ -60,6 +67,11 @@ def main() -> int:
         groups["numerics"][task][environment["numerics_fingerprint"]].append(
             str(path)
         )
+        execution_fingerprint = environment.get("execution_fingerprint")
+        if execution_fingerprint is None:
+            missing_execution.append(str(path))
+        else:
+            groups["execution"][task][execution_fingerprint].append(str(path))
 
     def sorted_groups(kind: str) -> dict:
         return {
@@ -71,8 +83,10 @@ def main() -> int:
         "schema_version": "clear-lewm-environment-audit-v1",
         "results": parsed,
         "results_without_environment": missing,
+        "results_without_execution_fingerprint": missing_execution,
         "physics_groups_by_task": sorted_groups("physics"),
         "numerics_groups_by_task": sorted_groups("numerics"),
+        "execution_groups_by_task": sorted_groups("execution"),
     }
     output = json.dumps(report, indent=2, sort_keys=True) + "\n"
     if args.output:
@@ -87,7 +101,12 @@ def main() -> int:
     numerics_failed = args.strict_numerics and (
         missing or any(len(items) != 1 for items in groups["numerics"].values())
     )
-    return 1 if physics_failed or numerics_failed else 0
+    execution_failed = args.strict_execution and (
+        missing
+        or missing_execution
+        or any(len(items) != 1 for items in groups["execution"].values())
+    )
+    return 1 if physics_failed or numerics_failed or execution_failed else 0
 
 
 if __name__ == "__main__":

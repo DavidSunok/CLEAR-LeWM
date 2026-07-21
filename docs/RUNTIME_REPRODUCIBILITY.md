@@ -15,19 +15,37 @@ Small floating-point differences can change CEM candidate ranking and amplify
 into a different closed-loop trajectory. Physics equality is necessary, but a
 paper-quality matched comparison should also use one numerical fingerprint.
 
-Every new CLEAR result records both fingerprints, all relevant package versions,
-the MuJoCo runtime version, CUDA/cuDNN builds, and accelerator properties. Audit
-a result directory with:
+Every new CLEAR result records physics, numerical, and execution fingerprints,
+all relevant package versions, the MuJoCo runtime version, CUDA/cuDNN builds,
+accelerator properties, and the source hashes of the world loop, policy, CEM,
+and checkpoint loader. Audit a result directory with:
 
 ```bash
 python scripts/audit_result_environments.py results/run \
-  --strict-physics --strict-numerics \
+  --strict-physics --strict-numerics --strict-execution \
   --output results/run/environment-audit.json
 ```
 
 The CUDA 12.4 stack used for canonical reference runs is pinned in
 `requirements/reference-cu124.txt`. Environment directory names are not evidence
 of equivalence; compare the recorded fingerprints.
+
+## Evaluator source integrity
+
+The upstream LeWM install command currently requests
+`stable-worldmodel[train,env]` without a lockfile, while the
+`stable-worldmodel` package leaves PyTorch and torchvision unpinned. Two installs
+can therefore resolve to different numerical stacks.
+
+A matching package version is still not enough: a file edited inside
+`site-packages` retains the same version string. CLEAR hashes the runtime files
+that own `World.evaluate`, `WorldModelPolicy`, CEM, and checkpoint loading. For
+the pinned `stable-worldmodel==0.1.0` reference environment, those hashes must
+match the published PyPI wheel before any rollout begins. A mismatch fails fast.
+
+`--allow-modified-stable-worldmodel` is an explicit escape hatch for development
+experiments. Such a run records the modified source hashes and must not be mixed
+into a reference table.
 
 ## Custom checkpoint runtimes
 

@@ -97,6 +97,14 @@ def build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="fail when checkpoint keys are missing or unexpected",
     )
+    evaluate.add_argument(
+        "--allow-modified-stable-worldmodel",
+        action="store_true",
+        help=(
+            "allow non-official stable-worldmodel runtime sources; results are "
+            "recorded as non-reference"
+        ),
+    )
     evaluate.add_argument("--random-results")
     evaluate.add_argument("--video-dir")
     return parser
@@ -161,6 +169,9 @@ def main(argv: list[str] | None = None) -> int:
             cpu_threads=args.cpu_threads,
             matmul_precision=args.matmul_precision,
             strict_checkpoint=args.strict_checkpoint,
+            allow_modified_stable_worldmodel=(
+                args.allow_modified_stable_worldmodel
+            ),
         )
         print(json.dumps(result["metrics"], indent=2, sort_keys=True))
         return 0
