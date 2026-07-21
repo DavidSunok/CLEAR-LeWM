@@ -98,10 +98,14 @@ def main() -> int:
     started = time.monotonic()
     for start in range(args.resume, rows, args.batch_size):
         end = min(start + args.batch_size, rows)
-        batch = dataset.__getitems__(list(range(start, end)))
-        for offset, sample in enumerate(batch):
-            for name, array in arrays.items():
-                array[start + offset] = row_array(sample[name])
+        indices = list(range(start, end))
+        batch = (
+            dataset.__getitems__(indices)
+            if hasattr(dataset, "__getitems__")
+            else [dataset[index] for index in indices]
+        )
+        for name, array in arrays.items():
+            array[start:end] = np.stack([row_array(sample[name]) for sample in batch])
         if end == rows or start % (args.batch_size * 50) == 0:
             elapsed = max(time.monotonic() - started, 1e-9)
             rate = (end - args.resume) / elapsed

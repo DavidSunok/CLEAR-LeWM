@@ -62,6 +62,11 @@ python scripts/audit_fast_dataset.py \
   --source pusht_expert_train.lance \
   --cache-dir "$STABLEWM_HOME" \
   --fast-dir "$STABLEWM_HOME/preprocessed/pusht"
+
+python scripts/benchmark_fast_dataset.py \
+  --source pusht_expert_train.lance \
+  --cache-dir "$STABLEWM_HOME" \
+  --fast-dir "$STABLEWM_HOME/preprocessed/pusht"
 ```
 
 The audit checks full episode metadata and non-image columns, then compares

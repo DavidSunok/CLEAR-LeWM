@@ -73,6 +73,21 @@ def build_parser() -> argparse.ArgumentParser:
     evaluate.add_argument("--num-samples", type=int)
     evaluate.add_argument("--n-steps", type=int)
     evaluate.add_argument("--topk", type=int)
+    evaluate.add_argument(
+        "--solver-batch-size",
+        type=int,
+        help="CEM environments per GPU batch; default 1 reproduces upstream",
+    )
+    evaluate.add_argument(
+        "--cpu-threads",
+        type=int,
+        help="PyTorch CPU threads; default 1 avoids oversubscription",
+    )
+    evaluate.add_argument(
+        "--matmul-precision",
+        choices=("highest", "high", "medium"),
+        help="PyTorch float32 matmul mode; unset preserves the runtime default",
+    )
     evaluate.add_argument("--random-results")
     evaluate.add_argument("--video-dir")
     return parser
@@ -132,6 +147,9 @@ def main(argv: list[str] | None = None) -> int:
             random_results=args.random_results,
             video_dir=args.video_dir,
             policy_label=args.policy_label,
+            solver_batch_size=args.solver_batch_size,
+            cpu_threads=args.cpu_threads,
+            matmul_precision=args.matmul_precision,
         )
         print(json.dumps(result["metrics"], indent=2, sort_keys=True))
         return 0

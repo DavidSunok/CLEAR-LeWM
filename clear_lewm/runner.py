@@ -5,6 +5,7 @@ import json
 import os
 import random
 import sys
+import time
 from importlib.metadata import PackageNotFoundError, version
 from pathlib import Path
 from types import MethodType
@@ -44,14 +45,20 @@ def _json_safe(value):
     return value
 
 
-def _seed_everything(seed: int) -> None:
+def _seed_everything(seed: int, cpu_threads: int | None = None) -> None:
     random.seed(seed)
     np.random.seed(seed)
     try:
         import torch
 
-        cpu_threads = int(os.environ.get("CLEAR_LEWM_CPU_THREADS", "1"))
-        torch.set_num_threads(max(cpu_threads, 1))
+        effective_threads = (
+            cpu_threads
+            if cpu_threads is not None
+            else int(os.environ.get("CLEAR_LEWM_CPU_THREADS", "1"))
+        )
+        if effective_threads < 1:
+            raise ValueError("cpu_threads must be at least 1")
+        torch.set_num_threads(effective_threads)
         torch.manual_seed(seed)
         if torch.cuda.is_available():
             torch.cuda.manual_seed_all(seed)
@@ -97,6 +104,25 @@ def _checkpoint_record(policy: str, data_root: Path) -> dict | None:
     if source.exists():
         record["source"] = json.loads(source.read_text())
     return record
+
+
+def _install_batched_lewm_criterion(model) -> None:
+    """Fix the missing CEM sample axis in canonical LeWM's batched cost."""
+    import torch.nn.functional as functional
+
+    def criterion(self, info_dict: dict):
+        predicted = info_dict["predicted_emb"]
+        goal = info_dict["goal_emb"]
+        if goal.ndim == predicted.ndim - 1:
+            goal = goal.unsqueeze(1)
+        goal = goal[..., -1:, :].expand_as(predicted)
+        return functional.mse_loss(
+            predicted[..., -1:, :],
+            goal[..., -1:, :].detach(),
+            reduction="none",
+        ).sum(dim=tuple(range(2, predicted.ndim)))
+
+    model.criterion = MethodType(criterion, model)
 
 
 def _image_transform(image_size: int):
@@ -300,7 +326,11 @@ def evaluate_manifest(
     random_results: str | Path | None = None,
     video_dir: str | Path | None = None,
     policy_label: str | None = None,
+    solver_batch_size: int | None = None,
+    cpu_threads: int | None = None,
+    matmul_precision: str | None = None,
 ) -> dict:
+    run_started = time.perf_counter()
     os.environ.setdefault("MUJOCO_GL", "egl")
     manifest_path = Path(manifest_path)
     manifest = load_manifest(manifest_path)
@@ -326,7 +356,9 @@ def evaluate_manifest(
         ) from exc
 
     seed = int(policy_seed if policy_seed is not None else manifest["policy_seed"])
-    _seed_everything(seed)
+    _seed_everything(seed, cpu_threads=cpu_threads)
+    if matmul_precision is not None:
+        torch.set_float32_matmul_precision(matmul_precision)
     cfg = _compose_config(task, upstream_dir)
     with open_dict(cfg):
         cfg.eval.num_eval = len(manifest["pairs"])
@@ -346,6 +378,10 @@ def evaluate_manifest(
             cfg.solver.n_steps = int(n_steps)
         if topk is not None:
             cfg.solver.topk = int(topk)
+        if solver_batch_size is not None:
+            if solver_batch_size < 1:
+                raise ValueError("solver_batch_size must be at least 1")
+            cfg.solver.batch_size = int(solver_batch_size)
 
     transform = {
         "pixels": _image_transform(cfg.eval.img_size),
@@ -390,6 +426,7 @@ def evaluate_manifest(
     if policy == "random":
         attached_policy = swm.policy.RandomPolicy(seed=seed)
         checkpoint = None
+        batched_criterion_patch = False
     else:
         try:
             model = swm.wm.utils.load_pretrained(policy, cache_dir=data_root)
@@ -398,6 +435,14 @@ def evaluate_manifest(
         model = model.to("cuda").eval()
         model.requires_grad_(False)
         model.interpolate_pos_encoding = True
+        batched_criterion_patch = False
+        canonical_lewm = (
+            type(model).__module__ == "stable_worldmodel.wm.lewm.lewm"
+            and type(model).__name__ == "LeWM"
+        )
+        if int(cfg.solver.batch_size) > 1 and canonical_lewm:
+            _install_batched_lewm_criterion(model)
+            batched_criterion_patch = True
         plan_config = swm.PlanConfig(**cfg.plan_config)
         solver = hydra.utils.instantiate(cfg.solver, model=model)
         attached_policy = swm.policy.WorldModelPolicy(
@@ -423,6 +468,7 @@ def evaluate_manifest(
                 sustained_steps=protocol.hold_steps("cube"),
             )
         world.set_policy(attached_policy)
+        evaluation_started = time.perf_counter()
         raw_metrics = world.evaluate(
             dataset=dataset,
             start_steps=start_steps,
@@ -432,6 +478,7 @@ def evaluate_manifest(
             callables=OmegaConf.to_container(cfg.eval.get("callables"), resolve=True),
             video=Path(video_dir) if video_dir else None,
         )
+        evaluation_seconds = time.perf_counter() - evaluation_started
     finally:
         world.close()
 
@@ -468,6 +515,7 @@ def evaluate_manifest(
             "sustained_steps": protocol.hold_steps(task),
         },
         "solver": {
+            "batch_size": OmegaConf.select(cfg, "solver.batch_size"),
             "num_samples": OmegaConf.select(cfg, "solver.num_samples"),
             "n_steps": OmegaConf.select(cfg, "solver.n_steps"),
             "topk": OmegaConf.select(cfg, "solver.topk"),
@@ -480,7 +528,11 @@ def evaluate_manifest(
             "stable_worldmodel": _package_version("stable-worldmodel"),
         },
         "runtime": {
-            "cpu_threads": int(os.environ.get("CLEAR_LEWM_CPU_THREADS", "1")),
+            "batched_lewm_criterion_patch": batched_criterion_patch,
+            "cpu_threads": torch.get_num_threads(),
+            "evaluation_seconds": evaluation_seconds,
+            "float32_matmul_precision": torch.get_float32_matmul_precision(),
+            "total_before_serialization_seconds": time.perf_counter() - run_started,
         },
     }
     output = Path(output)

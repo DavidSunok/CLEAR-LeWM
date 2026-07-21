@@ -88,6 +88,67 @@ skipped transforms is intentionally not reproduced. See
 [`DATA_SPEC.md`](DATA_SPEC.md) for canonical names, row counts, known
 HDF5/Lance differences, and audit commands.
 
+## FAST and Runtime
+
+FAST is an audited **training I/O optimization**, not a different dataset. It
+decodes the authoritative source once, stores each column as a row-major
+memmap, keeps every action in the action chunk, applies observation frameskip
+only where the source reader does, and still runs the configured transform.
+The converter now adds:
+
+- a schema and atomic `complete` flag;
+- exact shape, dtype, file-size, episode-length, and offset checks;
+- source-safe resume checks that reject mixed snapshots;
+- batched source reads and vectorized memmap writes during conversion;
+- seeded tensor equality auditing against the source reader.
+
+In a historical PushT H200 run with batch size 128 and 16 loader workers, the
+corrected FAST path sustained about **11.0 steps/s**, versus **6.1 steps/s** for
+Lance, an observed **1.8x end-to-end training throughput** gain. These were
+separate runs and are not a controlled hardware guarantee. In the isolated
+default benchmark on the H20-3 node, FAST reached **4,661 samples/s** versus
+**504 samples/s** for Lance, a **9.25x loader-only gain** over three fixed-seed
+rounds without model compute or image transforms. FAST trades storage for
+decode time: the uncompressed PushT snapshot is about 328 GiB. Measure the
+actual gain on each storage system with:
+
+```bash
+python scripts/preprocess_fast_dataset.py \
+  --source pusht_expert_train.lance \
+  --cache-dir "$STABLEWM_HOME" \
+  --output /local-nvme/pusht-fast
+
+python scripts/audit_fast_dataset.py \
+  --source pusht_expert_train.lance \
+  --cache-dir "$STABLEWM_HOME" \
+  --fast-dir /local-nvme/pusht-fast
+
+python scripts/benchmark_fast_dataset.py \
+  --source pusht_expert_train.lance \
+  --cache-dir "$STABLEWM_HOME" \
+  --fast-dir /local-nvme/pusht-fast
+```
+
+Evaluation has a separate bottleneck. Upstream CEM uses one environment per GPU
+batch. CLEAR-LeWM supports an opt-in throughput mode and fixes the missing
+sample-axis broadcast in canonical LeWM:
+
+```bash
+clear-lewm evaluate ... --solver-batch-size 16
+```
+
+On H20-3e, PushT Strict with 100 episodes and `300 x 30` CEM reduced the two
+CEM calls from **112.8 s** at batch 1 to **75.6 s** at batch 16, a **1.49x**
+solver speedup. Larger batches saturated near 1.5x. This mode changes how CEM
+random samples are assigned to environments and changed SR in our sweep, so it
+must not replace batch-1 reference results. The batch size, matmul mode, CPU
+threads, patch status, and measured runtime are recorded in every new result.
+
+The default `CLEAR_LEWM_CPU_THREADS=1` also avoids severe 100-environment CPU
+oversubscription. Run one task/protocol/seed per free GPU, keep video disabled
+for benchmark sweeps, and see [`PERFORMANCE.md`](PERFORMANCE.md) for the full
+audit and safe/unsafe optimization boundary.
+
 ## Install
 
 ```bash
@@ -160,6 +221,7 @@ added to Git; only hashes and reproducible conversion code belong here.
 | `clear_lewm/` | manifests, audits, criteria patches, metrics, runner |
 | `manifests/` | checked-in 100-pair task/tier manifests |
 | `results/reference/` | deterministic random reference results |
+| `benchmarks/` | FAST and CEM performance measurements |
 | `scripts/` | checkpoint prep, FAST conversion/audit, README asset build |
 | `third_party/le-wm/` | pinned upstream LeWM Git submodule |
 

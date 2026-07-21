@@ -3,10 +3,12 @@ from __future__ import annotations
 from types import SimpleNamespace
 
 import numpy as np
+import pytest
 
 from clear_lewm.protocols import get_protocol
 from clear_lewm.runner import (
     _checkpoint_record,
+    _install_batched_lewm_criterion,
     _install_pusht_success,
     _install_reacher_success,
     _install_tworoom_success,
@@ -93,3 +95,14 @@ def test_checkpoint_record_keeps_source_identity(tmp_path):
     assert record is not None
     assert record["source"]["revision"] == "abc"
     assert len(record["runtime_sha256"]) == 64
+
+
+def test_batched_lewm_criterion_adds_the_missing_sample_axis():
+    torch = pytest.importorskip("torch")
+    model = SimpleNamespace()
+    _install_batched_lewm_criterion(model)
+    predicted = torch.zeros(4, 3, 2, 5)
+    goal = torch.ones(4, 1, 5)
+    costs = model.criterion({"predicted_emb": predicted, "goal_emb": goal})
+    assert costs.shape == (4, 3)
+    assert torch.equal(costs, torch.full((4, 3), 5.0))
