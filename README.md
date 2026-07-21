@@ -1,116 +1,197 @@
-<div align="center">
+<p align="center">
+  <img src="assets/readme_hero.png" width="100%" alt="CLEAR-LeWM: auditable evaluation for latent world models across PushT, Cube, Reacher, and TwoRoom">
+</p>
 
-# CLEAR-LeWM
+<p align="center">
+  <a href="https://github.com/DavidSunok/CLEAR-LeWM/releases"><img src="https://img.shields.io/github/v/release/DavidSunok/CLEAR-LeWM?color=37b5a5&label=release" alt="Release"></a>
+  <a href="pyproject.toml"><img src="https://img.shields.io/badge/python-3.10%2B-3776ab" alt="Python 3.10+"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-101828" alt="MIT License"></a>
+  <a href="tests"><img src="https://img.shields.io/badge/tests-17%20passed-15803d" alt="17 tests passed"></a>
+  <a href="manifests"><img src="https://img.shields.io/badge/tasks-4-f97066" alt="4 tasks"></a>
+  <a href="results/reference"><img src="https://img.shields.io/badge/reference%20runs-24-f4c95d" alt="24 reference runs"></a>
+</p>
 
-**Controlled, Leakage-aware, Episode-balanced, Auditable, Reproducible**
-evaluation for LeWM-compatible visual world models.
+<p align="center">
+  <strong>Controlled · Leakage-aware · Episode-balanced · Auditable · Reproducible</strong>
+</p>
 
-[![Release](https://img.shields.io/github/v/release/DavidSunok/CLEAR-LeWM?color=15803d)](https://github.com/DavidSunok/CLEAR-LeWM/releases)
-[![Python](https://img.shields.io/badge/python-3.10%2B-3776ab)](pyproject.toml)
-[![License](https://img.shields.io/badge/license-MIT-101828)](LICENSE)
-[![Tests](https://img.shields.io/badge/tests-17%20passed-15803d)](tests)
+<p align="center">
+  <a href="#why-clear-lewm">Why CLEAR-LeWM</a> ·
+  <a href="#headline-results">Results</a> ·
+  <a href="#quick-start">Quick Start</a> ·
+  <a href="#three-explicit-tiers">Protocols</a> ·
+  <a href="#fast-and-runtime">FAST & Runtime</a> ·
+  <a href="PERFORMANCE.md">Performance Audit</a>
+</p>
 
-<img src="assets/protocols.gif" width="848" alt="CLEAR-LeWM protocols across PushT, Cube, Reacher, and TwoRoom">
-
-**One fixed goal manifest. Three explicit levels of success rigor. No silent
-benchmark changes.**
-
-</div>
+<table>
+  <tr>
+    <td width="33%" align="center">
+      <strong>Success means completion</strong><br>
+      Task-aware geometry and sustained success replace ambiguous first contact.
+    </td>
+    <td width="33%" align="center">
+      <strong>Every comparison is paired</strong><br>
+      One immutable manifest drives the model and its deterministic random floor.
+    </td>
+    <td width="33%" align="center">
+      <strong>Every artifact is traceable</strong><br>
+      Dataset, checkpoint, solver, protocol, and per-episode outcomes carry hashes.
+    </td>
+  </tr>
+</table>
 
 > [!IMPORTANT]
 > CLEAR-LeWM is an independent community project, not an official LeWM release.
-> The `official` tier exists to reproduce upstream behavior; `moderate` and
-> `strict` are corrected evaluation standards.
+> `official` reproduces upstream behavior; `moderate` and `strict` make stronger
+> completion claims measurable without silently rewriting the historical track.
 
 ## Why CLEAR-LeWM
 
-LeWM evaluates a goal sampled 25 steps later from an offline episode with a
-50-step control budget. That makes goals reachable, but raw success rate can be
-inflated by protocol details:
+LeWM selects a goal 25 dataset steps into the future and gives the controller a
+50-step budget. The goal is reachable, but the reported success rate can still
+be inflated by **row-biased sampling, already-solved starts, first-hit
+termination, train/eval trajectory overlap, and incomplete task predicates**.
 
-- sampling rows overweights longer episodes;
-- training and evaluation use the same public trajectories by default;
-- already-solved start-goal pairs are retained;
-- first contact with a loose goal region ends the episode;
-- Cube ignores target orientation under the upstream 4 cm position test.
+On the canonical snapshots, upstream predicates already mark **38.38% of Cube**
+and **8.82% of TwoRoom** start-goal pairs successful before control. Our fixed
+official manifests then produce random-policy SR of **47% on Cube** and **30%
+on TwoRoom**. A high number is not automatically a capable planner.
 
-On our canonical snapshots, the control-free initial-success floor is **38.38%
-for Cube** and **8.82% for TwoRoom** under upstream predicates. The LeWM paper
-also reports a 48% Cube random baseline. CLEAR-LeWM keeps that protocol
-reproducible while making stronger claims measurable.
+<p align="center">
+  <img src="assets/headline_results.png" width="100%" alt="CLEAR-LeWM headline results: strict evaluation suppresses random baselines while preserving official LeWM success">
+</p>
 
-## Three Tiers
+<table>
+  <tr>
+    <td width="33%"><strong>Diagnose</strong><br>Measure initial-success floors and a paired random policy before interpreting model SR.</td>
+    <td width="33%"><strong>Correct</strong><br>Balance episodes, remove trivial pairs, restore missing task geometry, and require stable attainment.</td>
+    <td width="33%"><strong>Reproduce</strong><br>Freeze pair IDs, criteria, checkpoint identity, planner budget, versions, and all 100 outcomes.</td>
+  </tr>
+</table>
 
-| Tier | Pair sampling | Initial success | Temporal rule | Intended claim |
+## Headline Results
+
+Each cell is **official LeWM / deterministic random** on the same 100-pair,
+seed-42 manifest with upstream `300 x 30` CEM.
+
+| Task | Official compatibility | Moderate robustness | Strict completion |
+|---|---:|---:|---:|
+| **PushT** | **89% / 7%** | **74% / 0%** | **42% / 0%** |
+| **Reacher** | **87% / 16%** | **63% / 6%** | **22% / 0%** |
+| **TwoRoom** | **85% / 30%** | **70% / 17%** | **41% / 1%** |
+| **Cube** | **62% / 47%** | **36% / 3%** | **17% / 2%** |
+
+Strict evaluation lowers absolute SR by design, yet every verified checkpoint
+remains above random. Moderate Cube is especially revealing: raw SR decreases,
+while model excess over random grows from **15pp to 33pp**. The benchmark is
+harder and more informative at the same time.
+
+All 24 JSON outputs, per-episode traces, manifests, and source checkpoint hashes
+are checked into [`results/reference/`](results/reference). Calibration choices
+and rejected alternatives are documented in
+[`docs/PROTOCOL_CALIBRATION.md`](docs/PROTOCOL_CALIBRATION.md).
+
+## Quick Start
+
+### 1. Install
+
+```bash
+git clone --recurse-submodules https://github.com/DavidSunok/CLEAR-LeWM.git
+cd CLEAR-LeWM
+python -m venv .venv
+source .venv/bin/activate
+pip install -e '.[dev,lewm]'
+```
+
+### 2. Prepare revision-pinned official checkpoints
+
+```bash
+python scripts/prepare_official_checkpoints.py --cache-dir "$STABLEWM_HOME"
+```
+
+### 3. Freeze one manifest, then evaluate random and model on identical pairs
+
+```bash
+clear-lewm manifest /path/to/tworoom.h5 \
+  --task tworoom --protocol moderate --num-eval 100 --seed 42 \
+  --output manifests/tworoom/moderate-seed42-n100.json
+
+clear-lewm evaluate \
+  --manifest manifests/tworoom/moderate-seed42-n100.json \
+  --policy random --cache-dir "$STABLEWM_HOME" \
+  --dataset-path /path/to/tworoom.h5 \
+  --output results/tworoom-random.json
+
+clear-lewm evaluate \
+  --manifest manifests/tworoom/moderate-seed42-n100.json \
+  --policy official/tworoom --policy-label official-lewm \
+  --cache-dir "$STABLEWM_HOME" --dataset-path /path/to/tworoom.h5 \
+  --random-results results/tworoom-random.json \
+  --output results/tworoom-lewm.json
+```
+
+The output includes the manifest hash, embedded protocol, task criterion,
+checkpoint provenance, solver budget, runtime settings, package versions,
+confidence interval, paired gain, and every episode outcome.
+
+## Three Explicit Tiers
+
+| Tier | Pair sampling | Initially solved pairs | Success rule | Intended claim |
 |---|---|---|---|---|
-| `official` | upstream row-uniform | retained | first hit | historical compatibility |
+| `official` | upstream row-uniform | retained | upstream first hit | historical compatibility |
 | `moderate` | episode-balanced | removed | calibrated target held 2-3 steps | robust in-distribution planning |
 | `strict` | balanced + difficulty floor | removed | tighter target held 2-5 steps | conservative task completion |
 
-Task thresholds are shown in the animation and defined normatively in
-[`EVALUATION_SPEC.md`](EVALUATION_SPEC.md). Data split is separate: use
-`--split all` for released full-data checkpoints, and `--split heldout` only for
-models retrained without those held-out episode IDs.
+<p align="center">
+  <img src="assets/protocols.gif" width="848" alt="Animated Official, Moderate, and Strict criteria across all four tasks">
+</p>
 
-### Calibrated reference
+Thresholds, inequalities, temporal rules, split semantics, and the retained
+upstream off-by-one behavior are normative in
+[`EVALUATION_SPEC.md`](EVALUATION_SPEC.md). Data split is orthogonal to rigor:
+use `--split heldout` only for a model retrained without those held-out episode
+IDs.
 
-Success rate below is **official LeWM / deterministic random**, using one fixed
-100-episode seed-42 manifest per cell and upstream `300 x 30` CEM:
+## Audit Trail
 
-| Task | Official | Moderate | Strict |
-|---|---:|---:|---:|
-| PushT | **89% / 7%** | **74% / 0%** | **42% / 0%** |
-| Reacher | **87% / 16%** | **63% / 6%** | **22% / 0%** |
-| TwoRoom | **85% / 30%** | **70% / 17%** | **41% / 1%** |
-| Cube | **62% / 47%** | **36% / 3%** | **17% / 2%** |
+```text
+canonical dataset
+      -> immutable 100-pair manifest
+      -> deterministic random floor
+      -> model on the exact same pairs
+      -> paired report + hashes + per-episode trace
+```
 
-The stricter tiers reduce absolute SR, as intended, while keeping every good
-checkpoint above random. Moderate Cube is especially informative: its raw SR
-is lower than Official, but excess over random increases from 15pp to 33pp.
-See [`docs/PROTOCOL_CALIBRATION.md`](docs/PROTOCOL_CALIBRATION.md).
-
-## Data Contract
-
-The current four-task shared-encoder training setup uses:
-
-| PushT | Cube | Reacher | TwoRoom |
-|---|---|---|---|
-| Lance | HDF5 | HDF5 | HDF5 |
-
-These are four fixed **logical** datasets, not four unconstrained files.
-Evaluation always uses canonical HDF5 row IDs. HDF5, Lance, or FAST memmap may
-be used for training only after episode boundaries, action chunks, transforms,
-normalization, and sampled RGB tensors pass the format-equivalence audit.
-
-The later corrected FAST loader is included as
-[`clear_lewm/fast_dataset.py`](clear_lewm/fast_dataset.py); the early loader that
-skipped transforms is intentionally not reproduced. See
-[`DATA_SPEC.md`](DATA_SPEC.md) for canonical names, row counts, known
-HDF5/Lance differences, and audit commands.
+The four official mirrors are pinned by Hugging Face revision and source
+SHA-256. Preparation reconstructs the runtime architecture, strictly loads
+**303/303 tensors**, and emits a provenance sidecar. This prevents a dangerous
+failure mode where a permissive state-dict load leaves the encoder randomly
+initialized. See [`docs/OFFICIAL_CHECKPOINTS.md`](docs/OFFICIAL_CHECKPOINTS.md).
 
 ## FAST and Runtime
 
-FAST is an audited **training I/O optimization**, not a different dataset. It
-decodes the authoritative source once, stores each column as a row-major
-memmap, keeps every action in the action chunk, applies observation frameskip
-only where the source reader does, and still runs the configured transform.
-The converter now adds:
+<table>
+  <tr>
+    <td width="33%" align="center"><strong>9.25x</strong><br>loader-only FAST vs. Lance</td>
+    <td width="33%" align="center"><strong>1.8x</strong><br>observed end-to-end training throughput</td>
+    <td width="33%" align="center"><strong>1.49x</strong><br>development CEM throughput at batch 16</td>
+  </tr>
+</table>
 
-- a schema and atomic `complete` flag;
-- exact shape, dtype, file-size, episode-length, and offset checks;
-- source-safe resume checks that reject mixed snapshots;
-- batched source reads and vectorized memmap writes during conversion;
-- seeded tensor equality auditing against the source reader.
+FAST is an audited **training I/O path**, not a new dataset. It decodes once,
+stores row-major memmaps, preserves every action in each chunk, applies
+frameskip only to observations, and still executes the configured transform.
+The corrected implementation adds schema/completion checks, exact shape and
+episode validation, source-safe resume, batched conversion, and seeded tensor
+equivalence auditing.
 
-In a historical PushT H200 run with batch size 128 and 16 loader workers, the
-corrected FAST path sustained about **11.0 steps/s**, versus **6.1 steps/s** for
-Lance, an observed **1.8x end-to-end training throughput** gain. These were
-separate runs and are not a controlled hardware guarantee. In the isolated
-default benchmark on the H20-3 node, FAST reached **4,661 samples/s** versus
-**504 samples/s** for Lance, a **9.25x loader-only gain** over three fixed-seed
-rounds without model compute or image transforms. FAST trades storage for
-decode time: the uncompressed PushT snapshot is about 328 GiB. Measure the
-actual gain on each storage system with:
+The isolated PushT benchmark measured **4,661 vs. 504 samples/s**. A historical
+H200 run observed **11.0 vs. 6.1 training steps/s**. FAST trades storage for
+decode time: PushT occupies about 328 GiB and belongs on local NVMe.
+
+<details>
+<summary><strong>Convert, audit, and benchmark a FAST snapshot</strong></summary>
 
 ```bash
 python scripts/preprocess_fast_dataset.py \
@@ -129,106 +210,40 @@ python scripts/benchmark_fast_dataset.py \
   --fast-dir /local-nvme/pusht-fast
 ```
 
-Evaluation has a separate bottleneck. Upstream CEM uses one environment per GPU
-batch. CLEAR-LeWM supports an opt-in throughput mode and fixes the missing
-sample-axis broadcast in canonical LeWM:
+</details>
 
-```bash
-clear-lewm evaluate ... --solver-batch-size 16
-```
+For development sweeps, `--solver-batch-size 16` reduces the two PushT Strict
+CEM calls from 112.8 s to 75.6 s. It also reorders CEM random draws and changes
+SR, so **published reference tables must remain at upstream batch 1**. The full
+safe/throughput boundary, TF32 negative result, CPU-thread audit, and raw records
+live in [`PERFORMANCE.md`](PERFORMANCE.md) and [`benchmarks/`](benchmarks).
 
-On H20-3e, PushT Strict with 100 episodes and `300 x 30` CEM reduced the two
-CEM calls from **112.8 s** at batch 1 to **75.6 s** at batch 16, a **1.49x**
-solver speedup. Larger batches saturated near 1.5x. This mode changes how CEM
-random samples are assigned to environments and changed SR in our sweep, so it
-must not replace batch-1 reference results. The batch size, matmul mode, CPU
-threads, patch status, and measured runtime are recorded in every new result.
+## Data Contract
 
-The default `CLEAR_LEWM_CPU_THREADS=1` also avoids severe 100-environment CPU
-oversubscription. Run one task/protocol/seed per free GPU, keep video disabled
-for benchmark sweeps, and see [`PERFORMANCE.md`](PERFORMANCE.md) for the full
-audit and safe/unsafe optimization boundary.
+| PushT | Cube | Reacher | TwoRoom |
+|---|---|---|---|
+| Lance | HDF5 | HDF5 | HDF5 |
 
-## Install
-
-```bash
-git clone --recurse-submodules https://github.com/DavidSunok/CLEAR-LeWM.git
-cd CLEAR-LeWM
-python -m venv .venv
-source .venv/bin/activate
-pip install -e '.[dev]'
-```
-
-Install the LeWM runtime only for checkpoint evaluation:
-
-```bash
-pip install -e '.[lewm]'
-```
-
-## Quick Start
-
-Generate a fixed 100-pair manifest:
-
-```bash
-clear-lewm manifest /path/to/tworoom.h5 \
-  --task tworoom \
-  --protocol moderate \
-  --num-eval 100 \
-  --seed 42 \
-  --output manifests/tworoom/moderate-seed42-n100.json
-```
-
-Run the deterministic random floor, then a model on the identical pairs:
-
-```bash
-clear-lewm evaluate \
-  --manifest manifests/tworoom/moderate-seed42-n100.json \
-  --policy random \
-  --cache-dir "$STABLEWM_HOME" \
-  --dataset-path /path/to/tworoom.h5 \
-  --output results/tworoom-random.json
-
-clear-lewm evaluate \
-  --manifest manifests/tworoom/moderate-seed42-n100.json \
-  --policy official/tworoom \
-  --policy-label official-lewm \
-  --cache-dir "$STABLEWM_HOME" \
-  --random-results results/tworoom-random.json \
-  --output results/tworoom-lewm.json
-```
-
-Every result stores the manifest hash, exact embedded protocol, criterion,
-solver budget, package versions, confidence interval, and per-episode outcome.
-
-## Official Checkpoints
-
-The four official Hugging Face mirrors are revision-pinned and SHA-256 checked.
-Prepare the object checkpoints expected by the LeWM runner with:
-
-```bash
-python scripts/prepare_official_checkpoints.py --cache-dir "$STABLEWM_HOME"
-```
-
-The evaluator policy names are `official/pusht`, `official/cube`,
-`official/reacher`, and `official/tworoom`. The script also emits legacy object
-checkpoints and supports both ViT state-dict key layouts. Checkpoints are not
-added to Git; only hashes and reproducible conversion code belong here.
+These are four fixed **logical datasets**, not interchangeable filenames.
+Evaluation uses canonical HDF5 row IDs. HDF5, Lance, or FAST may be used for
+training only after episode boundaries, action chunks, normalization, and RGB
+tensors pass the format-equivalence contract in [`DATA_SPEC.md`](DATA_SPEC.md).
 
 ## Repository Map
 
 | Path | Purpose |
 |---|---|
-| `clear_lewm/` | manifests, audits, criteria patches, metrics, runner |
-| `manifests/` | checked-in 100-pair task/tier manifests |
-| `results/reference/` | deterministic random reference results |
-| `benchmarks/` | FAST and CEM performance measurements |
-| `scripts/` | checkpoint prep, FAST conversion/audit, README asset build |
-| `third_party/le-wm/` | pinned upstream LeWM Git submodule |
+| [`clear_lewm/`](clear_lewm) | protocols, manifests, audits, metrics, and runner |
+| [`manifests/`](manifests) | immutable 100-pair task/tier manifests |
+| [`results/reference/`](results/reference) | 24 random and official-LeWM reference outputs |
+| [`benchmarks/`](benchmarks) | FAST and CEM performance measurements |
+| [`scripts/`](scripts) | checkpoint preparation, conversion, audit, and asset builders |
+| [`third_party/le-wm/`](third_party/le-wm) | pinned upstream LeWM submodule |
 
 ## Scope and Attribution
 
 LeWorldModel remains authored and licensed by its upstream authors. CLEAR-LeWM
 contains no private SICJEPA code, private checkpoints, datasets, or unpublished
-experiment logs. The protocol animation uses RGB frames from the public LeWM
-datasets solely to identify the benchmark tasks. See [`NOTICE.md`](NOTICE.md)
-and [`docs/AUDIT_FINDINGS.md`](docs/AUDIT_FINDINGS.md).
+experiment logs. README visuals use RGB frames from the public LeWM datasets
+solely to identify benchmark tasks. See [`NOTICE.md`](NOTICE.md) and
+[`docs/AUDIT_FINDINGS.md`](docs/AUDIT_FINDINGS.md).
