@@ -219,7 +219,7 @@ select {
 
 .hero-lead {
   max-width: 820px;
-  margin: 24px 0 0;
+  margin: 18px 0 0;
   font-size: 28px;
   font-weight: 680;
   line-height: 1.2;
@@ -298,49 +298,29 @@ select {
   line-height: 1.35;
 }
 
-.author-strip {
-  padding-block: 18px;
-  background: white;
-  border-bottom: 1px solid var(--line);
+.hero-authors {
+  margin-top: 16px;
 }
 
-.author-strip-inner {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 32px;
-}
-
-.author-role {
-  margin: 0 0 2px;
-  color: #087f73;
-  font-size: 11px;
-  font-weight: 800;
-  line-height: 1.2;
-  text-transform: uppercase;
-}
-
-.author-primary {
+.hero-author-names {
   margin: 0;
-  font-size: 20px;
-  font-weight: 800;
-  line-height: 1.25;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 20px;
+  color: white;
+  font-size: 17px;
+  font-weight: 750;
 }
 
-.author-primary a,
-.author-details a {
+.hero-author-names a {
   color: inherit;
   text-underline-offset: 3px;
 }
 
-.author-details {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: flex-end;
-  gap: 4px 20px;
-  color: var(--muted);
+.hero-author-affiliations {
+  margin: 4px 0 0;
+  color: #c8d5d2;
   font-size: 13px;
-  text-align: right;
 }
 
 .positioning {
@@ -1108,25 +1088,17 @@ code {
     gap: 10px;
   }
 
-  .author-strip {
-    padding-block: 14px;
+  .hero-authors {
+    margin-top: 12px;
   }
 
-  .author-strip-inner {
-    align-items: flex-start;
-    flex-direction: column;
-    gap: 6px;
+  .hero-author-names {
+    gap: 3px 12px;
+    font-size: 15px;
   }
 
-  .author-primary {
-    font-size: 18px;
-  }
-
-  .author-details {
-    justify-content: flex-start;
-    gap: 2px 12px;
-    font-size: 12px;
-    text-align: left;
+  .hero-author-affiliations {
+    font-size: 11px;
   }
 
   .code-block {
@@ -1154,6 +1126,27 @@ code {
 @media (max-width: 360px) {
   .overview h2 {
     font-size: 20px;
+  }
+
+  .hero-content {
+    padding-top: 76px;
+    padding-bottom: 20px;
+  }
+
+  .hero h1 {
+    font-size: 40px;
+  }
+
+  .hero-copy {
+    font-size: 14px;
+  }
+
+  .hero-actions {
+    margin-top: 20px;
+  }
+
+  .hero-facts {
+    display: none;
   }
 }
 
