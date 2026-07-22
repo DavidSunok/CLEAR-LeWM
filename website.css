@@ -28,7 +28,7 @@ body {
   color: var(--ink);
   font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   font-size: 16px;
-  line-height: 1.65;
+  line-height: 1.58;
   letter-spacing: 0;
 }
 
@@ -76,7 +76,7 @@ select {
 }
 
 .section-pad {
-  padding-block: 104px;
+  padding-block: 78px;
 }
 
 .site-header {
@@ -157,7 +157,7 @@ select {
 
 .hero {
   position: relative;
-  min-height: 86svh;
+  min-height: 82svh;
   overflow: hidden;
   background: var(--dark);
   color: white;
@@ -185,9 +185,9 @@ select {
 .hero-content {
   position: relative;
   z-index: 2;
-  min-height: 86svh;
-  padding-top: 136px;
-  padding-bottom: 72px;
+  min-height: 82svh;
+  padding-top: 122px;
+  padding-bottom: 52px;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -272,8 +272,8 @@ select {
 }
 
 .hero-facts {
-  margin: 56px 0 0;
-  padding: 22px 0 0;
+  margin: 40px 0 0;
+  padding: 18px 0 0;
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 150px));
   gap: 22px;
@@ -306,7 +306,7 @@ select {
 .citation-grid {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 0.9fr);
-  gap: 90px;
+  gap: 64px;
   align-items: start;
 }
 
@@ -341,7 +341,7 @@ select {
 
 .split-heading,
 .protocol-heading {
-  margin-bottom: 52px;
+  margin-bottom: 38px;
   display: grid;
   grid-template-columns: minmax(0, 1.2fr) minmax(280px, 0.7fr);
   gap: 64px;
@@ -356,7 +356,7 @@ select {
 
 .bar-chart {
   max-width: 980px;
-  padding: 36px 0 0;
+  padding: 24px 0 0;
 }
 
 .chart-legend {
@@ -391,7 +391,7 @@ select {
 }
 
 .chart-row {
-  min-height: 88px;
+  min-height: 72px;
   display: grid;
   grid-template-columns: 110px 1fr;
   align-items: center;
@@ -522,7 +522,7 @@ select {
 }
 
 .panel-summary {
-  padding: 44px 0;
+  padding: 32px 0;
   display: grid;
   grid-template-columns: 90px 1fr;
   gap: 20px;
@@ -550,7 +550,7 @@ select {
 }
 
 .criteria-row {
-  min-height: 90px;
+  min-height: 76px;
   display: grid;
   grid-template-columns: 190px 1fr;
   align-items: center;
@@ -565,7 +565,7 @@ select {
 }
 
 .criteria-head {
-  min-height: 54px;
+  min-height: 46px;
   color: #687773;
   font-size: 14px;
   font-weight: 800;
@@ -584,7 +584,7 @@ select {
 .task-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 28px;
+  gap: 20px;
 }
 
 .task-card {
@@ -602,8 +602,8 @@ select {
 }
 
 .task-body {
-  min-height: 270px;
-  padding: 28px;
+  min-height: 230px;
+  padding: 24px;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
@@ -616,7 +616,7 @@ select {
 }
 
 .task-body > p:not(.task-index) {
-  margin: 14px 0 22px;
+  margin: 12px 0 18px;
   color: var(--muted);
 }
 
@@ -664,7 +664,7 @@ table {
 
 th,
 td {
-  padding: 20px 18px;
+  padding: 16px 18px;
   text-align: left;
   border-bottom: 1px solid var(--line);
 }
@@ -703,7 +703,7 @@ tbody tr:last-child td {
 .reproduce-grid {
   display: grid;
   grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
-  gap: 72px;
+  gap: 52px;
   align-items: center;
 }
 
@@ -776,13 +776,13 @@ code {
 }
 
 .citation-grid > p {
-  margin: 26px 0 0;
+  margin: 16px 0 0;
   color: var(--muted);
   font-size: 18px;
 }
 
 .site-footer {
-  padding-block: 54px;
+  padding-block: 42px;
   background: white;
 }
 
@@ -812,7 +812,7 @@ code {
 
 @media (max-width: 900px) {
   .section-pad {
-    padding-block: 82px;
+    padding-block: 64px;
   }
 
   .nav-shell {
@@ -878,7 +878,7 @@ code {
   }
 
   .section-pad {
-    padding-block: 68px;
+    padding-block: 52px;
   }
 
   .brand {
@@ -902,8 +902,8 @@ code {
   }
 
   .hero-content {
-    padding-top: 112px;
-    padding-bottom: 46px;
+    padding-top: 98px;
+    padding-bottom: 36px;
   }
 
   .hero h1 {
@@ -928,7 +928,7 @@ code {
   }
 
   .hero-facts {
-    margin-top: 36px;
+    margin-top: 28px;
     gap: 14px;
   }
 
@@ -1003,7 +1003,7 @@ code {
   }
 
   .task-body {
-    padding: 22px;
+    padding: 20px;
   }
 
   .task-body h3 {
