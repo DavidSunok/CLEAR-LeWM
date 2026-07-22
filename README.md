@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="assets/readme_hero.png" width="100%" alt="CLEAR-LeWM task-semantic world-model evaluation">
+  <img src="assets/readme_hero_v03.png" width="100%" alt="CLEAR-LeWM task-semantic world-model evaluation">
 </p>
 
 <h1 align="center">CLEAR-LeWM</h1>

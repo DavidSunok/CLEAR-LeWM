@@ -86,7 +86,7 @@ def _draw_hero() -> None:
     for index, (value, label) in enumerate(facts):
         x = 72 + index * 180
         draw.text((x, 408), value, fill="#80E1D3", font=fact_value_font)
-        label_x = x + draw.textlength(value, font=fact_value_font) + 16
+        label_x = x + draw.textlength(value, font=fact_value_font) + 24
         draw.text((label_x, 426), label, fill="#98A2B3", font=fact_label_font)
     draw.text(
         (72, 524),
@@ -161,7 +161,7 @@ def _draw_hero() -> None:
             font=_font(12, True),
         )
 
-    output = ASSETS / "readme_hero.png"
+    output = ASSETS / "readme_hero_v03.png"
     canvas.save(output, optimize=True)
 
 
@@ -321,7 +321,7 @@ def main() -> int:
     ASSETS.mkdir(parents=True, exist_ok=True)
     _draw_hero()
     _draw_results()
-    print(ASSETS / "readme_hero.png")
+    print(ASSETS / "readme_hero_v03.png")
     print(ASSETS / "headline_results.png")
     return 0
 
