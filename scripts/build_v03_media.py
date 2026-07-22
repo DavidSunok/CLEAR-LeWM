@@ -83,6 +83,7 @@ RED = "#D94747"
 RED_BG = "#FBE9E7"
 GREEN = "#12866F"
 GREEN_BG = "#E4F5F0"
+PURPLE = "#B45CFF"
 
 
 def font(size: int, bold: bool = False) -> ImageFont.FreeTypeFont:
@@ -628,10 +629,10 @@ def save_gif(
 def intro_frame() -> Image.Image:
     image = Image.new("RGB", (VIDEO_WIDTH, VIDEO_HEIGHT), "#0B1220")
     draw = ImageDraw.Draw(image)
-    draw.rectangle((0, 0, 18, VIDEO_HEIGHT), fill=COLORS["pusht"])
+    draw.rectangle((0, 0, 18, VIDEO_HEIGHT), fill=PURPLE)
     draw.text((92, 92), "CLEAR-LeWM v0.3", font=font(72, True), fill="#FFFFFF")
     draw.text(
-        (96, 206), "WHEN SUCCESS MEANS COMPLETION", font=font(36, True), fill="#81E2D4"
+        (96, 206), "WHEN SUCCESS MEANS COMPLETION", font=font(39, True), fill=PURPLE
     )
     draw_wrapped(
         draw,
@@ -639,9 +640,9 @@ def intro_frame() -> Image.Image:
         "Four released or naive judgements on the left. "
         "Four task-semantic judgements on the right.",
         1080,
-        font(30),
+        font(39, True),
         "#D0D5DD",
-        line_gap=12,
+        line_gap=16,
         max_lines=2,
     )
     labels = (
@@ -653,8 +654,8 @@ def intro_frame() -> Image.Image:
     for index, (domain, task, color) in enumerate(labels):
         x = 96 + index * 448
         draw.rectangle((x, 520, x + 392, 532), fill=color)
-        draw.text((x, 566), domain, font=font(21, True), fill=color)
-        draw.text((x, 624), task, font=font(34, True), fill="#FFFFFF")
+        draw.text((x, 566), domain, font=font(26, True), fill=color)
+        draw.text((x, 628), task, font=font(43, True), fill="#FFFFFF")
     draw.text(
         (96, 902),
         "Same task. Explicit rule. Reproducible judgement.",
@@ -701,7 +702,16 @@ def _status(draw, box, label: str, detail: str, passed: bool) -> None:
     color = GREEN if passed else RED
     rounded(draw, box, fill, radius=8)
     x0, y0, x1, _ = box
-    draw.text((x0 + 18, y0 + 11), label, font=font(25, True), fill=color)
+    fit_text(
+        draw,
+        (x0 + 18, y0 + 11),
+        label,
+        x1 - x0 - 36,
+        color,
+        25,
+        True,
+        minimum=16,
+    )
     fit_text(draw, (x0 + 18, y0 + 50), detail, x1 - x0 - 36, MUTED, 21, False)
 
 
@@ -715,7 +725,7 @@ def _metric_block(
     max_width: int = 330,
 ) -> None:
     x, y = origin
-    draw.text((x, y), name, font=font(20, True), fill=MUTED)
+    fit_text(draw, (x, y), name, max_width, MUTED, 20, True, minimum=14)
     fit_text(draw, (x, y + 44), value, max_width, color, 48, True)
     draw_wrapped(
         draw,
@@ -834,6 +844,8 @@ def comparison_frame(
         image.paste(visual, (1024, 282))
         steps = source[task]["steps"]
         comparison_end = source[task].get("comparison_end_index")
+        display_end = len(steps) - 1 if comparison_end is None else comparison_end
+        step_index = int(round(progress * display_end))
         if task == "pusht":
             angle = _interpolated_value(
                 steps,
@@ -874,21 +886,21 @@ def comparison_frame(
             _metric_block(
                 draw,
                 (520, 314),
-                "NORMALIZED ERROR",
+                f"NORMALIZED ERROR  ·  STEP {step_index:03d}",
                 f"{old_value:.2f}",
-                f"Pusher term {pusher_term:.2f}; score changes when it moves.",
+                f"Pusher {pusher_term:.2f}; block {new_value:.2f}; both included.",
                 RED,
             )
             _metric_block(
                 draw,
                 (1456, 314),
-                "NORMALIZED ERROR",
+                f"NORMALIZED ERROR  ·  STEP {step_index:03d}",
                 f"{new_value:.2f}",
-                "Block position plus angle; threshold < 1.",
+                f"Block {new_value:.2f}; pusher excluded from this rule.",
                 GREEN,
             )
             old_detail = "The pusher keeps changing this score after the block settles."
-            new_detail = "The placed object receives the judgement."
+            new_detail = "Only block position and angle determine this output."
         else:
             position = _interpolated_value(
                 steps, "position_error_m", progress, comparison_end
@@ -905,7 +917,7 @@ def comparison_frame(
             _metric_block(
                 draw,
                 (520, 314),
-                "POSITION ERROR",
+                f"POSITION ERROR  ·  STEP {step_index:03d}",
                 f"{old_value:.1f} cm",
                 "The released rule ignores orientation.",
                 RED,
@@ -913,24 +925,28 @@ def comparison_frame(
             _metric_block(
                 draw,
                 (1456, 314),
-                "NORMALIZED POSE",
+                f"NORMALIZED POSE  ·  STEP {step_index:03d}",
                 f"{new_value:.2f}",
                 "Position plus the nearest of 24 equivalent rotations.",
                 GREEN,
             )
-            old_detail = "Position is close, so an unfinished pose is credited."
+            old_detail = (
+                "Position is close, so an unfinished pose is credited."
+                if old_pass
+                else "The position threshold has not been reached yet."
+            )
             new_detail = "Pose must also be correct up to cube symmetry."
         _status(
             draw,
             (88, 746, 894, 846),
-            "CREDITED" if old_pass else "NOT COMPLETE",
+            f"OLD RULE OUTPUT: {'SUCCESS' if old_pass else 'NOT COMPLETE'}",
             old_detail,
             False,
         )
         _status(
             draw,
             (1024, 746, 1830, 846),
-            "VALID SUCCESS" if new_pass else "CORRECTLY REJECTED",
+            f"CLEAR RULE OUTPUT: {'SUCCESS' if new_pass else 'NOT COMPLETE'}",
             new_detail,
             True,
         )
@@ -986,11 +1002,9 @@ def comparison_frame(
             draw,
             (88, 746, 894, 846),
             (
-                "VALID SUCCESS"
+                "RAW RULE OUTPUT: SUCCESS"
                 if raw_error < 4.3
-                else "SEAM DISTORTION"
-                if raw_error - wrapped_error > 20.0
-                else "NOT COMPLETE"
+                else "RAW RULE OUTPUT: NOT COMPLETE"
             ),
             (
                 "Raw subtraction overstates this physical joint displacement."
@@ -1002,7 +1016,11 @@ def comparison_frame(
         _status(
             draw,
             (1024, 746, 1830, 846),
-            "VALID SUCCESS" if wrapped_error < 4.3 else "PERIODIC ERROR",
+            (
+                "WRAPPED RULE OUTPUT: SUCCESS"
+                if wrapped_error < 4.3
+                else "WRAPPED RULE OUTPUT: NOT COMPLETE"
+            ),
             "RGB, dial, and wrapped metric use the same HDF5 qpos sample.",
             True,
         )
@@ -1040,15 +1058,23 @@ def comparison_frame(
         _status(
             draw,
             (88, 790, 894, 890),
-            "INVALID CREDIT",
-            "Endpoint reached, but the recorded route intersects the wall.",
+            (
+                "ENDPOINT RULE OUTPUT: SUCCESS"
+                if old_distance < 8.0
+                else "ENDPOINT RULE OUTPUT: NOT COMPLETE"
+            ),
+            "This output ignores that the recorded route intersects the wall.",
             False,
         )
         _status(
             draw,
             (1024, 790, 1830, 890),
-            "LEGAL SUCCESS",
-            "Swept collision redirects motion through the usable opening.",
+            (
+                "CLEAR RULE OUTPUT: SUCCESS"
+                if new_distance < 8.0
+                else "CLEAR RULE OUTPUT: NOT COMPLETE"
+            ),
+            "Swept collision keeps the route legal through the usable opening.",
             True,
         )
 
