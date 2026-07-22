@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="assets/readme_hero_v03.png" width="100%" alt="CLEAR-LeWM task-semantic world-model evaluation">
+  <img src="assets/readme_hero_v03_fast.png" width="100%" alt="CLEAR-LeWM task-semantic evaluation and audited FAST loader">
 </p>
 
 <h1 align="center">CLEAR-LeWM</h1>
@@ -7,15 +7,20 @@
 <p align="center">
   <a href="pyproject.toml"><img src="https://img.shields.io/badge/version-0.3.0-f26b5e" alt="v0.3.0"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-101828" alt="MIT License"></a>
-  <a href="tests"><img src="https://img.shields.io/badge/tests-37%20passed-15803d" alt="37 tests passed"></a>
+  <a href="tests"><img src="https://img.shields.io/badge/tests-43%20passed-15803d" alt="43 tests passed"></a>
   <a href="results/v0.3"><img src="https://img.shields.io/badge/audited%20runs-16-e5b94f" alt="16 v0.3 audited runs"></a>
   <a href="manifests/v0.3"><img src="https://img.shields.io/badge/tasks-4-65ae6e" alt="4 tasks"></a>
 </p>
 
 <p align="center">
-  <strong>Evaluation should measure the task, not an implementation accident.</strong><br>
+  <strong>Target-aligned success · Physics-valid trajectories · No task-irrelevant state · No pre-solved pairs</strong><br>
   CLEAR-LeWM freezes comparable goals, repairs task semantics, audits random floors,
   and records enough provenance to reproduce every reported success.
+</p>
+
+<p align="center">
+  <a href="PERFORMANCE.md"><strong>FAST training I/O: at least 5.7× loader throughput across all four tasks</strong></a><br>
+  <sub>5.77× PushT · 37.72× Cube · 30.77× Reacher · 15.15× TwoRoom · exact source-equivalence audits</sub>
 </p>
 
 <p align="center">
@@ -142,6 +147,9 @@ in [`EVALUATION_SPEC.md`](EVALUATION_SPEC.md).
 
 **Success belongs to the object.**
 
+> **FAST input: 5.77x loader throughput vs Lance.** Exact-audited pixels,
+> action chunks, proprio, state, and episode boundaries.
+
 The released predicate includes both pusher and block position. A correctly
 placed T block can therefore fail because the pusher stops elsewhere; pusher
 travel can also masquerade as task difficulty. CLEAR uses block pose and block
@@ -165,6 +173,9 @@ translation only.
 
 **Equivalent rotations stay equivalent.**
 
+> **FAST input: 37.72x loader throughput vs HDF5.** Exact-audited pixels,
+> action chunks, observations, merged 19-D proprio, and episode boundaries.
+
 The dataset samples target yaw, while upstream success checks only position.
 Raw quaternion matching is not a complete repair because a cube has 24 proper
 rotational symmetries. CLEAR minimizes geodesic error over that symmetry group.
@@ -186,6 +197,9 @@ rotational symmetries. CLEAR minimizes geodesic error over that symmetry group.
 ## 03. Reacher
 
 **Arrival is not stabilization.**
+
+> **FAST input: 30.77x loader throughput vs HDF5.** Exact-audited pixels,
+> action chunks, observations, and episode boundaries.
 
 The released task is first-hit joint matching. CLEAR wraps periodic angles and
 keeps first-hit SR as the primary metric. Multi-step holding and terminal speed
@@ -209,6 +223,9 @@ changes the model/random result to 1% / 0%, which is a different claim.
 ## 04. TwoRoom
 
 **An endpoint is not a route.**
+
+> **FAST input: 15.15x loader throughput vs HDF5.** Exact-audited pixels,
+> action chunks, proprio, and episode boundaries.
 
 When start and goal are separated by a wall, the complete agent disk must pass
 through a door. CLEAR performs continuous swept-circle collision, erodes each
@@ -317,11 +334,18 @@ FAST is an audited training I/O path, not a new dataset. It decodes once,
 stores row-major memmaps, preserves complete action chunks, and verifies tensor
 equivalence against the source reader.
 
-| Measurement | Result |
-|---|---:|
-| PushT loader-only FAST vs Lance | **9.25x** |
-| Observed end-to-end training throughput | **1.8x** |
-| Development CEM batch-16 throughput | **1.49x** |
+| Training input | Source samples/s | FAST samples/s | Paired speedup |
+|---|---:|---:|---:|
+| PushT / Lance | 711.4 | 4026.8 | **5.77x** |
+| Cube / HDF5 | 119.5 | 4426.5 | **37.72x** |
+| Reacher / HDF5 | 143.0 | 4362.1 | **30.77x** |
+| TwoRoom / HDF5 | 279.2 | 4291.4 | **15.15x** |
+
+The conservative headline is **at least 5.7x steady-state loader throughput
+across all four tasks**. These numbers exclude one-time conversion and model
+compute. A separate historical PushT run observed **1.8x end-to-end training
+throughput**; development CEM batch 16 observed **1.49x evaluation throughput**
+but changes planner trajectories and is never used for published tables.
 
 Batch 16 is faster but not numerically equivalent. Published reference tables
 and model selection stay at batch 1. Full measurements and negative results are
@@ -331,7 +355,7 @@ in [`PERFORMANCE.md`](PERFORMANCE.md).
 
 | PushT | Cube | Reacher | TwoRoom |
 |---|---|---|---|
-| Lance or canonical HDF5 | HDF5 | HDF5 | HDF5 |
+| Lance -> exact-audited FAST | HDF5 -> exact-audited FAST | HDF5 -> exact-audited FAST | HDF5 -> exact-audited FAST |
 
 Evaluation manifests always reference canonical HDF5 row IDs. Training may use
 HDF5, Lance, or FAST only after episode boundaries, action chunks,

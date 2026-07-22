@@ -1,0 +1,35 @@
+{
+  "clips_checked": 258,
+  "columns": {
+    "action": {
+      "exact": true,
+      "mae": 0.0,
+      "max_abs_error": 0.0,
+      "shape_equal": true
+    },
+    "pixels": {
+      "exact": true,
+      "mae": 0.0,
+      "max_abs_error": 0.0,
+      "scope": "seeded-clips"
+    },
+    "proprio": {
+      "exact": true,
+      "mae": 0.0,
+      "max_abs_error": 0.0,
+      "shape_equal": true
+    },
+    "state": {
+      "exact": true,
+      "mae": 0.0,
+      "max_abs_error": 0.0,
+      "shape_equal": true
+    }
+  },
+  "episode_lengths_equal": true,
+  "episode_offsets_equal": true,
+  "length_equal": true,
+  "pass": true,
+  "source": "pusht_expert_train.lance",
+  "task": "pusht"
+}

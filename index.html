@@ -6,15 +6,15 @@
     <meta name="theme-color" content="#101a19">
     <meta
       name="description"
-      content="CLEAR-LeWM is a task-semantic evaluation suite for the four LeWM control tasks, with Moderate and Strict protocols, random-floor audits, and reproducible scoring."
+      content="CLEAR-LeWM provides task-semantic, physics-valid evaluation for four LeWM control tasks plus an audited FAST training input path."
     >
     <meta property="og:title" content="CLEAR-LeWM">
     <meta property="og:description" content="Task completion, not proxy success.">
     <meta property="og:type" content="website">
     <meta property="og:image" content="assets/showcase/clear_lewm_v03_overview_poster.png">
     <title>CLEAR-LeWM | Task-semantic evaluation for LeWM</title>
-    <link rel="stylesheet" href="website.css?v=20260723-9">
-    <script src="website.js?v=20260723-9" defer></script>
+    <link rel="stylesheet" href="website.css?v=20260723-11">
+    <script src="website.js?v=20260723-11" defer></script>
   </head>
   <body>
     <a class="skip-link" href="#main">Skip to content</a>
@@ -61,9 +61,15 @@
           </div>
           <p class="hero-lead">Task completion, not proxy success.</p>
           <p class="hero-copy">
-            Four corrected task contracts, two calibrated protocols, and complete provenance for
-            measuring world-model control beyond permissive endpoint proxies.
+            Explicit task contracts replace irrelevant state, pre-solved pairs, and endpoint
+            shortcuts with physics-valid completion rules.
           </p>
+          <div class="hero-claims" aria-label="CLEAR-LeWM evaluation principles">
+            <span>Target-aligned</span>
+            <span>Physics-valid</span>
+            <span>Task-relevant state</span>
+            <span>No pre-solved pairs</span>
+          </div>
           <div class="hero-actions">
             <a class="button button-primary" href="#protocol">Explore the protocol</a>
             <a class="button button-secondary" href="https://github.com/DavidSunok/CLEAR-LeWM">View on GitHub</a>
@@ -72,7 +78,7 @@
             <div><dt>4</dt><dd>task contracts</dd></div>
             <div><dt>2</dt><dd>difficulty modes</dd></div>
             <div><dt>16</dt><dd>audited v0.3 runs</dd></div>
-            <div><dt>37</dt><dd>automated tests</dd></div>
+            <div class="hero-fast-fact"><dt>5.7×+</dt><dd><a href="#performance">all four loaders</a></dd></div>
           </dl>
         </div>
       </section>
@@ -113,14 +119,37 @@
           <div class="positioning-copy">
             <p>
               The historical LeWM evaluator can assign stable success to random actions and can
-              reward physically invalid or task-irrelevant endpoints. This weakens its ability to
-              distinguish improvements to the model itself.
+              reward physically invalid routes, task-irrelevant endpoints, and pairs that were
+              already solved at initialization. This weakens its ability to distinguish useful
+              model improvements.
             </p>
             <p>
               CLEAR-LeWM replaces those proxies with task-native geometry, temporal hold rules,
-              route legality, and deterministic evaluation pairs. Every score remains traceable to
-              a frozen goal, seed, solver budget, checkpoint, and protocol version.
+              route legality, task-relevant state, and initially unsolved deterministic pairs.
+              Every score remains traceable to a frozen goal, seed, solver budget, checkpoint,
+              and protocol version.
             </p>
+          </div>
+        </div>
+      </section>
+
+      <section class="fast-band section-pad" id="performance" aria-labelledby="performance-title">
+        <div class="page-shell fast-grid">
+          <div>
+            <p class="section-label">Audited training I/O</p>
+            <h2 id="performance-title"><span>At least 5.7×</span> across all four task loaders.</h2>
+          </div>
+          <p>
+            The generic FAST path decodes once into verified row-major memory maps while preserving
+            episode boundaries and complete action chunks. Five paired steady-state rounds ran
+            serially after conversion; all exact-equivalence audits passed. Figures are loader-only.
+          </p>
+          <a href="https://github.com/DavidSunok/CLEAR-LeWM/blob/main/PERFORMANCE.md">Read the performance audit</a>
+          <div class="fast-task-rates" aria-label="FAST loader throughput by task">
+            <div><span>PushT · Lance</span><strong>5.77×</strong><small>711 → 4027 samples/s</small></div>
+            <div><span>Cube · HDF5</span><strong>37.72×</strong><small>120 → 4427 samples/s</small></div>
+            <div><span>Reacher · HDF5</span><strong>30.77×</strong><small>143 → 4362 samples/s</small></div>
+            <div><span>TwoRoom · HDF5</span><strong>15.15×</strong><small>279 → 4291 samples/s</small></div>
           </div>
         </div>
       </section>
@@ -248,6 +277,7 @@
               <img src="assets/task_gifs/pusht.gif" loading="lazy" alt="PushT trace showing the block pose metric over time">
               <div class="task-body">
                 <p class="task-index">01 / PushT</p>
+                <div class="task-fast"><strong>5.77×</strong><span>FAST loader vs Lance</span></div>
                 <h3>Score the T-block, not the pusher.</h3>
                 <p>Object pose, angular error, displacement, and temporal hold determine success. The pusher endpoint is task-irrelevant.</p>
                 <a href="https://github.com/DavidSunok/CLEAR-LeWM/blob/main/docs/tasks/PUSHT.md">Read the task contract</a>
@@ -258,6 +288,7 @@
               <img src="assets/task_gifs/cube.gif" loading="lazy" alt="Cube trace showing symmetry-aware position and orientation metrics">
               <div class="task-body">
                 <p class="task-index">02 / Cube</p>
+                <div class="task-fast"><strong>37.72×</strong><span>FAST loader vs HDF5</span></div>
                 <h3>Respect the cube's 24 rotational symmetries.</h3>
                 <p>Orientation error is minimized over proper cube rotations, then combined with target position and a hold requirement.</p>
                 <a href="https://github.com/DavidSunok/CLEAR-LeWM/blob/main/docs/tasks/CUBE.md">Read the task contract</a>
@@ -268,6 +299,7 @@
               <img src="assets/task_gifs/reacher.gif" loading="lazy" alt="Reacher trace showing wrapped joint error and first arrival">
               <div class="task-body">
                 <p class="task-index">03 / Reacher</p>
+                <div class="task-fast"><strong>30.77×</strong><span>FAST loader vs HDF5</span></div>
                 <h3>Measure joint geometry without angle-wrap artifacts.</h3>
                 <p>Wrapped joint distance defines arrival, while the trace keeps arrival and later stabilization conceptually separate.</p>
                 <a href="https://github.com/DavidSunok/CLEAR-LeWM/blob/main/docs/tasks/REACHER.md">Read the task contract</a>
@@ -278,6 +310,7 @@
               <img src="assets/task_gifs/tworoom.gif" loading="lazy" alt="TwoRoom trace showing a collision-free cross-room route">
               <div class="task-body">
                 <p class="task-index">04 / TwoRoom</p>
+                <div class="task-fast"><strong>15.15×</strong><span>FAST loader vs HDF5</span></div>
                 <h3>Require a physically legal route through the door.</h3>
                 <p>Swept-disk collision, eroded door clearance, cross-room topology, and endpoint accuracy jointly define success.</p>
                 <a href="https://github.com/DavidSunok/CLEAR-LeWM/blob/main/docs/tasks/TWOROOM.md">Read the task contract</a>

@@ -1,6 +1,6 @@
 # Performance and reproducibility
 
-Audit date: 2026-07-21.
+Audit date: 2026-07-23.
 
 Performance changes are divided into two classes. Reference-preserving changes
 may be used for published CLEAR results. Throughput modes are useful for model
@@ -56,22 +56,50 @@ six important ways:
 6. Conversion uses a source reader's batched fetch when available and one
    vectorized memmap assignment per column, with a generic reader fallback.
 
-The PushT audit checked 66 fixed clips plus full action/proprio/state columns;
-all tensors, episode lengths, and offsets matched exactly. A historical H200
-training observation at batch 128 and 16 loader workers was 11.0 steps/s for
-FAST and 6.1 steps/s for Lance, or about 1.8x. Treat this as an operational
-observation: storage, page cache, compression, workers, and transforms can move
-the ratio substantially.
+The four-task audit checked 258 fixed and seeded clips per task, every complete
+numeric column, episode lengths, and episode offsets. All four FAST snapshots
+matched their authoritative training readers exactly. Machine-readable audit
+records are under [`benchmarks/`](benchmarks/).
 
-The default loader-only benchmark on the H20-3 node used `num_steps=4`,
-`frameskip=5`, batch size 32, zero workers, three warm-up batches, 30 measured
-batches, three alternating fixed-seed rounds, and no transforms. Median
-throughput was 503.7 samples/s for Lance and 4660.6 samples/s for FAST, a 9.25x
-I/O speedup. The individual Lance rates were 503.7, 584.3, and 471.4 samples/s;
-FAST produced 3990.4, 4660.6, and 5429.4 samples/s. The script isolates each
-backend in a fresh subprocess and alternates order to prevent worker lifetime
-and RSS carry-over from contaminating the comparison. The smaller 1.8x
-end-to-end gain is expected because GPU model compute is unchanged.
+### Four-task steady-state loader benchmark
+
+The formal 2026-07-23 run used one H200-2 node and local storage. Conversion
+writes were already complete; tasks ran serially, and Source/FAST order
+alternated within each task. Each backend ran in a fresh subprocess with
+`num_steps=4`, `frameskip=5`, batch size 32, zero workers, three in-process
+warm-up batches, 30 measured batches, and no image transform or model compute.
+One complete fixed-index pair was discarded to prime the OS page cache, then
+five fixed-seed pairs were measured. Speedup is the median of the five paired
+FAST/Source ratios.
+
+| Task | Source reader | Source samples/s | FAST samples/s | Paired speedup | Source / FAST CV |
+|---|---|---:|---:|---:|---:|
+| PushT | Lance | 711.4 | 4026.8 | **5.77x** | 0.070 / 0.069 |
+| Cube | HDF5 | 119.5 | 4426.5 | **37.72x** | 0.029 / 0.069 |
+| Reacher | HDF5 | 143.0 | 4362.1 | **30.77x** | 0.007 / 0.068 |
+| TwoRoom | HDF5 | 279.2 | 4291.4 | **15.15x** | 0.025 / 0.020 |
+
+The conservative cross-task statement is therefore **at least 5.7x
+steady-state loader throughput**. The larger HDF5 ratios measure removal of
+random row access and repeated image decoding. They are loader-only results,
+not claims of 15-38x end-to-end training speedup. Snapshot conversion time is
+also excluded; conversion is a one-time preprocessing cost whose throughput is
+sensitive to concurrent writes and storage bandwidth.
+
+### Historical PushT observations
+
+An earlier loader-only benchmark on H20-3 used the same clip geometry and batch
+size but three alternating rounds without the formal fixed-index priming pass.
+Median throughput was 503.7 samples/s for Lance and 4660.6 samples/s for FAST,
+or 9.25x. The individual Lance rates were 503.7, 584.3, and 471.4 samples/s;
+FAST produced 3990.4, 4660.6, and 5429.4 samples/s. This remains a transparent
+node-specific historical result, not the four-task headline.
+
+A historical H200 training observation at batch 128 and 16 loader workers was
+11.0 steps/s for FAST and 6.1 steps/s for Lance, or about 1.8x. Treat this as an
+operational observation: storage, page cache, compression, workers, transforms,
+and GPU compute can move the ratio substantially. The smaller end-to-end gain
+is expected because model compute is unchanged.
 
 FAST should live on local NVMe. The PushT snapshot is approximately 328 GiB;
 placing it on network storage can erase its latency advantage. Evaluation stays

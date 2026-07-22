@@ -1,0 +1,58 @@
+{
+  "columns": [
+    "action",
+    "observation",
+    "pixels"
+  ],
+  "config": {
+    "batch_size": 32,
+    "cache_state": "fixed-index OS page cache primed before measurement",
+    "frameskip": 5,
+    "measured_batches": 30,
+    "num_steps": 4,
+    "num_workers": 0,
+    "prefetch_factor": 3,
+    "priming_rounds": 1,
+    "rounds": 5,
+    "seed": 20260723,
+    "warmup_batches": 3
+  },
+  "fast_dir": "/data/junhan/clear_fast_four_task_20260723/snapshots/reacher",
+  "fast_speedup": 30.50704598390128,
+  "host": "zp-nc68",
+  "median_samples_per_second": {
+    "fast": 4362.058334062394,
+    "source": 142.9852741679504
+  },
+  "paired_speedup_median": 30.774539856258674,
+  "paired_speedups": [
+    30.774539856258674,
+    32.81516468957997,
+    34.69837383910566,
+    29.723587827604522,
+    28.67399005887769
+  ],
+  "rate_cv": {
+    "fast": 0.06802942789144498,
+    "source": 0.006541349029201369
+  },
+  "samples_per_second": {
+    "fast": [
+      4362.058334062394,
+      4651.630670654771,
+      4967.8421152234205,
+      4286.315528841865,
+      4099.958330057711
+    ],
+    "source": [
+      141.7424388613653,
+      141.75247068413574,
+      143.17218836418718,
+      144.20585945755616,
+      142.9852741679504
+    ]
+  },
+  "scope": "steady-state loader-only after untimed fixed-index priming; no model forward/backward or image transform",
+  "source": "dmc/reacher_random.h5",
+  "task": "reacher"
+}

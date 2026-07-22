@@ -10,6 +10,9 @@ from pathlib import Path
 
 import numpy as np
 
+from clear_lewm.fast_conversion import load_contiguous_batch, row_array
+from clear_lewm.fast_profiles import FAST_TASK_PROFILES, get_fast_profile
+
 
 def _write_meta(path: Path, payload: dict) -> None:
     temporary = path.with_suffix(".json.tmp")
@@ -24,7 +27,7 @@ def _validate_resume(output: Path, expected: dict) -> None:
     existing = json.loads(meta_path.read_text())
     if existing.get("complete", False):
         raise ValueError("Refusing to resume a FAST snapshot already marked complete")
-    for key in ("schema_version", "source", "rows", "shapes", "dtypes"):
+    for key in ("schema_version", "source", "task", "rows", "shapes", "dtypes"):
         if existing.get(key) != expected[key]:
             raise ValueError(f"FAST resume metadata mismatch for {key!r}")
     for name, shape in expected["shapes"].items():
@@ -38,27 +41,46 @@ def _validate_resume(output: Path, expected: dict) -> None:
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--source", required=True)
+    source_group = parser.add_mutually_exclusive_group(required=True)
+    source_group.add_argument("--source")
+    source_group.add_argument("--task", choices=sorted(FAST_TASK_PROFILES))
     parser.add_argument("--cache-dir", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
+    parser.add_argument("--columns", nargs="+")
     parser.add_argument("--batch-size", type=int, default=2048)
     parser.add_argument("--resume", type=int, default=0)
     args = parser.parse_args()
 
     import stable_worldmodel as swm
-    import torch
 
-    dataset = swm.data.load_dataset(args.source, cache_dir=args.cache_dir)
-    rows = len(dataset)
+    if args.task:
+        profile = get_fast_profile(args.task)
+        dataset = swm.data.load_dataset(
+            profile.source,
+            cache_dir=args.cache_dir,
+            keys_to_load=list(profile.keys_to_load),
+            keys_to_cache=list(profile.keys_to_cache),
+            keys_to_merge=profile.merge_mapping or None,
+        )
+        source_name = profile.source
+    else:
+        dataset = swm.data.load_dataset(args.source, cache_dir=args.cache_dir)
+        source_name = args.source
+    rows = int(np.asarray(dataset.lengths).sum())
     if args.resume < 0 or args.resume > rows:
         raise ValueError(f"--resume must be between 0 and {rows}")
     first = dataset[0]
-
-    def row_array(value):
-        array = torch.as_tensor(value).detach().cpu().numpy()
-        return array[0] if array.shape[:1] == (1,) else array
-
-    columns = {key: row_array(value) for key, value in first.items()}
+    requested = args.columns or list(first)
+    missing = sorted(set(requested) - set(first))
+    if missing:
+        raise ValueError(f"FAST source is missing requested columns: {missing}")
+    columns = {}
+    for key in requested:
+        try:
+            columns[key] = row_array(first[key])
+        except TypeError:
+            if args.columns:
+                raise
     shapes = {name: [rows, *value.shape] for name, value in columns.items()}
     dtypes = {name: str(value.dtype) for name, value in columns.items()}
 
@@ -66,7 +88,8 @@ def main() -> int:
     metadata = {
         "schema_version": "clear-fast-memmap-v1",
         "complete": False,
-        "source": args.source,
+        "source": source_name,
+        "task": args.task,
         "rows": rows,
         "episodes": int(len(dataset.lengths)),
         "shapes": shapes,
@@ -98,14 +121,9 @@ def main() -> int:
     started = time.monotonic()
     for start in range(args.resume, rows, args.batch_size):
         end = min(start + args.batch_size, rows)
-        indices = list(range(start, end))
-        batch = (
-            dataset.__getitems__(indices)
-            if hasattr(dataset, "__getitems__")
-            else [dataset[index] for index in indices]
-        )
+        batch = load_contiguous_batch(dataset, start, end, list(arrays))
         for name, array in arrays.items():
-            array[start:end] = np.stack([row_array(sample[name]) for sample in batch])
+            array[start:end] = batch[name]
         if end == rows or start % (args.batch_size * 50) == 0:
             elapsed = max(time.monotonic() - started, 1e-9)
             rate = (end - args.resume) / elapsed

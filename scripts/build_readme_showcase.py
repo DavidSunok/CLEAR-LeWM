@@ -4,6 +4,8 @@
 from __future__ import annotations
 
 import json
+import math
+from functools import cache
 from pathlib import Path
 
 from PIL import Image, ImageDraw, ImageFont, ImageOps
@@ -11,6 +13,7 @@ from PIL import Image, ImageDraw, ImageFont, ImageOps
 ROOT = Path(__file__).resolve().parents[1]
 ASSETS = ROOT / "assets"
 RESULTS = ROOT / "results" / "v0.3"
+BENCHMARKS = ROOT / "benchmarks"
 TASKS = ("pusht", "cube", "reacher", "tworoom")
 TASK_LABELS = {
     "pusht": "PushT",
@@ -24,6 +27,21 @@ TASK_COLORS = {
     "reacher": "#F4C95D",
     "tworoom": "#79B86A",
 }
+
+
+@cache
+def _fast_report(task: str) -> dict:
+    path = BENCHMARKS / f"fast_loader_{task}_20260723.json"
+    return json.loads(path.read_text())
+
+
+def _fast_speedup(task: str) -> float:
+    return float(_fast_report(task)["paired_speedup_median"])
+
+
+def _fast_floor() -> float:
+    minimum = min(_fast_speedup(task) for task in TASKS)
+    return math.floor(minimum * 10) / 10
 
 
 def _font(size: int, bold: bool = False):
@@ -88,11 +106,43 @@ def _draw_hero() -> None:
         draw.text((x, 408), value, fill="#80E1D3", font=fact_value_font)
         label_x = x + draw.textlength(value, font=fact_value_font) + 24
         draw.text((label_x, 426), label, fill="#98A2B3", font=fact_label_font)
+
+    draw.rounded_rectangle(
+        (70, 468, 622, 516),
+        radius=5,
+        fill="#32204B",
+        outline="#76578F",
+        width=1,
+    )
     draw.text(
-        (72, 524),
-        "PAIR-LOCKED  /  RANDOM-CONTROLLED  /  RUNTIME-HASHED",
+        (86, 475),
+        f"{_fast_floor():.1f}x",
         fill="#80E1D3",
-        font=_font(15, bold=True),
+        font=_font(27, True),
+    )
+    draw.text(
+        (190, 474),
+        "AT LEAST ACROSS 4 TASK LOADERS",
+        fill="#FFFFFF",
+        font=_font(13, True),
+    )
+    draw.text(
+        (190, 494),
+        "paired steady-state  /  loader-only",
+        fill="#B7A9C5",
+        font=_font(12),
+    )
+    draw.text(
+        (72, 536),
+        "TARGET-ALIGNED  /  PHYSICS-VALID",
+        fill="#C995FF",
+        font=_font(13, bold=True),
+    )
+    draw.text(
+        (72, 560),
+        "NO TASK-IRRELEVANT STATE  /  NO PRE-SOLVED PAIRS",
+        fill="#80E1D3",
+        font=_font(13, bold=True),
     )
 
     draw.line((664, 46, 664, 554), fill="#344054", width=2)
@@ -104,9 +154,10 @@ def _draw_hero() -> None:
     )
     headers = (
         (712, "TASK"),
-        (890, "RELEASED SIGNAL"),
-        (1160, "CLEAR CONTRACT"),
-        (1432, "STRICT SR"),
+        (850, "RELEASED"),
+        (1080, "CLEAR CONTRACT"),
+        (1325, "STRICT SR"),
+        (1484, "FAST"),
     )
     for x, label in headers:
         draw.text((x, 94), label, fill="#98A2B3", font=_font(13, True))
@@ -131,37 +182,43 @@ def _draw_hero() -> None:
             (728, y + 24),
             TASK_LABELS[task],
             fill="#FFFFFF",
-            font=_font(23, True),
+            font=_font(20, True),
         )
         draw.text(
-            (890, y + 28),
+            (850, y + 30),
             old_rules[task],
             fill="#AAB3C1",
-            font=_font(18, True),
+            font=_font(15, True),
         )
-        draw.text((1107, y + 25), "→", fill="#FFFFFF", font=_font(24, True))
+        draw.text((1038, y + 25), "→", fill="#FFFFFF", font=_font(24, True))
         draw.text(
-            (1160, y + 28),
+            (1080, y + 29),
             clear_rules[task],
             fill=TASK_COLORS[task],
-            font=_font(19, True),
+            font=_font(16, True),
         )
         model = _success_rate(task, "strict", "official-lewm")
         random = _success_rate(task, "strict", "random")
         draw.text(
-            (1432, y + 18),
+            (1325, y + 18),
             f"{model:.0f} / {random:.0f}",
             fill="#FFFFFF",
-            font=_font(24, True),
+            font=_font(21, True),
         )
         draw.text(
-            (1434, y + 52),
+            (1327, y + 50),
             "model / random",
             fill="#98A2B3",
-            font=_font(12, True),
+            font=_font(10, True),
+        )
+        draw.text(
+            (1484, y + 23),
+            f"{_fast_speedup(task):.2f}x",
+            fill="#80E1D3",
+            font=_font(18, True),
         )
 
-    output = ASSETS / "readme_hero_v03.png"
+    output = ASSETS / "readme_hero_v03_fast.png"
     canvas.save(output, optimize=True)
 
 
@@ -321,7 +378,7 @@ def main() -> int:
     ASSETS.mkdir(parents=True, exist_ok=True)
     _draw_hero()
     _draw_results()
-    print(ASSETS / "readme_hero_v03.png")
+    print(ASSETS / "readme_hero_v03_fast.png")
     print(ASSETS / "headline_results.png")
     return 0
 

@@ -19,15 +19,22 @@ def _measure_backend(backend, args, queue) -> None:
     import stable_worldmodel as swm
 
     from clear_lewm.fast_dataset import FastMemmapDataset
+    from clear_lewm.fast_profiles import load_profile_dataset
 
     kwargs = {"num_steps": args.num_steps, "frameskip": args.frameskip}
-    dataset = (
-        swm.data.load_dataset(
+    if backend == "fast":
+        dataset = FastMemmapDataset(args.fast_dir, transform=None, **kwargs)
+    elif args.task:
+        dataset = load_profile_dataset(
+            args.task,
+            args.cache_dir,
+            transform=None,
+            **kwargs,
+        )
+    else:
+        dataset = swm.data.load_dataset(
             args.source, transform=None, cache_dir=args.cache_dir, **kwargs
         )
-        if backend == "source"
-        else FastMemmapDataset(args.fast_dir, transform=None, **kwargs)
-    )
     count = (args.warmup_batches + args.batches) * args.batch_size
     rng = np.random.default_rng(args.seed)
     indices = rng.integers(0, len(dataset), size=count, dtype=np.int64)
@@ -64,9 +71,18 @@ def _measure(backend, args) -> dict:
     return queue.get()
 
 
+def _coefficient_of_variation(values: list[float]) -> float:
+    mean = statistics.fmean(values)
+    return statistics.pstdev(values) / mean if mean else float("inf")
+
+
 def main() -> int:
+    from clear_lewm.fast_profiles import FAST_TASK_PROFILES, get_fast_profile
+
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--source", required=True)
+    source_group = parser.add_mutually_exclusive_group(required=True)
+    source_group.add_argument("--source")
+    source_group.add_argument("--task", choices=sorted(FAST_TASK_PROFILES))
     parser.add_argument("--cache-dir", type=Path, required=True)
     parser.add_argument("--fast-dir", type=Path, required=True)
     parser.add_argument("--num-steps", type=int, default=4)
@@ -77,9 +93,36 @@ def main() -> int:
     parser.add_argument("--warmup-batches", type=int, default=3)
     parser.add_argument("--batches", type=int, default=30)
     parser.add_argument("--rounds", type=int, default=3)
+    parser.add_argument("--priming-rounds", type=int, default=1)
     parser.add_argument("--seed", type=int, default=20260721)
     parser.add_argument("--output", type=Path)
     args = parser.parse_args()
+
+    if args.priming_rounds < 0:
+        parser.error("--priming-rounds must be non-negative")
+    fast_meta = json.loads((args.fast_dir / "meta.json").read_text())
+    if args.task:
+        profile = get_fast_profile(args.task)
+        if fast_meta.get("task") != args.task:
+            parser.error(
+                f"FAST task mismatch: expected {args.task!r}, "
+                f"got {fast_meta.get('task')!r}"
+            )
+        if fast_meta.get("source") != profile.source:
+            parser.error(
+                f"FAST source mismatch: expected {profile.source!r}, "
+                f"got {fast_meta.get('source')!r}"
+            )
+    elif fast_meta.get("source") != args.source:
+        parser.error(
+            f"FAST source mismatch: expected {args.source!r}, "
+            f"got {fast_meta.get('source')!r}"
+        )
+
+    for prime_index in range(args.priming_rounds):
+        order = ("source", "fast") if prime_index % 2 == 0 else ("fast", "source")
+        for name in order:
+            _measure(name, args)
 
     rates = {"source": [], "fast": []}
     lengths = {}
@@ -96,9 +139,18 @@ def main() -> int:
 
     source_rate = statistics.median(rates["source"])
     fast_rate = statistics.median(rates["fast"])
+    paired_speedups = [
+        fast / source
+        for source, fast in zip(rates["source"], rates["fast"], strict=True)
+    ]
     report = {
-        "scope": "loader-only; no model forward/backward or image transform",
-        "source": args.source,
+        "scope": (
+            "steady-state loader-only after untimed fixed-index priming; "
+            "no model forward/backward or image transform"
+        ),
+        "source": fast_meta["source"],
+        "task": args.task,
+        "columns": list(fast_meta["shapes"]),
         "fast_dir": str(args.fast_dir),
         "host": platform.node(),
         "config": {
@@ -110,6 +162,8 @@ def main() -> int:
             "warmup_batches": args.warmup_batches,
             "measured_batches": args.batches,
             "rounds": args.rounds,
+            "priming_rounds": args.priming_rounds,
+            "cache_state": "fixed-index OS page cache primed before measurement",
             "seed": args.seed,
         },
         "samples_per_second": rates,
@@ -118,6 +172,12 @@ def main() -> int:
             "fast": fast_rate,
         },
         "fast_speedup": fast_rate / source_rate,
+        "paired_speedups": paired_speedups,
+        "paired_speedup_median": statistics.median(paired_speedups),
+        "rate_cv": {
+            "source": _coefficient_of_variation(rates["source"]),
+            "fast": _coefficient_of_variation(rates["fast"]),
+        },
     }
     payload = json.dumps(report, indent=2, sort_keys=True) + "\n"
     if args.output:

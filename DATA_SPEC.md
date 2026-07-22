@@ -50,28 +50,41 @@ are not byte-identical and must not be described that way.
 
 `clear_lewm.fast_dataset.FastMemmapDataset` is a derived I/O path, not a new
 dataset. It stores already-decoded tensors in raw memory maps and preserves the
-episode and clip semantics of the source reader. Use:
+episode and clip semantics of the source reader. Four named profiles pin the
+same source and schema used by joint training:
+
+| Profile | Authoritative source | Numeric FAST columns |
+|---|---|---|
+| `pusht` | `pusht_expert_train.lance` | pixels, action, proprio, state |
+| `cube` | `ogbench/cube_single_expert.h5` | pixels, action, observation, merged proprio |
+| `reacher` | `dmc/reacher_random.h5` | pixels, action, observation |
+| `tworoom` | `tworoom.h5` | pixels, action, proprio |
+
+Convert, audit, and benchmark any profile with the same interface:
 
 ```bash
 python scripts/preprocess_fast_dataset.py \
-  --source pusht_expert_train.lance \
+  --task pusht \
   --cache-dir "$STABLEWM_HOME" \
   --output "$STABLEWM_HOME/preprocessed/pusht"
 
 python scripts/audit_fast_dataset.py \
-  --source pusht_expert_train.lance \
+  --task pusht \
   --cache-dir "$STABLEWM_HOME" \
   --fast-dir "$STABLEWM_HOME/preprocessed/pusht"
 
 python scripts/benchmark_fast_dataset.py \
-  --source pusht_expert_train.lance \
+  --task pusht \
   --cache-dir "$STABLEWM_HOME" \
   --fast-dir "$STABLEWM_HOME/preprocessed/pusht"
 ```
 
-The audit checks full episode metadata and non-image columns, then compares
-fixed boundary clips plus a seeded random clip sample. A FAST artifact is not
-eligible for a reported run until this audit passes.
+Replace `pusht` with `cube`, `reacher`, or `tworoom` for the other training
+inputs. The 2026-07-23 audit checked 258 fixed and seeded clips per task, full
+episode metadata, and every non-image column. All four snapshots matched the
+authoritative readers exactly, including Cube's 19-dimensional merged proprio
+and complete unstrided action chunks. A FAST artifact is not eligible for a
+reported run until this audit passes.
 
 ## Required training data record
 

@@ -1,0 +1,58 @@
+{
+  "columns": [
+    "action",
+    "pixels",
+    "proprio"
+  ],
+  "config": {
+    "batch_size": 32,
+    "cache_state": "fixed-index OS page cache primed before measurement",
+    "frameskip": 5,
+    "measured_batches": 30,
+    "num_steps": 4,
+    "num_workers": 0,
+    "prefetch_factor": 3,
+    "priming_rounds": 1,
+    "rounds": 5,
+    "seed": 20260723,
+    "warmup_batches": 3
+  },
+  "fast_dir": "/data/junhan/clear_fast_four_task_20260723/snapshots/tworoom",
+  "fast_speedup": 15.372543117267027,
+  "host": "zp-nc68",
+  "median_samples_per_second": {
+    "fast": 4291.441912231118,
+    "source": 279.1627825984633
+  },
+  "paired_speedup_median": 15.146622453658372,
+  "paired_speedups": [
+    15.146622453658372,
+    15.047899307056626,
+    16.071864318228112,
+    15.04697644451112,
+    15.536736337466412
+  ],
+  "rate_cv": {
+    "fast": 0.019958226038501423,
+    "source": 0.025102630525335796
+  },
+  "samples_per_second": {
+    "fast": [
+      4228.373271131635,
+      4322.214898907287,
+      4291.441912231118,
+      4166.816203903062,
+      4419.091454887234
+    ],
+    "source": [
+      279.1627825984633,
+      287.23045062378964,
+      267.0158126810419,
+      276.92049756767216,
+      284.42855429236556
+    ]
+  },
+  "scope": "steady-state loader-only after untimed fixed-index priming; no model forward/backward or image transform",
+  "source": "tworoom.h5",
+  "task": "tworoom"
+}

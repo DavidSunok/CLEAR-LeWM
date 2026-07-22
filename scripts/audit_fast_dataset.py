@@ -10,11 +10,18 @@ import numpy as np
 import torch
 
 from clear_lewm.fast_dataset import FastMemmapDataset
+from clear_lewm.fast_profiles import (
+    FAST_TASK_PROFILES,
+    get_fast_profile,
+    load_profile_dataset,
+)
 
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--source", required=True)
+    source_group = parser.add_mutually_exclusive_group(required=True)
+    source_group.add_argument("--source")
+    source_group.add_argument("--task", choices=sorted(FAST_TASK_PROFILES))
     parser.add_argument("--cache-dir", required=True)
     parser.add_argument("--fast-dir", required=True)
     parser.add_argument("--num-steps", type=int, default=8)
@@ -27,12 +34,29 @@ def main() -> int:
     import stable_worldmodel as swm
 
     kwargs = {"num_steps": args.num_steps, "frameskip": args.frameskip}
-    source = swm.data.load_dataset(
-        args.source, transform=None, cache_dir=args.cache_dir, **kwargs
+    source = (
+        load_profile_dataset(args.task, args.cache_dir, transform=None, **kwargs)
+        if args.task
+        else swm.data.load_dataset(
+            args.source, transform=None, cache_dir=args.cache_dir, **kwargs
+        )
     )
     fast = FastMemmapDataset(args.fast_dir, transform=None, **kwargs)
+    if args.task:
+        profile = get_fast_profile(args.task)
+        if fast.meta.get("task") != args.task:
+            raise ValueError(
+                f"FAST task mismatch: expected {args.task!r}, "
+                f"got {fast.meta.get('task')!r}"
+            )
+        if fast.meta.get("source") != profile.source:
+            raise ValueError(
+                f"FAST source mismatch: expected {profile.source!r}, "
+                f"got {fast.meta.get('source')!r}"
+            )
     report = {
-        "source": args.source,
+        "source": fast.meta["source"],
+        "task": args.task,
         "length_equal": len(source) == len(fast),
         "episode_lengths_equal": bool(np.array_equal(source.lengths, fast.lengths)),
         "episode_offsets_equal": bool(np.array_equal(source.offsets, fast.offsets)),
@@ -79,7 +103,9 @@ def main() -> int:
                 )
                 if not torch.equal(left_tensor, right_tensor):
                     report["columns"][name]["exact"] = False
-            torch.testing.assert_close(left_tensor, right_tensor, rtol=0, atol=0)
+            torch.testing.assert_close(
+                left_tensor, right_tensor, rtol=0, atol=0, equal_nan=True
+            )
     if "pixels" in report["columns"]:
         report["columns"]["pixels"]["mae"] = pixel_error_sum / max(pixel_values, 1)
     report["clips_checked"] = int(len(indices))

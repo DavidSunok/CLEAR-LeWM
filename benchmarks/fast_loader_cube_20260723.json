@@ -1,0 +1,59 @@
+{
+  "columns": [
+    "action",
+    "observation",
+    "pixels",
+    "proprio"
+  ],
+  "config": {
+    "batch_size": 32,
+    "cache_state": "fixed-index OS page cache primed before measurement",
+    "frameskip": 5,
+    "measured_batches": 30,
+    "num_steps": 4,
+    "num_workers": 0,
+    "prefetch_factor": 3,
+    "priming_rounds": 1,
+    "rounds": 5,
+    "seed": 20260723,
+    "warmup_batches": 3
+  },
+  "fast_dir": "/data/junhan/clear_fast_four_task_20260723/snapshots/cube",
+  "fast_speedup": 37.03946315389214,
+  "host": "zp-nc68",
+  "median_samples_per_second": {
+    "fast": 4426.514015299064,
+    "source": 119.50805001972394
+  },
+  "paired_speedup_median": 37.72424751200453,
+  "paired_speedups": [
+    37.72424751200453,
+    39.67313008263564,
+    38.189740995280324,
+    33.65774831203444,
+    36.97454422436588
+  ],
+  "rate_cv": {
+    "fast": 0.06944488494292893,
+    "source": 0.028619579790723854
+  },
+  "samples_per_second": {
+    "fast": [
+      4514.428487133071,
+      4741.258414354635,
+      4274.965055129429,
+      3833.5556501629353,
+      4426.514015299064
+    ],
+    "source": [
+      119.6691461028215,
+      119.50805001972394,
+      111.94014265919608,
+      113.89816141658635,
+      119.71787910186146
+    ]
+  },
+  "scope": "steady-state loader-only after untimed fixed-index priming; no model forward/backward or image transform",
+  "source": "ogbench/cube_single_expert.h5",
+  "task": "cube"
+}
