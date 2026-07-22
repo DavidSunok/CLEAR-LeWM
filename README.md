@@ -342,9 +342,7 @@ normalization, and RGB tensors pass [`DATA_SPEC.md`](DATA_SPEC.md).
 
 ## Scope and attribution
 
-LeWorldModel remains authored and licensed by its upstream authors. CLEAR-LeWM
-contains no private SICJEPA code, private checkpoints, datasets, or unpublished
-training logs. PushT, Cube, and Reacher media sample RGB and metrics from the
-same canonical episode indices; TwoRoom uses recorded rollout trajectories.
-See [`NOTICE.md`](NOTICE.md) and
-[`docs/AUDIT_FINDINGS.md`](docs/AUDIT_FINDINGS.md).
+LeWorldModel remains authored and licensed by its upstream authors. PushT,
+Cube, and Reacher media sample RGB and metrics from the same canonical episode
+indices; TwoRoom uses recorded rollout trajectories. See
+[`NOTICE.md`](NOTICE.md) and [`docs/AUDIT_FINDINGS.md`](docs/AUDIT_FINDINGS.md).
