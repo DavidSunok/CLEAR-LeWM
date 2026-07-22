@@ -449,16 +449,21 @@ select {
 }
 
 .protocol {
-  background: var(--dark);
-  color: white;
+  background: #edf2f0;
+  color: var(--ink);
 }
 
 .section-label.light {
-  color: #78decf;
+  color: #087f73;
 }
 
 .protocol-heading {
   align-items: end;
+}
+
+.protocol-heading h2 {
+  max-width: 830px;
+  font-size: 48px;
 }
 
 .mode-switch {
@@ -466,8 +471,9 @@ select {
   padding: 4px;
   display: inline-grid;
   grid-template-columns: 1fr 1fr;
-  border: 1px solid #66716f;
+  border: 1px solid #8a9793;
   border-radius: 6px;
+  background: white;
 }
 
 .mode-switch button {
@@ -477,19 +483,19 @@ select {
   border: 0;
   border-radius: 3px;
   background: transparent;
-  color: #c8d4d1;
+  color: #53615e;
   cursor: pointer;
   font-weight: 750;
 }
 
 .mode-switch button[aria-selected="true"] {
-  background: #75dfd0;
-  color: #10211e;
+  background: #167f74;
+  color: white;
 }
 
 .protocol-panel {
-  border-top: 1px solid #52605d;
-  border-bottom: 1px solid #52605d;
+  border-top: 1px solid #84928e;
+  border-bottom: 1px solid #84928e;
 }
 
 .protocol-panel[hidden] {
@@ -501,35 +507,37 @@ select {
   display: grid;
   grid-template-columns: 80px 1fr;
   gap: 20px;
-  border-bottom: 1px solid #52605d;
+  border-bottom: 1px solid #c4ceca;
 }
 
 .panel-number {
   margin: 0;
-  color: #78decf;
+  color: #087f73;
   font-size: 14px;
   font-weight: 800;
 }
 
 .panel-summary h3 {
   margin: 0;
-  font-size: 28px;
+  font-size: 32px;
 }
 
 .panel-summary p:last-child {
   max-width: 680px;
   margin: 8px 0 0;
-  color: #b9c7c4;
+  color: #566460;
+  font-size: 18px;
 }
 
 .criteria-row {
-  min-height: 68px;
+  min-height: 78px;
   display: grid;
-  grid-template-columns: 160px 1fr;
+  grid-template-columns: 180px 1fr;
   align-items: center;
   gap: 24px;
-  border-bottom: 1px solid #34423f;
-  color: #dfe9e6;
+  border-bottom: 1px solid #c4ceca;
+  color: #33423f;
+  font-size: 18px;
 }
 
 .criteria-row:last-child {
@@ -537,15 +545,16 @@ select {
 }
 
 .criteria-head {
-  min-height: 46px;
-  color: #8fa09c;
-  font-size: 12px;
+  min-height: 50px;
+  color: #687773;
+  font-size: 13px;
   font-weight: 800;
   text-transform: uppercase;
 }
 
 .criteria-row strong {
-  color: white;
+  color: var(--ink);
+  font-size: 18px;
 }
 
 .tasks {
