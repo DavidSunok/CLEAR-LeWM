@@ -447,6 +447,11 @@ select {
   margin-bottom: 20px;
 }
 
+.overview .title-line {
+  display: block;
+  white-space: nowrap;
+}
+
 .overview-video {
   width: min(100%, 900px);
   aspect-ratio: 16 / 9;
@@ -963,6 +968,10 @@ code {
     font-size: 30px;
   }
 
+  .overview h2 {
+    font-size: 24px;
+  }
+
   .protocol-heading h2 {
     font-size: 34px;
   }
@@ -1062,6 +1071,12 @@ code {
 
   .footer-links {
     flex-wrap: wrap;
+  }
+}
+
+@media (max-width: 360px) {
+  .overview h2 {
+    font-size: 20px;
   }
 }
 
