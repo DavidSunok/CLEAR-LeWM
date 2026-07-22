@@ -37,6 +37,12 @@ tabs.forEach((tab, index) => {
 
 const copyButton = document.querySelector("[data-copy-code]");
 const installCode = document.querySelector("[data-install-code]");
+const overviewVideo = document.querySelector("[data-overview-video]");
+
+overviewVideo?.addEventListener("ended", () => {
+  overviewVideo.currentTime = 0;
+  overviewVideo.pause();
+});
 
 copyButton?.addEventListener("click", async () => {
   if (!installCode) return;
