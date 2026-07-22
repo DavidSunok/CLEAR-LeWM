@@ -1,6 +1,7 @@
 # Audit findings for the public LeWM evaluation protocol
 
-Audit date: 2026-07-21.
+Audit dates: 2026-07-21 initial protocol audit; 2026-07-22 task-semantic and
+TwoRoom topology audit.
 
 The analysis used the four public LeWM dataset snapshots available locally and
 `stable-worldmodel==0.1.0`. Initial-success rates were computed over every valid
@@ -19,6 +20,24 @@ TwoRoom, and 48% on Cube. The current Cube result reproduces the reported high
 floor. The current TwoRoom stack does not reproduce the paper's zero random
 baseline, indicating dependency, data, environment, or protocol drift that
 should be resolved with immutable version records.
+
+## v0.3 task-semantic reference
+
+v0.3 corrects four independent mechanisms rather than applying one generic
+threshold change: PushT object semantics, Cube rotational symmetry, Reacher
+periodic first-hit semantics, and TwoRoom continuous route validity.
+
+| Task | Moderate LeWM/random | Strict LeWM/random |
+|---|---:|---:|
+| PushT | 93% / 7% | 79% / 2% |
+| Cube | 43% / 4% | 18% / 3% |
+| Reacher | 90% / 17% | 36% / 4% |
+| TwoRoom | 61% / 2% | 24% / 0% |
+
+All 200 PushT observation rollouts remained inside the simulated workspace.
+Cube and Reacher produced no non-finite states. The critical physical defect was
+TwoRoom: 87/100 original cross-room Strict trajectories were route-invalid.
+Swept-disk evaluation reduced that count to zero while preserving 24% legal SR.
 
 ## v0.2 calibrated reference
 

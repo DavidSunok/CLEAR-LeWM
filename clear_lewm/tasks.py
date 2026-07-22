@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from itertools import permutations, product
 
 import h5py
 import numpy as np
@@ -22,6 +23,63 @@ def quaternion_angle_deg(q0: np.ndarray, q1: np.ndarray) -> np.ndarray:
     q1 = q1 / np.clip(np.linalg.norm(q1, axis=-1, keepdims=True), 1e-12, None)
     dot = np.abs(np.sum(q0 * q1, axis=-1))
     return np.degrees(2.0 * np.arccos(np.clip(dot, 0.0, 1.0)))
+
+
+def wrapped_angle_error(current: np.ndarray, target: np.ndarray) -> np.ndarray:
+    """Return the shortest absolute error for periodic angles in radians."""
+    delta = np.asarray(current, dtype=np.float64) - np.asarray(target, dtype=np.float64)
+    return np.abs(np.arctan2(np.sin(delta), np.cos(delta)))
+
+
+def _cube_symmetry_matrices() -> np.ndarray:
+    matrices = []
+    identity = np.eye(3, dtype=np.float64)
+    for permutation in permutations(range(3)):
+        base = identity[:, permutation]
+        for signs in product((-1.0, 1.0), repeat=3):
+            matrix = base * np.asarray(signs, dtype=np.float64)[None, :]
+            if np.linalg.det(matrix) > 0.5:
+                matrices.append(matrix)
+    result = np.asarray(matrices, dtype=np.float64)
+    if result.shape != (24, 3, 3):
+        raise RuntimeError(f"Expected 24 cube symmetries, got {result.shape}")
+    return result
+
+
+CUBE_SYMMETRY_MATRICES = _cube_symmetry_matrices()
+
+
+def _quaternion_matrix_wxyz(quaternion: np.ndarray) -> np.ndarray:
+    quaternion = np.asarray(quaternion, dtype=np.float64)
+    quaternion = quaternion / np.clip(
+        np.linalg.norm(quaternion, axis=-1, keepdims=True), 1e-12, None
+    )
+    w, x, y, z = np.moveaxis(quaternion, -1, 0)
+    return np.stack(
+        (
+            1 - 2 * (y * y + z * z),
+            2 * (x * y - z * w),
+            2 * (x * z + y * w),
+            2 * (x * y + z * w),
+            1 - 2 * (x * x + z * z),
+            2 * (y * z - x * w),
+            2 * (x * z - y * w),
+            2 * (y * z + x * w),
+            1 - 2 * (x * x + y * y),
+        ),
+        axis=-1,
+    ).reshape((*quaternion.shape[:-1], 3, 3))
+
+
+def cube_symmetry_angle_deg(q0: np.ndarray, q1: np.ndarray) -> np.ndarray:
+    """Geodesic orientation error modulo the cube's 24 proper rotations."""
+    current = _quaternion_matrix_wxyz(q0)
+    target = _quaternion_matrix_wxyz(q1)
+    relative = np.swapaxes(current, -1, -2) @ target
+    equivalent = relative[..., None, :, :] @ CUBE_SYMMETRY_MATRICES
+    traces = np.trace(equivalent, axis1=-2, axis2=-1)
+    angles = np.arccos(np.clip((traces - 1.0) / 2.0, -1.0, 1.0))
+    return np.degrees(np.min(angles, axis=-1))
 
 
 def _read_pair(
@@ -53,6 +111,9 @@ def pair_diagnostics(
                 dataset, "privileged_block_0_quat", starts, goals
             )
             extras["orientation_distance_deg"] = quaternion_angle_deg(start_q, goal_q)
+            extras["symmetry_orientation_distance_deg"] = cube_symmetry_angle_deg(
+                start_q, goal_q
+            )
         return PairDiagnostics(
             difficulty=position_m,
             initial_success=position_m <= 0.04,
@@ -61,32 +122,61 @@ def pair_diagnostics(
 
     if task == "pusht":
         start, goal = _read_pair(dataset, "state", starts, goals)
-        position = np.linalg.norm(goal[:, :4] - start[:, :4], axis=1)
+        upstream_position = np.linalg.norm(goal[:, :4] - start[:, :4], axis=1)
+        block_position = np.linalg.norm(goal[:, 2:4] - start[:, 2:4], axis=1)
         angle = np.abs(goal[:, 4] - start[:, 4])
         angle = np.minimum(angle, 2.0 * np.pi - angle)
-        success = (position < 20.0) & (angle < np.pi / 9.0)
+        success = (upstream_position < 20.0) & (angle < np.pi / 9.0)
         return PairDiagnostics(
-            difficulty=position,
+            difficulty=block_position,
             initial_success=success,
             extras={
-                "position_distance": position,
+                "position_distance": upstream_position,
+                "block_position_distance": block_position,
                 "angle_distance_deg": np.degrees(angle),
             },
         )
 
     if task == "reacher":
         start, goal = _read_pair(dataset, "qpos", starts, goals)
-        max_joint = np.max(np.abs(goal - start), axis=1)
+        raw_max_joint = np.max(np.abs(goal - start), axis=1)
+        wrapped_max_joint = np.max(wrapped_angle_error(goal, start), axis=1)
         return PairDiagnostics(
-            difficulty=max_joint,
-            initial_success=max_joint < 0.05,
-            extras={"max_joint_distance_rad": max_joint},
+            difficulty=wrapped_max_joint,
+            initial_success=raw_max_joint < 0.05,
+            extras={
+                "max_joint_distance_rad": raw_max_joint,
+                "max_wrapped_joint_distance_rad": wrapped_max_joint,
+            },
         )
 
     start, goal = _read_pair(dataset, "proprio", starts, goals)
     distance = np.linalg.norm(goal - start, axis=1)
+    from .topology import canonical_tworoom_geometry, point_is_clear
+
+    geometry = canonical_tworoom_geometry()
+    cross_room = np.asarray(
+        [
+            geometry.is_cross_room(current, target)
+            for current, target in zip(start, goal)
+        ]
+    )
+    start_clear = np.asarray([point_is_clear(geometry, point) for point in start])
+    goal_clear = np.asarray([point_is_clear(geometry, point) for point in goal])
+    geodesic = np.asarray(
+        [
+            geometry.shortest_door_path(current, target)
+            for current, target in zip(start, goal)
+        ]
+    )
     return PairDiagnostics(
-        difficulty=distance,
+        difficulty=geodesic,
         initial_success=distance < 16.0,
-        extras={"euclidean_distance": distance},
+        extras={
+            "euclidean_distance": distance,
+            "geodesic_distance": geodesic,
+            "cross_room": cross_room,
+            "start_clear": start_clear,
+            "goal_clear": goal_clear,
+        },
     )

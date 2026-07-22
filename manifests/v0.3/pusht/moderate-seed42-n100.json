@@ -1,0 +1,1987 @@
+{
+  "created_utc": "2026-07-22T06:06:37.266811+00:00",
+  "dataset": {
+    "episode_column": "episode_idx",
+    "fingerprint": {
+      "kind": "metadata-sha256",
+      "value": "8dabf107816dce322a4afb3f2c80bf2981e399b00bb37c52aac1fd068fa3dd00"
+    },
+    "name": "pusht_expert_train.h5"
+  },
+  "num_eval": 100,
+  "pairs": [
+    {
+      "angle_distance_deg": 52.80966567993164,
+      "block_position_distance": 86.0094985961914,
+      "difficulty": 86.0094985961914,
+      "episode_id": 136,
+      "goal_row": 15672,
+      "goal_step": 78,
+      "initial_success": false,
+      "pair_id": 0,
+      "position_distance": 142.5399627685547,
+      "source_pair_index": 2,
+      "start_row": 15647,
+      "start_step": 53,
+      "task_semantic_difficulty": {
+        "block_angle_displacement_deg": 52.80966686998834,
+        "block_position_displacement": 86.00949936636121
+      },
+      "upstream_initial_success": false
+    },
+    {
+      "angle_distance_deg": 5.8546295166015625,
+      "block_position_distance": 35.63716125488281,
+      "difficulty": 35.63716125488281,
+      "episode_id": 254,
+      "goal_row": 28680,
+      "goal_step": 72,
+      "initial_success": false,
+      "pair_id": 1,
+      "position_distance": 59.783023834228516,
+      "source_pair_index": 4,
+      "start_row": 28655,
+      "start_step": 47,
+      "task_semantic_difficulty": {
+        "block_angle_displacement_deg": 5.854629835765245,
+        "block_position_displacement": 35.637161104768914
+      },
+      "upstream_initial_success": false
+    },
+    {
+      "angle_distance_deg": 26.028223037719727,
+      "block_position_distance": 76.16414642333984,
+      "difficulty": 76.16414642333984,
+      "episode_id": 324,
+      "goal_row": 35583,
+      "goal_step": 45,
+      "initial_success": false,
+      "pair_id": 2,
+      "position_distance": 94.71734619140625,
+      "source_pair_index": 5,
+      "start_row": 35558,
+      "start_step": 20,
+      "task_semantic_difficulty": {
+        "block_angle_displacement_deg": 26.028225341896132,
+        "block_position_displacement": 76.1641501571667
+      },
+      "upstream_initial_success": false
+    },
+    {
+      "angle_distance_deg": 1.0204541683197021,
+      "block_position_distance": 25.1821346282959,
+      "difficulty": 25.1821346282959,
+      "episode_id": 328,
+      "goal_row": 36199,
+      "goal_step": 125,
+      "initial_success": false,
+      "pair_id": 3,
+      "position_distance": 130.09458923339844,
+      "source_pair_index": 6,
+      "start_row": 36174,
+      "start_step": 100,
+      "task_semantic_difficulty": {
+        "block_angle_displacement_deg": 1.020454167662,
+        "block_position_displacement": 25.182133822924825
+      },
+      "upstream_initial_success": false
+    },
+    {
+      "angle_distance_deg": 20.181989669799805,
+      "block_position_distance": 40.77536392211914,
+      "difficulty": 40.77536392211914,
+      "episode_id": 360,
+      "goal_row": 40439,
+      "goal_step": 77,
+      "initial_success": false,
+      "pair_id": 4,
+      "position_distance": 84.38811492919922,
+      "source_pair_index": 7,
+      "start_row": 40414,
+      "start_step": 52,
+      "task_semantic_difficulty": {
+        "block_angle_displacement_deg": 20.181991516168125,
+        "block_position_displacement": 40.77536318523582
+      },
+      "upstream_initial_success": false
+    },
+    {
+      "angle_distance_deg": 65.11585235595703,
+      "block_position_distance": 107.44175720214844,
+      "difficulty": 107.44175720214844,
+      "episode_id": 405,
+      "goal_row": 46366,
+      "goal_step": 39,
+      "initial_success": false,
+      "pair_id": 5,
+      "position_distance": 178.94107055664062,
+      "source_pair_index": 9,
+      "start_row": 46341,
+      "start_step": 14,
+      "task_semantic_difficulty": {
+        "block_angle_displacement_deg": 65.11585433912668,
+        "block_position_displacement": 107.44175497089522
+      },
+      "upstream_initial_success": false
+    },
+    {
+      "angle_distance_deg": 44.59685134887695,
+      "block_position_distance": 84.27408599853516,
+      "difficulty": 84.27408599853516,
+      "episode_id": 419,
+      "goal_row": 47339,
+      "goal_step": 46,
+      "initial_success": false,
+      "pair_id": 6,
+      "position_distance": 124.69432830810547,
+      "source_pair_index": 10,
+      "start_row": 47314,
+      "start_step": 21,
+      "task_semantic_difficulty": {
+        "block_angle_displacement_deg": 44.596852751573664,
+        "block_position_displacement": 84.2740871262292
+      },
+      "upstream_initial_success": false
+    },
+    {
+      "angle_distance_deg": 69.283203125,
+      "block_position_distance": 105.34965515136719,
+      "difficulty": 105.34965515136719,
+      "episode_id": 420,
+      "goal_row": 47397,
+      "goal_step": 35,
+      "initial_success": false,
+      "pair_id": 7,
+      "position_distance": 190.4014129638672,
+      "source_pair_index": 11,
+      "start_row": 47372,
+      "start_step": 10,
+      "task_semantic_difficulty": {
+        "block_angle_displacement_deg": 69.28320546875075,
+        "block_position_displacement": 105.34965832085234
+      },
+      "upstream_initial_success": false
+    },
+    {
+      "angle_distance_deg": 53.63222122192383,
+      "block_position_distance": 96.39269256591797,
+      "difficulty": 96.39269256591797,
+      "episode_id": 453,
+      "goal_row": 49682,
+      "goal_step": 43,
+      "initial_success": false,
+      "pair_id": 8,
+      "position_distance": 145.06227111816406,
+      "source_pair_index": 12,
+      "start_row": 49657,
+      "start_step": 18,
+      "task_semantic_difficulty": {
+        "block_angle_displacement_deg": 53.632223136638395,
+        "block_position_displacement": 96.3926975126008
+      },
+      "upstream_initial_success": false
+    },
+    {
+      "angle_distance_deg": 54.719276428222656,
+      "block_position_distance": 95.63268280029297,
+      "difficulty": 95.63268280029297,
+      "episode_id": 458,
+      "goal_row": 50027,
+      "goal_step": 43,
+      "initial_success": false,
+      "pair_id": 9,
+      "position_distance": 145.95538330078125,
+      "source_pair_index": 13,
+      "start_row": 50002,
+      "start_step": 18,
+      "task_semantic_difficulty": {
+        "block_angle_displacement_deg": 54.71927847889719,
+        "block_position_displacement": 95.63268086893714
+      },
+      "upstream_initial_success": false
+    },
+    {
+      "angle_distance_deg": 47.78249740600586,
+      "block_position_distance": 140.9440155029297,
+      "difficulty": 140.9440155029297,
+      "episode_id": 584,
+      "goal_row": 63270,
+      "goal_step": 89,
+      "initial_success": false,
+      "pair_id": 10,
+      "position_distance": 197.98345947265625,
+      "source_pair_index": 15,
+      "start_row": 63245,
+      "start_step": 64,
+      "task_semantic_difficulty": {
+        "block_angle_displacement_deg": 47.78248992010549,
+        "block_position_displacement": 140.94401195507947
+      },
+      "upstream_initial_success": false
+    },
+    {
+      "angle_distance_deg": 66.91355895996094,
+      "block_position_distance": 108.53565216064453,
+      "difficulty": 108.53565216064453,
+      "episode_id": 643,
+      "goal_row": 71855,
+      "goal_step": 56,
+      "initial_success": false,
+      "pair_id": 11,
+      "position_distance": 181.22007751464844,
+      "source_pair_index": 16,
+      "start_row": 71830,
+      "start_step": 31,
+      "task_semantic_difficulty": {
+        "block_angle_displacement_deg": 66.9135432805722,
+        "block_position_displacement": 108.53565246104193
+      },
+      "upstream_initial_success": false
+    },
+    {
+      "angle_distance_deg": 48.03343963623047,
+      "block_position_distance": 95.90675354003906,
+      "difficulty": 95.90675354003906,
+      "episode_id": 691,
+      "goal_row": 79428,
+      "goal_step": 45,
+      "initial_success": false,
+      "pair_id": 12,
+      "position_distance": 219.94229125976562,
+      "source_pair_index": 18,
+      "start_row": 79403,
+      "start_step": 20,
+      "task_semantic_difficulty": {
+        "block_angle_displacement_deg": 48.03342509379623,
+        "block_position_displacement": 95.90675550931135
+      },
+      "upstream_initial_success": false
+    },
+    {
+      "angle_distance_deg": 1.1302357912063599,
+      "block_position_distance": 41.742515563964844,
+      "difficulty": 41.742515563964844,
+      "episode_id": 767,
+      "goal_row": 89532,
+      "goal_step": 121,
+      "initial_success": false,
+      "pair_id": 13,
+      "position_distance": 132.43603515625,
+      "source_pair_index": 19,
+      "start_row": 89507,
+      "start_step": 96,
+      "task_semantic_difficulty": {
+        "block_angle_displacement_deg": 1.130235798191615,
+        "block_position_displacement": 41.742515298916324
+      },
+      "upstream_initial_success": false
+    },
+    {
+      "angle_distance_deg": 20.01026725769043,
+      "block_position_distance": 61.32048797607422,
+      "difficulty": 61.32048797607422,
+      "episode_id": 1266,
+      "goal_row": 153859,
+      "goal_step": 81,
+      "initial_success": false,
+      "pair_id": 14,
+      "position_distance": 120.63177490234375,
+      "source_pair_index": 27,
+      "start_row": 153834,
+      "start_step": 56,
+      "task_semantic_difficulty": {
+        "block_angle_displacement_deg": 20.010268607602956,
+        "block_position_displacement": 61.32048734581281
+      },
+      "upstream_initial_success": false
+    },
+    {
+      "angle_distance_deg": 18.5770206451416,
+      "block_position_distance": 45.487892150878906,
+      "difficulty": 45.487892150878906,
+      "episode_id": 1463,
+      "goal_row": 179877,
+      "goal_step": 33,
+      "initial_success": false,
+      "pair_id": 15,
+      "position_distance": 156.0831756591797,
+      "source_pair_index": 29,
+      "start_row": 179852,
+      "start_step": 8,
+      "task_semantic_difficulty": {
+        "block_angle_displacement_deg": 18.577020858393833,
+        "block_position_displacement": 45.48789406647119
+      },
+      "upstream_initial_success": false
+    },
+    {
+      "angle_distance_deg": 22.59151268005371,
+      "block_position_distance": 53.97720718383789,
+      "difficulty": 53.97720718383789,
+      "episode_id": 1469,
+      "goal_row": 180429,
+      "goal_step": 33,
+      "initial_success": false,
+      "pair_id": 16,
+      "position_distance": 154.6689910888672,
+      "source_pair_index": 30,
+      "start_row": 180404,
+      "start_step": 8,
+      "task_semantic_difficulty": {
+        "block_angle_displacement_deg": 22.591512354393018,
+        "block_position_displacement": 53.97720980924039
+      },
+      "upstream_initial_success": false
+    },
+    {
+      "angle_distance_deg": 15.87912368774414,
+      "block_position_distance": 71.40624237060547,
+      "difficulty": 71.40624237060547,
+      "episode_id": 1522,
+      "goal_row": 185627,
+      "goal_step": 40,
+      "initial_success": false,
+      "pair_id": 17,
+      "position_distance": 174.2643280029297,
+      "source_pair_index": 32,
+      "start_row": 185602,
+      "start_step": 15,
+      "task_semantic_difficulty": {
+        "block_angle_displacement_deg": 15.879124310769123,
+        "block_position_displacement": 71.40623820930035
+      },
+      "upstream_initial_success": false
+    },
+    {
+      "angle_distance_deg": 67.76514434814453,
+      "block_position_distance": 145.50265502929688,
+      "difficulty": 145.50265502929688,
+      "episode_id": 1540,
+      "goal_row": 188141,
+      "goal_step": 88,
+      "initial_success": false,
+      "pair_id": 18,
+      "position_distance": 253.4671630859375,
+      "source_pair_index": 33,
+      "start_row": 188116,
+      "start_step": 63,
+      "task_semantic_difficulty": {
+        "block_angle_displacement_deg": 67.76514811439122,
+        "block_position_displacement": 145.50265803545923
+      },
+      "upstream_initial_success": false
+    },
+    {
+      "angle_distance_deg": 55.964134216308594,
+      "block_position_distance": 125.89707946777344,
+      "difficulty": 125.89707946777344,
+      "episode_id": 1605,
+      "goal_row": 197031,
+      "goal_step": 73,
+      "initial_success": false,
+      "pair_id": 19,
+      "position_distance": 190.9337921142578,
+      "source_pair_index": 35,
+      "start_row": 197006,
+      "start_step": 48,
+      "task_semantic_difficulty": {
+        "block_angle_displacement_deg": 55.964138511739954,
+        "block_position_displacement": 125.89707543221111
+      },
+      "upstream_initial_success": false
+    },
+    {
+      "angle_distance_deg": 9.91732120513916,
+      "block_position_distance": 35.2689094543457,
+      "difficulty": 35.2689094543457,
+      "episode_id": 1620,
+      "goal_row": 199120,
+      "goal_step": 107,
+      "initial_success": false,
+      "pair_id": 20,
+      "position_distance": 92.90078735351562,
+      "source_pair_index": 36,
+      "start_row": 199095,
+      "start_step": 82,
+      "task_semantic_difficulty": {
+        "block_angle_displacement_deg": 9.91732197673721,
+        "block_position_displacement": 35.26890791431986
+      },
+      "upstream_initial_success": false
+    },
+    {
+      "angle_distance_deg": 59.230709075927734,
+      "block_position_distance": 155.27444458007812,
+      "difficulty": 155.27444458007812,
+      "episode_id": 1718,
+      "goal_row": 212437,
+      "goal_step": 45,
+      "initial_success": false,
+      "pair_id": 21,
+      "position_distance": 224.82582092285156,
+      "source_pair_index": 40,
+      "start_row": 212412,
+      "start_step": 20,
+      "task_semantic_difficulty": {
+        "block_angle_displacement_deg": 59.230710633244406,
+        "block_position_displacement": 155.27444632835272
+      },
+      "upstream_initial_success": false
+    },
+    {
+      "angle_distance_deg": 60.42121505737305,
+      "block_position_distance": 156.97677612304688,
+      "difficulty": 156.97677612304688,
+      "episode_id": 1729,
+      "goal_row": 213446,
+      "goal_step": 64,
+      "initial_success": false,
+      "pair_id": 22,
+      "position_distance": 208.68751525878906,
+      "source_pair_index": 41,
+      "start_row": 213421,
+      "start_step": 39,
+      "task_semantic_difficulty": {
+        "block_angle_displacement_deg": 60.4212194357668,
+        "block_position_displacement": 156.97677163713075
+      },
+      "upstream_initial_success": false
+    },
+    {
+      "angle_distance_deg": 63.26426696777344,
+      "block_position_distance": 165.28448486328125,
+      "difficulty": 165.28448486328125,
+      "episode_id": 1746,
+      "goal_row": 214961,
+      "goal_step": 49,
+      "initial_success": false,
+      "pair_id": 23,
+      "position_distance": 235.71652221679688,
+      "source_pair_index": 42,
+      "start_row": 214936,
+      "start_step": 24,
+      "task_semantic_difficulty": {
+        "block_angle_displacement_deg": 63.26427201740626,
+        "block_position_displacement": 165.28449107637533
+      },
+      "upstream_initial_success": false
+    },
+    {
+      "angle_distance_deg": 57.753379821777344,
+      "block_position_distance": 158.79034423828125,
+      "difficulty": 158.79034423828125,
+      "episode_id": 1758,
+      "goal_row": 216039,
+      "goal_step": 47,
+      "initial_success": false,
+      "pair_id": 24,
+      "position_distance": 226.01889038085938,
+      "source_pair_index": 43,
+      "start_row": 216014,
+      "start_step": 22,
+      "task_semantic_difficulty": {
+        "block_angle_displacement_deg": 57.75338169690567,
+        "block_position_displacement": 158.79033378247306
+      },
+      "upstream_initial_success": false
+    },
+    {
+      "angle_distance_deg": 22.43199348449707,
+      "block_position_distance": 60.52996063232422,
+      "difficulty": 60.52996063232422,
+      "episode_id": 1780,
+      "goal_row": 218004,
+      "goal_step": 32,
+      "initial_success": false,
+      "pair_id": 25,
+      "position_distance": 207.2580108642578,
+      "source_pair_index": 44,
+      "start_row": 217979,
+      "start_step": 7,
+      "task_semantic_difficulty": {
+        "block_angle_displacement_deg": 22.43199414010102,
+        "block_position_displacement": 60.52996178043765
+      },
+      "upstream_initial_success": false
+    },
+    {
+      "angle_distance_deg": 1.0065785646438599,
+      "block_position_distance": 34.627349853515625,
+      "difficulty": 34.627349853515625,
+      "episode_id": 1965,
+      "goal_row": 235552,
+      "goal_step": 27,
+      "initial_success": false,
+      "pair_id": 26,
+      "position_distance": 84.03858947753906,
+      "source_pair_index": 48,
+      "start_row": 235527,
+      "start_step": 2,
+      "task_semantic_difficulty": {
+        "block_angle_displacement_deg": 1.0065786383631192,
+        "block_position_displacement": 34.6273517690724
+      },
+      "upstream_initial_success": false
+    },
+    {
+      "angle_distance_deg": 25.306777954101562,
+      "block_position_distance": 38.63666915893555,
+      "difficulty": 38.63666915893555,
+      "episode_id": 1987,
+      "goal_row": 238335,
+      "goal_step": 60,
+      "initial_success": false,
+      "pair_id": 27,
+      "position_distance": 69.59233856201172,
+      "source_pair_index": 50,
+      "start_row": 238310,
+      "start_step": 35,
+      "task_semantic_difficulty": {
+        "block_angle_displacement_deg": 25.306772324032632,
+        "block_position_displacement": 38.63666897574771
+      },
+      "upstream_initial_success": false
+    },
+    {
+      "angle_distance_deg": 2.952810049057007,
+      "block_position_distance": 58.51621627807617,
+      "difficulty": 58.51621627807617,
+      "episode_id": 1995,
+      "goal_row": 239399,
+      "goal_step": 124,
+      "initial_success": false,
+      "pair_id": 28,
+      "position_distance": 97.74641418457031,
+      "source_pair_index": 51,
+      "start_row": 239374,
+      "start_step": 99,
+      "task_semantic_difficulty": {
+        "block_angle_displacement_deg": 2.9528103065069873,
+        "block_position_displacement": 58.51621683033157
+      },
+      "upstream_initial_success": false
+    },
+    {
+      "angle_distance_deg": 1.9179375171661377,
+      "block_position_distance": 25.19886589050293,
+      "difficulty": 25.19886589050293,
+      "episode_id": 2124,
+      "goal_row": 256835,
+      "goal_step": 61,
+      "initial_success": false,
+      "pair_id": 29,
+      "position_distance": 103.94996643066406,
+      "source_pair_index": 52,
+      "start_row": 256810,
+      "start_step": 36,
+      "task_semantic_difficulty": {
+        "block_angle_displacement_deg": 1.9179376095070906,
+        "block_position_displacement": 25.19886650114371
+      },
+      "upstream_initial_success": false
+    },
+    {
+      "angle_distance_deg": 2.1796839237213135,
+      "block_position_distance": 60.2435188293457,
+      "difficulty": 60.2435188293457,
+      "episode_id": 2162,
+      "goal_row": 259808,
+      "goal_step": 70,
+      "initial_success": false,
+      "pair_id": 30,
+      "position_distance": 72.88667297363281,
+      "source_pair_index": 54,
+      "start_row": 259783,
+      "start_step": 45,
+      "task_semantic_difficulty": {
+        "block_angle_displacement_deg": 2.1796841188803193,
+        "block_position_displacement": 60.24352076992914
+      },
+      "upstream_initial_success": false
+    },
+    {
+      "angle_distance_deg": 6.146275043487549,
+      "block_position_distance": 50.96318435668945,
+      "difficulty": 50.96318435668945,
+      "episode_id": 2181,
+      "goal_row": 261272,
+      "goal_step": 52,
+      "initial_success": false,
+      "pair_id": 31,
+      "position_distance": 72.43103790283203,
+      "source_pair_index": 55,
+      "start_row": 261247,
+      "start_step": 27,
+      "task_semantic_difficulty": {
+        "block_angle_displacement_deg": 6.146275498230204,
+        "block_position_displacement": 50.963185537021445
+      },
+      "upstream_initial_success": false
+    },
+    {
+      "angle_distance_deg": 5.483213901519775,
+      "block_position_distance": 31.82833480834961,
+      "difficulty": 31.82833480834961,
+      "episode_id": 2184,
+      "goal_row": 261510,
+      "goal_step": 56,
+      "initial_success": false,
+      "pair_id": 32,
+      "position_distance": 107.50116729736328,
+      "source_pair_index": 56,
+      "start_row": 261485,
+      "start_step": 31,
+      "task_semantic_difficulty": {
+        "block_angle_displacement_deg": 5.483214393983706,
+        "block_position_displacement": 31.828334917590922
+      },
+      "upstream_initial_success": false
+    },
+    {
+      "angle_distance_deg": 6.292369365692139,
+      "block_position_distance": 31.581756591796875,
+      "difficulty": 31.581756591796875,
+      "episode_id": 2258,
+      "goal_row": 269585,
+      "goal_step": 127,
+      "initial_success": false,
+      "pair_id": 33,
+      "position_distance": 70.49158477783203,
+      "source_pair_index": 59,
+      "start_row": 269560,
+      "start_step": 102,
+      "task_semantic_difficulty": {
+        "block_angle_displacement_deg": 6.292369829482192,
+        "block_position_displacement": 31.581756630343023
+      },
+      "upstream_initial_success": false
+    },
+    {
+      "angle_distance_deg": 3.0498433113098145,
+      "block_position_distance": 52.05845642089844,
+      "difficulty": 52.05845642089844,
+      "episode_id": 2391,
+      "goal_row": 283915,
+      "goal_step": 53,
+      "initial_success": false,
+      "pair_id": 34,
+      "position_distance": 128.02862548828125,
+      "source_pair_index": 62,
+      "start_row": 283890,
+      "start_step": 28,
+      "task_semantic_difficulty": {
+        "block_angle_displacement_deg": 3.0498433889507734,
+        "block_position_displacement": 52.05845756010063
+      },
+      "upstream_initial_success": false
+    },
+    {
+      "angle_distance_deg": 0.6390392780303955,
+      "block_position_distance": 53.039772033691406,
+      "difficulty": 53.039772033691406,
+      "episode_id": 2408,
+      "goal_row": 285249,
+      "goal_step": 61,
+      "initial_success": false,
+      "pair_id": 35,
+      "position_distance": 134.4613037109375,
+      "source_pair_index": 64,
+      "start_row": 285224,
+      "start_step": 36,
+      "task_semantic_difficulty": {
+        "block_angle_displacement_deg": 0.639039328935563,
+        "block_position_displacement": 53.039769480589094
+      },
+      "upstream_initial_success": false
+    },
+    {
+      "angle_distance_deg": 41.5463981628418,
+      "block_position_distance": 95.31439971923828,
+      "difficulty": 95.31439971923828,
+      "episode_id": 2418,
+      "goal_row": 286021,
+      "goal_step": 53,
+      "initial_success": false,
+      "pair_id": 36,
+      "position_distance": 143.5474090576172,
+      "source_pair_index": 66,
+      "start_row": 285996,
+      "start_step": 28,
+      "task_semantic_difficulty": {
+        "block_angle_displacement_deg": 41.54640062201312,
+        "block_position_displacement": 95.31439820319106
+      },
+      "upstream_initial_success": false
+    },
+    {
+      "angle_distance_deg": 67.5816879272461,
+      "block_position_distance": 103.10839080810547,
+      "difficulty": 103.10839080810547,
+      "episode_id": 2557,
+      "goal_row": 299434,
+      "goal_step": 47,
+      "initial_success": false,
+      "pair_id": 37,
+      "position_distance": 217.16403198242188,
+      "source_pair_index": 67,
+      "start_row": 299409,
+      "start_step": 22,
+      "task_semantic_difficulty": {
+        "block_angle_displacement_deg": 67.58168946065577,
+        "block_position_displacement": 103.10838923465602
+      },
+      "upstream_initial_success": false
+    },
+    {
+      "angle_distance_deg": 59.11888885498047,
+      "block_position_distance": 85.54663848876953,
+      "difficulty": 85.54663848876953,
+      "episode_id": 2586,
+      "goal_row": 301385,
+      "goal_step": 55,
+      "initial_success": false,
+      "pair_id": 38,
+      "position_distance": 90.75694274902344,
+      "source_pair_index": 69,
+      "start_row": 301360,
+      "start_step": 30,
+      "task_semantic_difficulty": {
+        "block_angle_displacement_deg": 59.118883588429455,
+        "block_position_displacement": 85.54663800608726
+      },
+      "upstream_initial_success": false
+    },
+    {
+      "angle_distance_deg": 58.84592819213867,
+      "block_position_distance": 114.16581726074219,
+      "difficulty": 114.16581726074219,
+      "episode_id": 2593,
+      "goal_row": 301849,
+      "goal_step": 50,
+      "initial_success": false,
+      "pair_id": 39,
+      "position_distance": 203.1615447998047,
+      "source_pair_index": 70,
+      "start_row": 301824,
+      "start_step": 25,
+      "task_semantic_difficulty": {
+        "block_angle_displacement_deg": 58.84592703108095,
+        "block_position_displacement": 114.16582079783778
+      },
+      "upstream_initial_success": false
+    },
+    {
+      "angle_distance_deg": 54.20743942260742,
+      "block_position_distance": 88.79595184326172,
+      "difficulty": 88.79595184326172,
+      "episode_id": 2595,
+      "goal_row": 301976,
+      "goal_step": 43,
+      "initial_success": false,
+      "pair_id": 40,
+      "position_distance": 221.97976684570312,
+      "source_pair_index": 71,
+      "start_row": 301951,
+      "start_step": 18,
+      "task_semantic_difficulty": {
+        "block_angle_displacement_deg": 54.20742603741481,
+        "block_position_displacement": 88.79595103360442
+      },
+      "upstream_initial_success": false
+    },
+    {
+      "angle_distance_deg": 60.431488037109375,
+      "block_position_distance": 39.48978805541992,
+      "difficulty": 39.48978805541992,
+      "episode_id": 2701,
+      "goal_row": 314630,
+      "goal_step": 45,
+      "initial_success": false,
+      "pair_id": 41,
+      "position_distance": 105.1204833984375,
+      "source_pair_index": 75,
+      "start_row": 314605,
+      "start_step": 20,
+      "task_semantic_difficulty": {
+        "block_angle_displacement_deg": 60.4314920402785,
+        "block_position_displacement": 39.48978855912875
+      },
+      "upstream_initial_success": false
+    },
+    {
+      "angle_distance_deg": 3.16140079498291,
+      "block_position_distance": 39.19099807739258,
+      "difficulty": 39.19099807739258,
+      "episode_id": 2804,
+      "goal_row": 325882,
+      "goal_step": 85,
+      "initial_success": false,
+      "pair_id": 42,
+      "position_distance": 112.321533203125,
+      "source_pair_index": 78,
+      "start_row": 325857,
+      "start_step": 60,
+      "task_semantic_difficulty": {
+        "block_angle_displacement_deg": 3.161400868664592,
+        "block_position_displacement": 39.19099845818615
+      },
+      "upstream_initial_success": false
+    },
+    {
+      "angle_distance_deg": 2.8203625679016113,
+      "block_position_distance": 47.652130126953125,
+      "difficulty": 47.652130126953125,
+      "episode_id": 2818,
+      "goal_row": 327242,
+      "goal_step": 73,
+      "initial_success": false,
+      "pair_id": 43,
+      "position_distance": 133.2792205810547,
+      "source_pair_index": 79,
+      "start_row": 327217,
+      "start_step": 48,
+      "task_semantic_difficulty": {
+        "block_angle_displacement_deg": 2.820362693216685,
+        "block_position_displacement": 47.6521283093453
+      },
+      "upstream_initial_success": false
+    },
+    {
+      "angle_distance_deg": 1.1603671312332153,
+      "block_position_distance": 47.22113800048828,
+      "difficulty": 47.22113800048828,
+      "episode_id": 2962,
+      "goal_row": 350903,
+      "goal_step": 193,
+      "initial_success": false,
+      "pair_id": 44,
+      "position_distance": 59.73139572143555,
+      "source_pair_index": 81,
+      "start_row": 350878,
+      "start_step": 168,
+      "task_semantic_difficulty": {
+        "block_angle_displacement_deg": 1.1603671777151263,
+        "block_position_displacement": 47.22113944906169
+      },
+      "upstream_initial_success": false
+    },
+    {
+      "angle_distance_deg": 30.57990264892578,
+      "block_position_distance": 53.533748626708984,
+      "difficulty": 53.533748626708984,
+      "episode_id": 2984,
+      "goal_row": 356177,
+      "goal_step": 55,
+      "initial_success": false,
+      "pair_id": 45,
+      "position_distance": 167.3756103515625,
+      "source_pair_index": 82,
+      "start_row": 356152,
+      "start_step": 30,
+      "task_semantic_difficulty": {
+        "block_angle_displacement_deg": 30.579904385927648,
+        "block_position_displacement": 53.53374902429598
+      },
+      "upstream_initial_success": false
+    },
+    {
+      "angle_distance_deg": 6.194721698760986,
+      "block_position_distance": 26.929166793823242,
+      "difficulty": 26.929166793823242,
+      "episode_id": 2989,
+      "goal_row": 357550,
+      "goal_step": 198,
+      "initial_success": false,
+      "pair_id": 46,
+      "position_distance": 55.368309020996094,
+      "source_pair_index": 83,
+      "start_row": 357525,
+      "start_step": 173,
+      "task_semantic_difficulty": {
+        "block_angle_displacement_deg": 6.1947220300131045,
+        "block_position_displacement": 26.929166883311847
+      },
+      "upstream_initial_success": false
+    },
+    {
+      "angle_distance_deg": 0.5636818408966064,
+      "block_position_distance": 36.84980010986328,
+      "difficulty": 36.84980010986328,
+      "episode_id": 3308,
+      "goal_row": 403992,
+      "goal_step": 39,
+      "initial_success": false,
+      "pair_id": 47,
+      "position_distance": 126.49830627441406,
+      "source_pair_index": 95,
+      "start_row": 403967,
+      "start_step": 14,
+      "task_semantic_difficulty": {
+        "block_angle_displacement_deg": 0.5636818518228123,
+        "block_position_displacement": 36.849799551659835
+      },
+      "upstream_initial_success": false
+    },
+    {
+      "angle_distance_deg": 15.327394485473633,
+      "block_position_distance": 83.13391876220703,
+      "difficulty": 83.13391876220703,
+      "episode_id": 3313,
+      "goal_row": 404611,
+      "goal_step": 83,
+      "initial_success": false,
+      "pair_id": 48,
+      "position_distance": 146.62667846679688,
+      "source_pair_index": 96,
+      "start_row": 404586,
+      "start_step": 58,
+      "task_semantic_difficulty": {
+        "block_angle_displacement_deg": 15.327394863107012,
+        "block_position_displacement": 83.1339216864926
+      },
+      "upstream_initial_success": false
+    },
+    {
+      "angle_distance_deg": 94.36509704589844,
+      "block_position_distance": 30.575950622558594,
+      "difficulty": 30.575950622558594,
+      "episode_id": 3469,
+      "goal_row": 424319,
+      "goal_step": 49,
+      "initial_success": false,
+      "pair_id": 49,
+      "position_distance": 182.8964080810547,
+      "source_pair_index": 98,
+      "start_row": 424294,
+      "start_step": 24,
+      "task_semantic_difficulty": {
+        "block_angle_displacement_deg": 94.36507759266144,
+        "block_position_displacement": 30.57595207121034
+      },
+      "upstream_initial_success": false
+    },
+    {
+      "angle_distance_deg": 48.491859436035156,
+      "block_position_distance": 37.72442626953125,
+      "difficulty": 37.72442626953125,
+      "episode_id": 3626,
+      "goal_row": 442746,
+      "goal_step": 121,
+      "initial_success": false,
+      "pair_id": 50,
+      "position_distance": 115.7104721069336,
+      "source_pair_index": 101,
+      "start_row": 442721,
+      "start_step": 96,
+      "task_semantic_difficulty": {
+        "block_angle_displacement_deg": 48.491863748421814,
+        "block_position_displacement": 37.72442713281683
+      },
+      "upstream_initial_success": false
+    },
+    {
+      "angle_distance_deg": 87.62725067138672,
+      "block_position_distance": 34.359703063964844,
+      "difficulty": 34.359703063964844,
+      "episode_id": 3715,
+      "goal_row": 455462,
+      "goal_step": 33,
+      "initial_success": false,
+      "pair_id": 51,
+      "position_distance": 243.71981811523438,
+      "source_pair_index": 103,
+      "start_row": 455437,
+      "start_step": 8,
+      "task_semantic_difficulty": {
+        "block_angle_displacement_deg": 87.62725625851827,
+        "block_position_displacement": 34.35970468059915
+      },
+      "upstream_initial_success": false
+    },
+    {
+      "angle_distance_deg": 5.305174827575684,
+      "block_position_distance": 80.75225067138672,
+      "difficulty": 80.75225067138672,
+      "episode_id": 3719,
+      "goal_row": 456126,
+      "goal_step": 113,
+      "initial_success": false,
+      "pair_id": 52,
+      "position_distance": 88.88716888427734,
+      "source_pair_index": 104,
+      "start_row": 456101,
+      "start_step": 88,
+      "task_semantic_difficulty": {
+        "block_angle_displacement_deg": 5.305175267983569,
+        "block_position_displacement": 80.75225225863439
+      },
+      "upstream_initial_success": false
+    },
+    {
+      "angle_distance_deg": 0.9874950647354126,
+      "block_position_distance": 42.631011962890625,
+      "difficulty": 42.631011962890625,
+      "episode_id": 3736,
+      "goal_row": 458571,
+      "goal_step": 76,
+      "initial_success": false,
+      "pair_id": 53,
+      "position_distance": 141.40792846679688,
+      "source_pair_index": 105,
+      "start_row": 458546,
+      "start_step": 51,
+      "task_semantic_difficulty": {
+        "block_angle_displacement_deg": 0.9874950898221035,
+        "block_position_displacement": 42.631011617200215
+      },
+      "upstream_initial_success": false
+    },
+    {
+      "angle_distance_deg": 4.484599590301514,
+      "block_position_distance": 130.9528045654297,
+      "difficulty": 130.9528045654297,
+      "episode_id": 3762,
+      "goal_row": 462152,
+      "goal_step": 86,
+      "initial_success": false,
+      "pair_id": 54,
+      "position_distance": 202.69337463378906,
+      "source_pair_index": 106,
+      "start_row": 462127,
+      "start_step": 61,
+      "task_semantic_difficulty": {
+        "block_angle_displacement_deg": 4.484599756192822,
+        "block_position_displacement": 130.95280382148192
+      },
+      "upstream_initial_success": false
+    },
+    {
+      "angle_distance_deg": 24.342052459716797,
+      "block_position_distance": 29.33258628845215,
+      "difficulty": 29.33258628845215,
+      "episode_id": 3979,
+      "goal_row": 495248,
+      "goal_step": 101,
+      "initial_success": false,
+      "pair_id": 55,
+      "position_distance": 168.8290252685547,
+      "source_pair_index": 107,
+      "start_row": 495223,
+      "start_step": 76,
+      "task_semantic_difficulty": {
+        "block_angle_displacement_deg": 24.342053980174143,
+        "block_position_displacement": 29.332585839845624
+      },
+      "upstream_initial_success": false
+    },
+    {
+      "angle_distance_deg": 0.2697269916534424,
+      "block_position_distance": 136.05323791503906,
+      "difficulty": 136.05323791503906,
+      "episode_id": 4222,
+      "goal_row": 525878,
+      "goal_step": 54,
+      "initial_success": false,
+      "pair_id": 56,
+      "position_distance": 206.92955017089844,
+      "source_pair_index": 110,
+      "start_row": 525853,
+      "start_step": 29,
+      "task_semantic_difficulty": {
+        "block_angle_displacement_deg": 0.26972700511911335,
+        "block_position_displacement": 136.05323759854323
+      },
+      "upstream_initial_success": false
+    },
+    {
+      "angle_distance_deg": 47.525081634521484,
+      "block_position_distance": 93.43649291992188,
+      "difficulty": 93.43649291992188,
+      "episode_id": 4226,
+      "goal_row": 526249,
+      "goal_step": 65,
+      "initial_success": false,
+      "pair_id": 57,
+      "position_distance": 145.5026397705078,
+      "source_pair_index": 111,
+      "start_row": 526224,
+      "start_step": 40,
+      "task_semantic_difficulty": {
+        "block_angle_displacement_deg": 47.52506435915594,
+        "block_position_displacement": 93.43649559199422
+      },
+      "upstream_initial_success": false
+    },
+    {
+      "angle_distance_deg": 0.11532090604305267,
+      "block_position_distance": 28.85963249206543,
+      "difficulty": 28.85963249206543,
+      "episode_id": 4234,
+      "goal_row": 526991,
+      "goal_step": 87,
+      "initial_success": false,
+      "pair_id": 58,
+      "position_distance": 65.49275970458984,
+      "source_pair_index": 112,
+      "start_row": 526966,
+      "start_step": 62,
+      "task_semantic_difficulty": {
+        "block_angle_displacement_deg": 0.11532091394649528,
+        "block_position_displacement": 28.859631932749377
+      },
+      "upstream_initial_success": false
+    },
+    {
+      "angle_distance_deg": 32.717472076416016,
+      "block_position_distance": 90.82011413574219,
+      "difficulty": 90.82011413574219,
+      "episode_id": 4410,
+      "goal_row": 542582,
+      "goal_step": 43,
+      "initial_success": false,
+      "pair_id": 59,
+      "position_distance": 103.80463409423828,
+      "source_pair_index": 116,
+      "start_row": 542557,
+      "start_step": 18,
+      "task_semantic_difficulty": {
+        "block_angle_displacement_deg": 32.71747441215931,
+        "block_position_displacement": 90.82011210801079
+      },
+      "upstream_initial_success": false
+    },
+    {
+      "angle_distance_deg": 1.746417760848999,
+      "block_position_distance": 57.46112060546875,
+      "difficulty": 57.46112060546875,
+      "episode_id": 4557,
+      "goal_row": 562880,
+      "goal_step": 64,
+      "initial_success": false,
+      "pair_id": 60,
+      "position_distance": 184.63229370117188,
+      "source_pair_index": 120,
+      "start_row": 562855,
+      "start_step": 39,
+      "task_semantic_difficulty": {
+        "block_angle_displacement_deg": 1.7464178990697303,
+        "block_position_displacement": 57.46112088366879
+      },
+      "upstream_initial_success": false
+    },
+    {
+      "angle_distance_deg": 13.212034225463867,
+      "block_position_distance": 30.381235122680664,
+      "difficulty": 30.381235122680664,
+      "episode_id": 4560,
+      "goal_row": 563057,
+      "goal_step": 28,
+      "initial_success": false,
+      "pair_id": 61,
+      "position_distance": 185.86907958984375,
+      "source_pair_index": 121,
+      "start_row": 563032,
+      "start_step": 3,
+      "task_semantic_difficulty": {
+        "block_angle_displacement_deg": 13.21203447762211,
+        "block_position_displacement": 30.38123536513353
+      },
+      "upstream_initial_success": false
+    },
+    {
+      "angle_distance_deg": 54.55842971801758,
+      "block_position_distance": 110.94366455078125,
+      "difficulty": 110.94366455078125,
+      "episode_id": 4804,
+      "goal_row": 593809,
+      "goal_step": 78,
+      "initial_success": false,
+      "pair_id": 62,
+      "position_distance": 212.56289672851562,
+      "source_pair_index": 123,
+      "start_row": 593784,
+      "start_step": 53,
+      "task_semantic_difficulty": {
+        "block_angle_displacement_deg": 54.558430939037976,
+        "block_position_displacement": 110.94366480747202
+      },
+      "upstream_initial_success": false
+    },
+    {
+      "angle_distance_deg": 71.5490951538086,
+      "block_position_distance": 130.28175354003906,
+      "difficulty": 130.28175354003906,
+      "episode_id": 5028,
+      "goal_row": 628094,
+      "goal_step": 92,
+      "initial_success": false,
+      "pair_id": 63,
+      "position_distance": 209.77256774902344,
+      "source_pair_index": 128,
+      "start_row": 628069,
+      "start_step": 67,
+      "task_semantic_difficulty": {
+        "block_angle_displacement_deg": 71.54907655704396,
+        "block_position_displacement": 130.28174476238
+      },
+      "upstream_initial_success": false
+    },
+    {
+      "angle_distance_deg": 22.390888214111328,
+      "block_position_distance": 32.68059158325195,
+      "difficulty": 32.68059158325195,
+      "episode_id": 5103,
+      "goal_row": 641659,
+      "goal_step": 41,
+      "initial_success": false,
+      "pair_id": 64,
+      "position_distance": 89.4682388305664,
+      "source_pair_index": 130,
+      "start_row": 641634,
+      "start_step": 16,
+      "task_semantic_difficulty": {
+        "block_angle_displacement_deg": 22.39089006167588,
+        "block_position_displacement": 32.680590788965745
+      },
+      "upstream_initial_success": false
+    },
+    {
+      "angle_distance_deg": 3.3469462394714355,
+      "block_position_distance": 64.25272369384766,
+      "difficulty": 64.25272369384766,
+      "episode_id": 5129,
+      "goal_row": 646657,
+      "goal_step": 151,
+      "initial_success": false,
+      "pair_id": 65,
+      "position_distance": 83.06571960449219,
+      "source_pair_index": 132,
+      "start_row": 646632,
+      "start_step": 126,
+      "task_semantic_difficulty": {
+        "block_angle_displacement_deg": 3.346946372562573,
+        "block_position_displacement": 64.25272046415553
+      },
+      "upstream_initial_success": false
+    },
+    {
+      "angle_distance_deg": 18.89485740661621,
+      "block_position_distance": 44.14639663696289,
+      "difficulty": 44.14639663696289,
+      "episode_id": 5215,
+      "goal_row": 660499,
+      "goal_step": 129,
+      "initial_success": false,
+      "pair_id": 66,
+      "position_distance": 118.89216613769531,
+      "source_pair_index": 136,
+      "start_row": 660474,
+      "start_step": 104,
+      "task_semantic_difficulty": {
+        "block_angle_displacement_deg": 18.894857735004855,
+        "block_position_displacement": 44.14639534887696
+      },
+      "upstream_initial_success": false
+    },
+    {
+      "angle_distance_deg": 24.316913604736328,
+      "block_position_distance": 64.8701400756836,
+      "difficulty": 64.8701400756836,
+      "episode_id": 5223,
+      "goal_row": 661712,
+      "goal_step": 126,
+      "initial_success": false,
+      "pair_id": 67,
+      "position_distance": 76.9458236694336,
+      "source_pair_index": 137,
+      "start_row": 661687,
+      "start_step": 101,
+      "task_semantic_difficulty": {
+        "block_angle_displacement_deg": 24.316914615160265,
+        "block_position_displacement": 64.87013816604167
+      },
+      "upstream_initial_success": false
+    },
+    {
+      "angle_distance_deg": 14.40224552154541,
+      "block_position_distance": 43.883060455322266,
+      "difficulty": 43.883060455322266,
+      "episode_id": 5232,
+      "goal_row": 663057,
+      "goal_step": 103,
+      "initial_success": false,
+      "pair_id": 68,
+      "position_distance": 104.3511734008789,
+      "source_pair_index": 138,
+      "start_row": 663032,
+      "start_step": 78,
+      "task_semantic_difficulty": {
+        "block_angle_displacement_deg": 14.402246166915607,
+        "block_position_displacement": 43.88306225396987
+      },
+      "upstream_initial_success": false
+    },
+    {
+      "angle_distance_deg": 24.39243507385254,
+      "block_position_distance": 73.36663055419922,
+      "difficulty": 73.36663055419922,
+      "episode_id": 5272,
+      "goal_row": 668257,
+      "goal_step": 63,
+      "initial_success": false,
+      "pair_id": 69,
+      "position_distance": 137.68643188476562,
+      "source_pair_index": 140,
+      "start_row": 668232,
+      "start_step": 38,
+      "task_semantic_difficulty": {
+        "block_angle_displacement_deg": 24.392424291353137,
+        "block_position_displacement": 73.36662757301247
+      },
+      "upstream_initial_success": false
+    },
+    {
+      "angle_distance_deg": 48.09064865112305,
+      "block_position_distance": 79.25267028808594,
+      "difficulty": 79.25267028808594,
+      "episode_id": 5360,
+      "goal_row": 678146,
+      "goal_step": 76,
+      "initial_success": false,
+      "pair_id": 70,
+      "position_distance": 109.7119369506836,
+      "source_pair_index": 142,
+      "start_row": 678121,
+      "start_step": 51,
+      "task_semantic_difficulty": {
+        "block_angle_displacement_deg": 48.090651606386096,
+        "block_position_displacement": 79.25266989969197
+      },
+      "upstream_initial_success": false
+    },
+    {
+      "angle_distance_deg": 13.075645446777344,
+      "block_position_distance": 44.6231803894043,
+      "difficulty": 44.6231803894043,
+      "episode_id": 5416,
+      "goal_row": 685917,
+      "goal_step": 119,
+      "initial_success": false,
+      "pair_id": 71,
+      "position_distance": 65.22379302978516,
+      "source_pair_index": 143,
+      "start_row": 685892,
+      "start_step": 94,
+      "task_semantic_difficulty": {
+        "block_angle_displacement_deg": 13.075645845180711,
+        "block_position_displacement": 44.62317979167545
+      },
+      "upstream_initial_success": false
+    },
+    {
+      "angle_distance_deg": 41.87905502319336,
+      "block_position_distance": 57.63185119628906,
+      "difficulty": 57.63185119628906,
+      "episode_id": 5427,
+      "goal_row": 687415,
+      "goal_step": 99,
+      "initial_success": false,
+      "pair_id": 72,
+      "position_distance": 141.58749389648438,
+      "source_pair_index": 144,
+      "start_row": 687390,
+      "start_step": 74,
+      "task_semantic_difficulty": {
+        "block_angle_displacement_deg": 41.87905582139956,
+        "block_position_displacement": 57.63185078328145
+      },
+      "upstream_initial_success": false
+    },
+    {
+      "angle_distance_deg": 26.654020309448242,
+      "block_position_distance": 49.85967254638672,
+      "difficulty": 49.85967254638672,
+      "episode_id": 5440,
+      "goal_row": 689152,
+      "goal_step": 42,
+      "initial_success": false,
+      "pair_id": 73,
+      "position_distance": 131.914794921875,
+      "source_pair_index": 145,
+      "start_row": 689127,
+      "start_step": 17,
+      "task_semantic_difficulty": {
+        "block_angle_displacement_deg": 26.65402093403104,
+        "block_position_displacement": 49.859673361014465
+      },
+      "upstream_initial_success": false
+    },
+    {
+      "angle_distance_deg": 23.032445907592773,
+      "block_position_distance": 46.395023345947266,
+      "difficulty": 46.395023345947266,
+      "episode_id": 5477,
+      "goal_row": 693383,
+      "goal_step": 64,
+      "initial_success": false,
+      "pair_id": 74,
+      "position_distance": 102.18693542480469,
+      "source_pair_index": 146,
+      "start_row": 693358,
+      "start_step": 39,
+      "task_semantic_difficulty": {
+        "block_angle_displacement_deg": 23.032446315320595,
+        "block_position_displacement": 46.395024844094465
+      },
+      "upstream_initial_success": false
+    },
+    {
+      "angle_distance_deg": 5.557041645050049,
+      "block_position_distance": 38.71723175048828,
+      "difficulty": 38.71723175048828,
+      "episode_id": 5553,
+      "goal_row": 700938,
+      "goal_step": 95,
+      "initial_success": false,
+      "pair_id": 75,
+      "position_distance": 136.84303283691406,
+      "source_pair_index": 149,
+      "start_row": 700913,
+      "start_step": 70,
+      "task_semantic_difficulty": {
+        "block_angle_displacement_deg": 5.557041908722375,
+        "block_position_displacement": 38.71722909273286
+      },
+      "upstream_initial_success": false
+    },
+    {
+      "angle_distance_deg": 0.6478639245033264,
+      "block_position_distance": 32.18640899658203,
+      "difficulty": 32.18640899658203,
+      "episode_id": 5638,
+      "goal_row": 706410,
+      "goal_step": 57,
+      "initial_success": false,
+      "pair_id": 76,
+      "position_distance": 110.94791412353516,
+      "source_pair_index": 151,
+      "start_row": 706385,
+      "start_step": 32,
+      "task_semantic_difficulty": {
+        "block_angle_displacement_deg": 0.6478639333432195,
+        "block_position_displacement": 32.18640809643367
+      },
+      "upstream_initial_success": false
+    },
+    {
+      "angle_distance_deg": 33.0565071105957,
+      "block_position_distance": 44.21468734741211,
+      "difficulty": 44.21468734741211,
+      "episode_id": 5787,
+      "goal_row": 722268,
+      "goal_step": 58,
+      "initial_success": false,
+      "pair_id": 77,
+      "position_distance": 114.775390625,
+      "source_pair_index": 157,
+      "start_row": 722243,
+      "start_step": 33,
+      "task_semantic_difficulty": {
+        "block_angle_displacement_deg": 33.056510488406765,
+        "block_position_displacement": 44.214687819342956
+      },
+      "upstream_initial_success": false
+    },
+    {
+      "angle_distance_deg": 60.22574996948242,
+      "block_position_distance": 36.35081100463867,
+      "difficulty": 36.35081100463867,
+      "episode_id": 5809,
+      "goal_row": 724530,
+      "goal_step": 54,
+      "initial_success": false,
+      "pair_id": 78,
+      "position_distance": 116.82915496826172,
+      "source_pair_index": 159,
+      "start_row": 724505,
+      "start_step": 29,
+      "task_semantic_difficulty": {
+        "block_angle_displacement_deg": 60.225753082099374,
+        "block_position_displacement": 36.350810855679825
+      },
+      "upstream_initial_success": false
+    },
+    {
+      "angle_distance_deg": 0.11276641488075256,
+      "block_position_distance": 64.5582046508789,
+      "difficulty": 64.5582046508789,
+      "episode_id": 5858,
+      "goal_row": 729643,
+      "goal_step": 120,
+      "initial_success": false,
+      "pair_id": 79,
+      "position_distance": 87.40013885498047,
+      "source_pair_index": 161,
+      "start_row": 729618,
+      "start_step": 95,
+      "task_semantic_difficulty": {
+        "block_angle_displacement_deg": 0.11276642319691052,
+        "block_position_displacement": 64.55820795678136
+      },
+      "upstream_initial_success": false
+    },
+    {
+      "angle_distance_deg": 13.25863265991211,
+      "block_position_distance": 26.273590087890625,
+      "difficulty": 26.273590087890625,
+      "episode_id": 5948,
+      "goal_row": 742885,
+      "goal_step": 42,
+      "initial_success": false,
+      "pair_id": 80,
+      "position_distance": 152.69139099121094,
+      "source_pair_index": 163,
+      "start_row": 742860,
+      "start_step": 17,
+      "task_semantic_difficulty": {
+        "block_angle_displacement_deg": 13.258633443234523,
+        "block_position_displacement": 26.273590811507713
+      },
+      "upstream_initial_success": false
+    },
+    {
+      "angle_distance_deg": 8.777775764465332,
+      "block_position_distance": 64.32109069824219,
+      "difficulty": 64.32109069824219,
+      "episode_id": 6144,
+      "goal_row": 769604,
+      "goal_step": 46,
+      "initial_success": false,
+      "pair_id": 81,
+      "position_distance": 170.76580810546875,
+      "source_pair_index": 168,
+      "start_row": 769579,
+      "start_step": 21,
+      "task_semantic_difficulty": {
+        "block_angle_displacement_deg": 8.777776630706867,
+        "block_position_displacement": 64.32109496267229
+      },
+      "upstream_initial_success": false
+    },
+    {
+      "angle_distance_deg": 3.1309995651245117,
+      "block_position_distance": 43.09346008300781,
+      "difficulty": 43.09346008300781,
+      "episode_id": 6146,
+      "goal_row": 769976,
+      "goal_step": 78,
+      "initial_success": false,
+      "pair_id": 82,
+      "position_distance": 106.36642456054688,
+      "source_pair_index": 169,
+      "start_row": 769951,
+      "start_step": 53,
+      "task_semantic_difficulty": {
+        "block_angle_displacement_deg": 3.130999696668865,
+        "block_position_displacement": 43.09345801233485
+      },
+      "upstream_initial_success": false
+    },
+    {
+      "angle_distance_deg": 17.816850662231445,
+      "block_position_distance": 49.30341339111328,
+      "difficulty": 49.30341339111328,
+      "episode_id": 6266,
+      "goal_row": 787110,
+      "goal_step": 45,
+      "initial_success": false,
+      "pair_id": 83,
+      "position_distance": 82.6012191772461,
+      "source_pair_index": 171,
+      "start_row": 787085,
+      "start_step": 20,
+      "task_semantic_difficulty": {
+        "block_angle_displacement_deg": 17.816852393396328,
+        "block_position_displacement": 49.30341445874909
+      },
+      "upstream_initial_success": false
+    },
+    {
+      "angle_distance_deg": 9.07764720916748,
+      "block_position_distance": 56.07931900024414,
+      "difficulty": 56.07931900024414,
+      "episode_id": 6445,
+      "goal_row": 802404,
+      "goal_step": 71,
+      "initial_success": false,
+      "pair_id": 84,
+      "position_distance": 144.27822875976562,
+      "source_pair_index": 174,
+      "start_row": 802379,
+      "start_step": 46,
+      "task_semantic_difficulty": {
+        "block_angle_displacement_deg": 9.077647548479813,
+        "block_position_displacement": 56.079319938139825
+      },
+      "upstream_initial_success": false
+    },
+    {
+      "angle_distance_deg": 56.453147888183594,
+      "block_position_distance": 150.593505859375,
+      "difficulty": 150.593505859375,
+      "episode_id": 6609,
+      "goal_row": 824696,
+      "goal_step": 57,
+      "initial_success": false,
+      "pair_id": 85,
+      "position_distance": 193.11256408691406,
+      "source_pair_index": 175,
+      "start_row": 824671,
+      "start_step": 32,
+      "task_semantic_difficulty": {
+        "block_angle_displacement_deg": 56.453149320461605,
+        "block_position_displacement": 150.59350165001428
+      },
+      "upstream_initial_success": false
+    },
+    {
+      "angle_distance_deg": 17.614274978637695,
+      "block_position_distance": 75.65938568115234,
+      "difficulty": 75.65938568115234,
+      "episode_id": 6690,
+      "goal_row": 832672,
+      "goal_step": 56,
+      "initial_success": false,
+      "pair_id": 86,
+      "position_distance": 77.21797180175781,
+      "source_pair_index": 177,
+      "start_row": 832647,
+      "start_step": 31,
+      "task_semantic_difficulty": {
+        "block_angle_displacement_deg": 17.61427581280292,
+        "block_position_displacement": 75.65938516707858
+      },
+      "upstream_initial_success": false
+    },
+    {
+      "angle_distance_deg": 10.0643892288208,
+      "block_position_distance": 84.62785339355469,
+      "difficulty": 84.62785339355469,
+      "episode_id": 6717,
+      "goal_row": 834911,
+      "goal_step": 54,
+      "initial_success": false,
+      "pair_id": 87,
+      "position_distance": 91.49583435058594,
+      "source_pair_index": 178,
+      "start_row": 834886,
+      "start_step": 29,
+      "task_semantic_difficulty": {
+        "block_angle_displacement_deg": 10.064389609945923,
+        "block_position_displacement": 84.62785108610952
+      },
+      "upstream_initial_success": false
+    },
+    {
+      "angle_distance_deg": 13.62200927734375,
+      "block_position_distance": 93.10948944091797,
+      "difficulty": 93.10948944091797,
+      "episode_id": 6770,
+      "goal_row": 839437,
+      "goal_step": 67,
+      "initial_success": false,
+      "pair_id": 88,
+      "position_distance": 133.43557739257812,
+      "source_pair_index": 179,
+      "start_row": 839412,
+      "start_step": 42,
+      "task_semantic_difficulty": {
+        "block_angle_displacement_deg": 13.622009752362956,
+        "block_position_displacement": 93.10949097747579
+      },
+      "upstream_initial_success": false
+    },
+    {
+      "angle_distance_deg": 37.574337005615234,
+      "block_position_distance": 60.72134017944336,
+      "difficulty": 60.72134017944336,
+      "episode_id": 6780,
+      "goal_row": 840617,
+      "goal_step": 37,
+      "initial_success": false,
+      "pair_id": 89,
+      "position_distance": 172.27423095703125,
+      "source_pair_index": 180,
+      "start_row": 840592,
+      "start_step": 12,
+      "task_semantic_difficulty": {
+        "block_angle_displacement_deg": 37.574339114911695,
+        "block_position_displacement": 60.721339100234516
+      },
+      "upstream_initial_success": false
+    },
+    {
+      "angle_distance_deg": 39.97751235961914,
+      "block_position_distance": 81.90643310546875,
+      "difficulty": 81.90643310546875,
+      "episode_id": 6827,
+      "goal_row": 846306,
+      "goal_step": 39,
+      "initial_success": false,
+      "pair_id": 90,
+      "position_distance": 176.06698608398438,
+      "source_pair_index": 183,
+      "start_row": 846281,
+      "start_step": 14,
+      "task_semantic_difficulty": {
+        "block_angle_displacement_deg": 39.977513853624004,
+        "block_position_displacement": 81.9064311373828
+      },
+      "upstream_initial_success": false
+    },
+    {
+      "angle_distance_deg": 43.8367919921875,
+      "block_position_distance": 129.17701721191406,
+      "difficulty": 129.17701721191406,
+      "episode_id": 6842,
+      "goal_row": 848139,
+      "goal_step": 57,
+      "initial_success": false,
+      "pair_id": 91,
+      "position_distance": 193.4727020263672,
+      "source_pair_index": 184,
+      "start_row": 848114,
+      "start_step": 32,
+      "task_semantic_difficulty": {
+        "block_angle_displacement_deg": 43.83679271582923,
+        "block_position_displacement": 129.17702529266109
+      },
+      "upstream_initial_success": false
+    },
+    {
+      "angle_distance_deg": 41.023563385009766,
+      "block_position_distance": 65.23006439208984,
+      "difficulty": 65.23006439208984,
+      "episode_id": 6920,
+      "goal_row": 859044,
+      "goal_step": 68,
+      "initial_success": false,
+      "pair_id": 92,
+      "position_distance": 149.61289978027344,
+      "source_pair_index": 186,
+      "start_row": 859019,
+      "start_step": 43,
+      "task_semantic_difficulty": {
+        "block_angle_displacement_deg": 41.023564155200624,
+        "block_position_displacement": 65.23006560282003
+      },
+      "upstream_initial_success": false
+    },
+    {
+      "angle_distance_deg": 38.52505111694336,
+      "block_position_distance": 88.61970520019531,
+      "difficulty": 88.61970520019531,
+      "episode_id": 6956,
+      "goal_row": 864424,
+      "goal_step": 84,
+      "initial_success": false,
+      "pair_id": 93,
+      "position_distance": 140.6105194091797,
+      "source_pair_index": 187,
+      "start_row": 864399,
+      "start_step": 59,
+      "task_semantic_difficulty": {
+        "block_angle_displacement_deg": 38.52505363605328,
+        "block_position_displacement": 88.61970414164948
+      },
+      "upstream_initial_success": false
+    },
+    {
+      "angle_distance_deg": 38.12482833862305,
+      "block_position_distance": 34.64752960205078,
+      "difficulty": 34.64752960205078,
+      "episode_id": 7048,
+      "goal_row": 874651,
+      "goal_step": 79,
+      "initial_success": false,
+      "pair_id": 94,
+      "position_distance": 89.0979232788086,
+      "source_pair_index": 188,
+      "start_row": 874626,
+      "start_step": 54,
+      "task_semantic_difficulty": {
+        "block_angle_displacement_deg": 38.12481843843996,
+        "block_position_displacement": 34.64753156456576
+      },
+      "upstream_initial_success": false
+    },
+    {
+      "angle_distance_deg": 15.48319149017334,
+      "block_position_distance": 31.63813018798828,
+      "difficulty": 31.63813018798828,
+      "episode_id": 7203,
+      "goal_row": 891755,
+      "goal_step": 66,
+      "initial_success": false,
+      "pair_id": 95,
+      "position_distance": 60.92919921875,
+      "source_pair_index": 189,
+      "start_row": 891730,
+      "start_step": 41,
+      "task_semantic_difficulty": {
+        "block_angle_displacement_deg": 15.483191904961824,
+        "block_position_displacement": 31.638130568692375
+      },
+      "upstream_initial_success": false
+    },
+    {
+      "angle_distance_deg": 39.374794006347656,
+      "block_position_distance": 109.42555236816406,
+      "difficulty": 109.42555236816406,
+      "episode_id": 7508,
+      "goal_row": 931062,
+      "goal_step": 90,
+      "initial_success": false,
+      "pair_id": 96,
+      "position_distance": 132.033935546875,
+      "source_pair_index": 192,
+      "start_row": 931037,
+      "start_step": 65,
+      "task_semantic_difficulty": {
+        "block_angle_displacement_deg": 39.37479747069457,
+        "block_position_displacement": 109.42555177496756
+      },
+      "upstream_initial_success": false
+    },
+    {
+      "angle_distance_deg": 30.094528198242188,
+      "block_position_distance": 82.43785858154297,
+      "difficulty": 82.43785858154297,
+      "episode_id": 7512,
+      "goal_row": 931708,
+      "goal_step": 76,
+      "initial_success": false,
+      "pair_id": 97,
+      "position_distance": 231.11865234375,
+      "source_pair_index": 193,
+      "start_row": 931683,
+      "start_step": 51,
+      "task_semantic_difficulty": {
+        "block_angle_displacement_deg": 30.09453065293903,
+        "block_position_displacement": 82.43785592983797
+      },
+      "upstream_initial_success": false
+    },
+    {
+      "angle_distance_deg": 20.935789108276367,
+      "block_position_distance": 50.14306640625,
+      "difficulty": 50.14306640625,
+      "episode_id": 7527,
+      "goal_row": 934245,
+      "goal_step": 138,
+      "initial_success": false,
+      "pair_id": 98,
+      "position_distance": 112.01947021484375,
+      "source_pair_index": 194,
+      "start_row": 934220,
+      "start_step": 113,
+      "task_semantic_difficulty": {
+        "block_angle_displacement_deg": 20.93578997599095,
+        "block_position_displacement": 50.143065031892576
+      },
+      "upstream_initial_success": false
+    },
+    {
+      "angle_distance_deg": 2.3985984325408936,
+      "block_position_distance": 88.46967315673828,
+      "difficulty": 88.46967315673828,
+      "episode_id": 7650,
+      "goal_row": 950306,
+      "goal_step": 104,
+      "initial_success": false,
+      "pair_id": 99,
+      "position_distance": 126.65663146972656,
+      "source_pair_index": 199,
+      "start_row": 950281,
+      "start_step": 79,
+      "task_semantic_difficulty": {
+        "block_angle_displacement_deg": 2.3985985119683977,
+        "block_position_displacement": 88.46967309674443
+      },
+      "upstream_initial_success": false
+    }
+  ],
+  "policy_seed": 42,
+  "protocol": {
+    "cube_orientation_threshold_deg": 30.0,
+    "cube_position_threshold_m": 0.04,
+    "cube_sustained_steps": null,
+    "cube_symmetry_aware": true,
+    "description": "Episode-balanced in-distribution evaluation with initially solved pairs removed and task-semantic completion criteria applied.",
+    "eval_budget": 50,
+    "exclude_initial_success": true,
+    "goal_offset": 25,
+    "heldout_fraction": 0.2,
+    "min_difficulty": {
+      "pusht": 25.0,
+      "tworoom": 24.0
+    },
+    "name": "moderate",
+    "pusht_angle_threshold_deg": 20.0,
+    "pusht_block_only": true,
+    "pusht_position_threshold": 20.0,
+    "pusht_sustained_steps": null,
+    "reacher_joint_threshold_rad": 0.075,
+    "reacher_sustained_steps": 1,
+    "reacher_wrap_angles": true,
+    "reproduce_upstream_off_by_one": false,
+    "sampling": "episode-balanced",
+    "split": "all",
+    "success_mode": "task-sustained",
+    "sustained_steps": 3,
+    "tworoom_collision_mode": "swept",
+    "tworoom_crossroom_only": true,
+    "tworoom_distance_threshold": 12.0,
+    "tworoom_route_required": true,
+    "tworoom_sustained_steps": null
+  },
+  "release": {
+    "name": "clear-lewm-task-semantic-v0.3",
+    "selection_note": "Frozen from the audited 2026-07-22 task-semantic evaluation.",
+    "source_manifest": "audited-2026-07-22-selection"
+  },
+  "schema_version": "clear-lewm-manifest-v1",
+  "seed": 42,
+  "split": "all",
+  "statistics": {
+    "initial_success_rate_percent": 0.2230410497156895,
+    "num_eval": 100,
+    "pairs_after_filters": 1865441,
+    "pairs_available_to_sampler": 1865441,
+    "pairs_in_selected_split": 1869611,
+    "selected_initial_successes": 0,
+    "unique_episodes": 500,
+    "upstream_initial_success_rate_percent": 0.2230410497156895,
+    "valid_pairs_all_splits": 1869611
+  },
+  "task": "pusht",
+  "task_semantic_filter": {
+    "difficulty_mode": "translation",
+    "eligible_pairs": 248,
+    "name": "pusht-block-only-v1",
+    "rejection_counts": {
+      "difficulty": 70,
+      "initial_success": 182
+    },
+    "selected_pairs": 100,
+    "settings": {
+      "angle_threshold_deg": 20.0,
+      "min_angle_displacement_deg": 20.0,
+      "min_block_displacement": 25.0,
+      "position_threshold": 20.0
+    },
+    "source_manifest": "audited-candidate-pool-n500",
+    "source_pairs": 500,
+    "tier": "moderate"
+  }
+}

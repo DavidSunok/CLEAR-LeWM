@@ -1,4 +1,4 @@
-# CLEAR-LeWM Data Specification v0.2
+# CLEAR-LeWM Data Specification v0.3
 
 This document separates a **logical dataset snapshot** from its physical storage
 format. HDF5, Lance, and a derived memory map are interchangeable only after the

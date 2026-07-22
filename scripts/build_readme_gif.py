@@ -32,13 +32,13 @@ TIERS = (
     ),
     (
         "MODERATE",
-        "Balanced non-trivial goals with stable target attainment",
+        "Balanced non-trivial goals with task-semantic completion",
         "#d97706",
         {
-            "PushT": ("pos < 20; angle < 20 deg", "hold 3 steps"),
-            "Cube": ("pos <= 4 cm; ori <= 30 deg", "hold 3 steps"),
-            "Reacher": ("joint error < 0.10 rad", "hold 2 steps"),
-            "TwoRoom": ("distance < 12", "hold 3 steps"),
+            "PushT": ("block < 20 px; angle < 20 deg", "hold 3; move >= 25"),
+            "Cube": ("pos <= 4 cm; symmetry <= 30 deg", "hold 3 steps"),
+            "Reacher": ("wrapped joint error < 0.075 rad", "first hit"),
+            "TwoRoom": ("cross-room; swept; distance < 12", "valid route; hold 3"),
         },
     ),
     (
@@ -46,10 +46,10 @@ TIERS = (
         "Tighter geometry, sustained success, and larger start-goal change",
         "#15803d",
         {
-            "PushT": ("pos < 15; angle < 15 deg", "hold 3 steps"),
-            "Cube": ("pos <= 3 cm; ori <= 15 deg", "hold 5 steps"),
-            "Reacher": ("joint error < 0.075 rad", "hold 2 steps"),
-            "TwoRoom": ("distance < 8", "hold 5 steps"),
+            "PushT": ("block < 15 px; angle < 15 deg", "hold 5; move >= 50"),
+            "Cube": ("pos <= 3 cm; symmetry <= 15 deg", "hold 5 steps"),
+            "Reacher": ("wrapped joint error < 0.05 rad", "first hit"),
+            "TwoRoom": ("cross-room; swept; distance < 8", "valid route; hold 5"),
         },
     ),
 )

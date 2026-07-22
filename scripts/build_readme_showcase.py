@@ -10,7 +10,7 @@ from PIL import Image, ImageDraw, ImageFont, ImageOps
 
 ROOT = Path(__file__).resolve().parents[1]
 ASSETS = ROOT / "assets"
-RESULTS = ROOT / "results" / "reference"
+RESULTS = ROOT / "results" / "v0.3"
 TASKS = ("pusht", "cube", "reacher", "tworoom")
 TASK_LABELS = {
     "pusht": "PushT",
@@ -38,12 +38,10 @@ def _rounded(draw, box, fill, outline=None, width=1, radius=8):
 
 
 def _task_images() -> dict[str, Image.Image]:
-    frame = Image.open(ASSETS / "protocols.gif").convert("RGB")
-    images = {}
-    for index, task in enumerate(TASKS):
-        x = 17 + index * 210
-        images[task] = frame.crop((x, 86, x + 184, 270))
-    return images
+    return {
+        task: Image.open(ASSETS / "task_gifs" / f"{task}.gif").convert("RGB")
+        for task in TASKS
+    }
 
 
 def _draw_hero() -> None:
@@ -75,8 +73,8 @@ def _draw_hero() -> None:
 
     metrics = (
         ("4", "benchmark tasks"),
-        ("3", "protocol tiers"),
-        ("24", "reference runs"),
+        ("2", "auditable modes"),
+        ("16", "v0.3 audited runs"),
         ("303/303", "official tensors"),
     )
     for index, (value, label) in enumerate(metrics):
@@ -150,14 +148,14 @@ def _draw_results() -> None:
         1082,
         48,
         (
-            ("Official random", "#98A2B3"),
+            ("Moderate random", "#98A2B3"),
             ("Strict random", "#37B5A5"),
             ("Strict LeWM", "#F97066"),
         ),
         text_color="#D0D5DD",
     )
 
-    official_random = [_success_rate(task, "official", "random") for task in TASKS]
+    official_random = [_success_rate(task, "moderate", "random") for task in TASKS]
     strict_random = [_success_rate(task, "strict", "random") for task in TASKS]
     strict_model = [_success_rate(task, "strict", "official-lewm") for task in TASKS]
     images = _task_images()
@@ -201,7 +199,7 @@ def _draw_results() -> None:
             fill="#667085",
             font=_font(38, bold=True),
         )
-        draw.text((x + 29, y + 299), "OFFICIAL", fill="#667085", font=_font(12, True))
+        draw.text((x + 20, y + 299), "MODERATE", fill="#667085", font=_font(12, True))
         draw.line((x + 113, y + 276, x + 220, y + 276), fill="#B7C0CE", width=3)
         draw.polygon(
             ((x + 220, y + 270), (x + 232, y + 276), (x + 220, y + 282)),

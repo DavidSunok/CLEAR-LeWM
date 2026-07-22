@@ -29,16 +29,40 @@ def _criterion_initial_success(diagnostics, task: str, spec: ProtocolSpec):
         position_ok = extras["position_distance_m"] <= spec.cube_position_threshold_m
         if spec.cube_orientation_threshold_deg is None:
             return position_ok
+        orientation_key = (
+            "symmetry_orientation_distance_deg"
+            if spec.cube_symmetry_aware
+            else "orientation_distance_deg"
+        )
         return position_ok & (
-            extras["orientation_distance_deg"] <= spec.cube_orientation_threshold_deg
+            extras[orientation_key] <= spec.cube_orientation_threshold_deg
         )
     if task == "pusht":
-        return (extras["position_distance"] < spec.pusht_position_threshold) & (
+        position_key = (
+            "block_position_distance" if spec.pusht_block_only else "position_distance"
+        )
+        return (extras[position_key] < spec.pusht_position_threshold) & (
             extras["angle_distance_deg"] < spec.pusht_angle_threshold_deg
         )
     if task == "reacher":
-        return extras["max_joint_distance_rad"] < spec.reacher_joint_threshold_rad
+        distance_key = (
+            "max_wrapped_joint_distance_rad"
+            if spec.reacher_wrap_angles
+            else "max_joint_distance_rad"
+        )
+        return extras[distance_key] < spec.reacher_joint_threshold_rad
     return extras["euclidean_distance"] < spec.tworoom_distance_threshold
+
+
+def _criterion_difficulty(diagnostics, task: str, spec: ProtocolSpec):
+    extras = diagnostics.extras
+    if task == "pusht" and not spec.pusht_block_only:
+        return extras["position_distance"]
+    if task == "reacher" and not spec.reacher_wrap_angles:
+        return extras["max_joint_distance_rad"]
+    if task == "tworoom" and not spec.tworoom_route_required:
+        return extras["euclidean_distance"]
+    return diagnostics.difficulty
 
 
 def _json_scalar(value):
@@ -81,6 +105,7 @@ def generate_manifest(
         goals = goals[split_mask]
 
         diagnostics = pair_diagnostics(dataset, task, starts, goals)
+        criterion_difficulty = _criterion_difficulty(diagnostics, task, spec)
         criterion_initial = _criterion_initial_success(diagnostics, task, spec)
         initial_success_rate = float(criterion_initial.mean() * 100.0)
         upstream_initial_success_rate = float(
@@ -89,9 +114,13 @@ def generate_manifest(
         keep = np.ones(len(starts), dtype=bool)
         if spec.exclude_initial_success:
             keep &= ~criterion_initial
+        if task == "tworoom" and spec.tworoom_crossroom_only:
+            keep &= diagnostics.extras["cross_room"]
+            keep &= diagnostics.extras["start_clear"]
+            keep &= diagnostics.extras["goal_clear"]
         min_difficulty = spec.min_difficulty.get(task)
         if min_difficulty is not None:
-            keep &= diagnostics.difficulty >= min_difficulty
+            keep &= criterion_difficulty >= min_difficulty
         filtered_starts = starts[keep]
         sampling_candidates = filtered_starts
         if spec.reproduce_upstream_off_by_one:
@@ -106,6 +135,7 @@ def generate_manifest(
         )
         chosen_goals = chosen + spec.goal_offset
         chosen_diag = pair_diagnostics(dataset, task, chosen, chosen_goals)
+        chosen_difficulty = _criterion_difficulty(chosen_diag, task, spec)
         chosen_initial = _criterion_initial_success(chosen_diag, task, spec)
         ep_key = episode_column(dataset)
 
@@ -118,7 +148,7 @@ def generate_manifest(
                 "goal_step": int(steps[goal_row]),
                 "start_row": int(start_row),
                 "goal_row": int(goal_row),
-                "difficulty": float(chosen_diag.difficulty[index]),
+                "difficulty": float(chosen_difficulty[index]),
                 "initial_success": bool(chosen_initial[index]),
                 "upstream_initial_success": bool(chosen_diag.initial_success[index]),
             }

@@ -78,6 +78,27 @@ def build_parser() -> argparse.ArgumentParser:
     evaluate.add_argument("--n-steps", type=int)
     evaluate.add_argument("--topk", type=int)
     evaluate.add_argument(
+        "--actor-warmstart",
+        choices=("auto", "on", "off"),
+        default="auto",
+        help=(
+            "control action-prior initialization for CEM; use 'off' for "
+            "audited pure-CEM"
+        ),
+    )
+    evaluate.add_argument(
+        "--inference-mode",
+        choices=("cem", "direct"),
+        default="cem",
+        help="run CEM planning or the checkpoint action head without search",
+    )
+    evaluate.add_argument(
+        "--direct-target-mode",
+        choices=("query", "goal", "query_horizon"),
+        default="query",
+        help="latent target supplied to the action head in direct mode",
+    )
+    evaluate.add_argument(
         "--solver-batch-size",
         type=int,
         help="CEM environments per GPU batch; default 1 reproduces upstream",
@@ -162,6 +183,11 @@ def main(argv: list[str] | None = None) -> int:
             num_samples=args.num_samples,
             n_steps=args.n_steps,
             topk=args.topk,
+            actor_warmstart=(
+                None if args.actor_warmstart == "auto" else args.actor_warmstart == "on"
+            ),
+            inference_mode=args.inference_mode,
+            direct_target_mode=args.direct_target_mode,
             random_results=args.random_results,
             video_dir=args.video_dir,
             policy_label=args.policy_label,
@@ -169,9 +195,7 @@ def main(argv: list[str] | None = None) -> int:
             cpu_threads=args.cpu_threads,
             matmul_precision=args.matmul_precision,
             strict_checkpoint=args.strict_checkpoint,
-            allow_modified_stable_worldmodel=(
-                args.allow_modified_stable_worldmodel
-            ),
+            allow_modified_stable_worldmodel=(args.allow_modified_stable_worldmodel),
         )
         print(json.dumps(result["metrics"], indent=2, sort_keys=True))
         return 0

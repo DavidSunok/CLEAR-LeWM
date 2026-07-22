@@ -33,9 +33,13 @@ def test_primary_protocols_have_increasing_rigor():
     assert official.success_mode == "upstream"
     assert moderate.sustained_steps == 3
     assert strict.sustained_steps == 5
-    assert moderate.hold_steps("reacher") == 2
-    assert strict.hold_steps("pusht") == 3
+    assert moderate.hold_steps("reacher") == 1
+    assert strict.hold_steps("pusht") == 5
     assert strict.hold_steps("cube") == 5
+    assert moderate.pusht_block_only
+    assert strict.cube_symmetry_aware
+    assert strict.reacher_wrap_angles
+    assert strict.tworoom_route_required
     assert strict.tworoom_distance_threshold < moderate.tworoom_distance_threshold
     assert strict.reacher_joint_threshold_rad < moderate.reacher_joint_threshold_rad
     assert strict.pusht_position_threshold < moderate.pusht_position_threshold
@@ -49,8 +53,8 @@ def test_manifest_protocol_is_restored_without_registry_drift():
     assert get_protocol("moderate").tworoom_distance_threshold == 12.0
 
     old_strict = get_protocol("strict").to_dict()
-    old_strict.pop("pusht_sustained_steps")
-    assert protocol_from_dict(old_strict).hold_steps("pusht") == 5
+    old_strict["pusht_sustained_steps"] = 3
+    assert protocol_from_dict(old_strict).hold_steps("pusht") == 3
 
 
 def test_task_aliases_and_invalid_values():

@@ -19,8 +19,14 @@ class ProtocolSpec:
     cube_orientation_threshold_deg: float | None = None
     pusht_position_threshold: float = 20.0
     pusht_angle_threshold_deg: float = 20.0
+    pusht_block_only: bool = False
     reacher_joint_threshold_rad: float = 0.05
+    reacher_wrap_angles: bool = False
     tworoom_distance_threshold: float = 16.0
+    tworoom_crossroom_only: bool = False
+    tworoom_route_required: bool = False
+    tworoom_collision_mode: str = "official"
+    cube_symmetry_aware: bool = False
     sustained_steps: int = 1
     pusht_sustained_steps: int | None = None
     cube_sustained_steps: int | None = None
@@ -56,18 +62,25 @@ PROTOCOLS: dict[str, ProtocolSpec] = {
         name="moderate",
         description=(
             "Episode-balanced in-distribution evaluation with initially solved "
-            "pairs removed and task success sustained for three steps."
+            "pairs removed and task-semantic completion criteria applied."
         ),
         sampling="episode-balanced",
         split="all",
         heldout_fraction=0.2,
         exclude_initial_success=True,
         cube_orientation_threshold_deg=30.0,
-        reacher_joint_threshold_rad=0.10,
+        cube_symmetry_aware=True,
+        pusht_block_only=True,
+        reacher_joint_threshold_rad=0.075,
+        reacher_wrap_angles=True,
         tworoom_distance_threshold=12.0,
+        tworoom_crossroom_only=True,
+        tworoom_route_required=True,
+        tworoom_collision_mode="swept",
         sustained_steps=3,
-        reacher_sustained_steps=2,
+        reacher_sustained_steps=1,
         success_mode="task-sustained",
+        min_difficulty={"pusht": 25.0, "tworoom": 24.0},
     ),
     "strict": ProtocolSpec(
         name="strict",
@@ -81,13 +94,18 @@ PROTOCOLS: dict[str, ProtocolSpec] = {
         exclude_initial_success=True,
         cube_position_threshold_m=0.03,
         cube_orientation_threshold_deg=15.0,
+        cube_symmetry_aware=True,
         pusht_position_threshold=15.0,
         pusht_angle_threshold_deg=15.0,
-        reacher_joint_threshold_rad=0.075,
+        pusht_block_only=True,
+        reacher_joint_threshold_rad=0.05,
+        reacher_wrap_angles=True,
         tworoom_distance_threshold=8.0,
+        tworoom_crossroom_only=True,
+        tworoom_route_required=True,
+        tworoom_collision_mode="swept",
         sustained_steps=5,
-        pusht_sustained_steps=3,
-        reacher_sustained_steps=2,
+        reacher_sustained_steps=1,
         success_mode="task-sustained",
         min_difficulty={
             "cube": 0.08,

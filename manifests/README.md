@@ -1,6 +1,16 @@
 # Reference manifests
 
-The primary v0.2 suite contains four tasks, three tiers, 100 pairs per manifest,
+The current task-semantic suite is versioned explicitly:
+
+```text
+manifests/v0.3/{pusht,cube,reacher,tworoom}/{moderate,strict}-seed42-n100.json
+```
+
+These manifests use object-level PushT difficulty, cube rotational symmetry,
+wrapped Reacher joints, and full-clearance cross-room TwoRoom topology. Every
+selected pair is initially unsolved under its embedded rollout predicate.
+
+The archived v0.2 suite contains four tasks, three tiers, 100 pairs per manifest,
 and manifest/policy seed 42:
 
 ```text

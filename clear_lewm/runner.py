@@ -17,7 +17,12 @@ from .manifests import load_manifest
 from .metrics import load_success_trace, summarize_success
 from .protocols import ProtocolSpec, normalize_task, protocol_from_dict
 from .runtime import audit_hydra_targets, configure_import_paths
-from .tasks import quaternion_angle_deg
+from .tasks import (
+    cube_symmetry_angle_deg,
+    quaternion_angle_deg,
+    wrapped_angle_error,
+)
+from .tworoom_runtime import install_topology_success, topology_audit_records
 
 OFFICIAL_DATASETS = {
     "pusht": "pusht_expert_train",
@@ -229,6 +234,7 @@ def _install_cube_success(
     position_threshold_m: float,
     orientation_threshold_deg: float,
     sustained_steps: int,
+    symmetry_aware: bool = False,
 ) -> None:
     def patch_environment(env) -> None:
         original_post_step = env.post_step
@@ -248,9 +254,10 @@ def _install_cube_success(
             target_pos = np.asarray(self._data.mocap_pos[target_id])
             target_quat = np.asarray(self._data.mocap_quat[target_id])
             position_ok = np.linalg.norm(qpos[:3] - target_pos) <= position_threshold_m
-            angle_deg = float(
-                quaternion_angle_deg(qpos[None, 3:7], target_quat[None])[0]
+            angle_function = (
+                cube_symmetry_angle_deg if symmetry_aware else quaternion_angle_deg
             )
+            angle_deg = float(angle_function(qpos[None, 3:7], target_quat[None])[0])
             pose_ok = bool(position_ok and angle_deg <= orientation_threshold_deg)
             self._clear_lewm_hold_count = (
                 self._clear_lewm_hold_count + 1 if pose_ok else 0
@@ -279,7 +286,10 @@ def _install_pusht_success(world, protocol: ProtocolSpec) -> None:
             observation, reward, _, truncated, info = original_step(action)
             state = np.asarray(observation["state"])
             goal = np.asarray(self.goal_state)
-            position_error = float(np.linalg.norm(goal[:4] - state[:4]))
+            position_slice = slice(2, 4) if protocol.pusht_block_only else slice(0, 4)
+            position_error = float(
+                np.linalg.norm(goal[position_slice] - state[position_slice])
+            )
             angle_error = abs(float(goal[4] - state[4]))
             angle_error = min(angle_error, 2.0 * np.pi - angle_error)
             success = (
@@ -351,7 +361,12 @@ def _install_reacher_success(world, protocol: ProtocolSpec) -> None:
             observation, reward, _, truncated, info = original_step(action)
             qpos = np.asarray(self.env.physics.data.qpos)
             target = np.asarray(self.env.task.target_qpos)
-            joint_error = float(np.max(np.abs(qpos - target)))
+            errors = (
+                wrapped_angle_error(qpos, target)
+                if protocol.reacher_wrap_angles
+                else np.abs(qpos - target)
+            )
+            joint_error = float(np.max(errors))
             success = joint_error < protocol.reacher_joint_threshold_rad
             self._clear_lewm_hold_count = (
                 self._clear_lewm_hold_count + 1 if success else 0
@@ -376,11 +391,14 @@ def _install_task_success(world, task: str, protocol: ProtocolSpec) -> None:
             position_threshold_m=protocol.cube_position_threshold_m,
             orientation_threshold_deg=protocol.cube_orientation_threshold_deg,
             sustained_steps=protocol.hold_steps("cube"),
+            symmetry_aware=protocol.cube_symmetry_aware,
         )
     elif task == "pusht":
         _install_pusht_success(world, protocol)
     elif task == "reacher":
         _install_reacher_success(world, protocol)
+    elif protocol.tworoom_route_required:
+        install_topology_success(world, protocol)
     else:
         _install_tworoom_success(world, protocol)
 
@@ -398,6 +416,9 @@ def evaluate_manifest(
     num_samples: int | None = None,
     n_steps: int | None = None,
     topk: int | None = None,
+    actor_warmstart: bool | None = None,
+    inference_mode: str = "cem",
+    direct_target_mode: str = "query",
     random_results: str | Path | None = None,
     video_dir: str | Path | None = None,
     policy_label: str | None = None,
@@ -408,6 +429,12 @@ def evaluate_manifest(
     allow_modified_stable_worldmodel: bool = False,
 ) -> dict:
     run_started = time.perf_counter()
+    if inference_mode not in {"cem", "direct"}:
+        raise ValueError(f"Unknown inference mode: {inference_mode}")
+    if direct_target_mode not in {"query", "goal", "query_horizon"}:
+        raise ValueError(f"Unknown direct target mode: {direct_target_mode}")
+    if inference_mode == "direct" and actor_warmstart is False:
+        raise ValueError("Direct inference requires the checkpoint action head")
     os.environ.setdefault("MUJOCO_GL", "egl")
     manifest_path = Path(manifest_path)
     manifest = load_manifest(manifest_path)
@@ -418,6 +445,18 @@ def evaluate_manifest(
         upstream_dir or Path(__file__).resolve().parents[1] / "third_party" / "le-wm"
     ).resolve()
     runtime_dir = Path(runtime_dir).resolve() if runtime_dir is not None else None
+    direct_solver = None
+    if inference_mode == "direct":
+        if runtime_dir is None:
+            raise ValueError("Direct inference requires --runtime-dir")
+        direct_solver_path = runtime_dir / "prior_only_solver.py"
+        if not direct_solver_path.is_file():
+            raise FileNotFoundError(f"Direct solver is missing: {direct_solver_path}")
+        direct_solver = {
+            "file": direct_solver_path.name,
+            "sha256": file_sha256(direct_solver_path),
+        }
+        os.environ["INVERSE_DIRECT_TARGET_MODE"] = direct_target_mode
     import_paths = configure_import_paths(upstream_dir, runtime_dir)
 
     try:
@@ -469,6 +508,8 @@ def evaluate_manifest(
             cfg.solver.n_steps = int(n_steps)
         if topk is not None:
             cfg.solver.topk = int(topk)
+        if inference_mode == "direct":
+            cfg.solver._target_ = "prior_only_solver.PriorOnlySolver"
         if solver_batch_size is not None:
             if solver_batch_size < 1:
                 raise ValueError("solver_batch_size must be at least 1")
@@ -514,6 +555,8 @@ def evaluate_manifest(
         if column != "action":
             process[f"goal_{column}"] = scaler
 
+    requested_actor_warmstart = actor_warmstart
+    actor_warmstart_effective = None
     if policy == "random":
         attached_policy = swm.policy.RandomPolicy(seed=seed)
         checkpoint = None
@@ -529,6 +572,19 @@ def evaluate_manifest(
         model = model.to("cuda").eval()
         model.requires_grad_(False)
         model.interpolate_pos_encoding = True
+        requested_actor_warmstart = (
+            True
+            if inference_mode == "direct" and actor_warmstart is None
+            else actor_warmstart
+        )
+        if requested_actor_warmstart is not None:
+            if hasattr(model, "set_actor_warmstart"):
+                model.set_actor_warmstart(requested_actor_warmstart)
+            elif hasattr(model, "actor_warmstart"):
+                model.actor_warmstart = bool(requested_actor_warmstart)
+        actor_warmstart_effective = getattr(model, "actor_warmstart", None)
+        if actor_warmstart_effective is not None:
+            actor_warmstart_effective = bool(actor_warmstart_effective)
         batched_criterion_patch = False
         canonical_lewm = (
             type(model).__module__ == "stable_worldmodel.wm.lewm.lewm"
@@ -564,6 +620,7 @@ def evaluate_manifest(
                 position_threshold_m=protocol.cube_position_threshold_m,
                 orientation_threshold_deg=protocol.cube_orientation_threshold_deg,
                 sustained_steps=protocol.hold_steps("cube"),
+                symmetry_aware=protocol.cube_symmetry_aware,
             )
         world.set_policy(attached_policy)
         evaluation_started = time.perf_counter()
@@ -581,6 +638,11 @@ def evaluate_manifest(
         world.close()
 
     episode_successes = np.asarray(raw_metrics["episode_successes"], dtype=bool)
+    topology_records = (
+        topology_audit_records()
+        if task == "tworoom" and protocol.tworoom_route_required
+        else []
+    )
     summary = summarize_success(
         episode_successes,
         random_trace=random_trace,
@@ -605,10 +667,15 @@ def evaluate_manifest(
         "criterion": {
             "cube_position_threshold_m": protocol.cube_position_threshold_m,
             "cube_orientation_threshold_deg": protocol.cube_orientation_threshold_deg,
+            "cube_symmetry_aware": protocol.cube_symmetry_aware,
             "pusht_position_threshold": protocol.pusht_position_threshold,
             "pusht_angle_threshold_deg": protocol.pusht_angle_threshold_deg,
+            "pusht_block_only": protocol.pusht_block_only,
             "reacher_joint_threshold_rad": protocol.reacher_joint_threshold_rad,
+            "reacher_wrap_angles": protocol.reacher_wrap_angles,
             "tworoom_distance_threshold": protocol.tworoom_distance_threshold,
+            "tworoom_route_required": protocol.tworoom_route_required,
+            "tworoom_collision_mode": protocol.tworoom_collision_mode,
             "sustained_steps": protocol.hold_steps(task),
         },
         "solver": {
@@ -617,9 +684,46 @@ def evaluate_manifest(
             "n_steps": OmegaConf.select(cfg, "solver.n_steps"),
             "topk": OmegaConf.select(cfg, "solver.topk"),
         },
+        "inference": {
+            "mode": (
+                "direct"
+                if inference_mode == "direct"
+                else "pure-cem"
+                if actor_warmstart_effective is False
+                else "prior-initialized-cem"
+                if actor_warmstart_effective is True
+                else "cem"
+            ),
+            "actor_warmstart_requested": requested_actor_warmstart,
+            "actor_warmstart_effective": actor_warmstart_effective,
+            "direct_target_mode": (
+                direct_target_mode if inference_mode == "direct" else None
+            ),
+            "solver_target": OmegaConf.select(cfg, "solver._target_"),
+            "direct_solver": direct_solver,
+        },
         "metrics": summary,
         "episode_successes": episode_successes.tolist(),
         "raw_world_metrics": _json_safe(raw_metrics),
+        "topology": (
+            {
+                "episodes": topology_records,
+                "route_valid_episodes": sum(
+                    record["route_valid"] for record in topology_records
+                ),
+                "invalid_routes": sum(
+                    not record["route_valid"] for record in topology_records
+                ),
+                "valid_room_crossings": sum(
+                    record["valid_room_crossings"] for record in topology_records
+                ),
+                "collision_contacts": sum(
+                    record["collision_contacts"] for record in topology_records
+                ),
+            }
+            if topology_records
+            else None
+        ),
         "environment": collect_environment(torch, task=task),
         "versions": {
             "torch": torch.__version__,
@@ -631,9 +735,7 @@ def evaluate_manifest(
             "custom_runtime": import_paths["custom_runtime"],
             "evaluation_seconds": evaluation_seconds,
             "float32_matmul_precision": torch.get_float32_matmul_precision(),
-            "modified_stable_worldmodel_allowed": (
-                allow_modified_stable_worldmodel
-            ),
+            "modified_stable_worldmodel_allowed": (allow_modified_stable_worldmodel),
             "total_before_serialization_seconds": time.perf_counter() - run_started,
         },
     }

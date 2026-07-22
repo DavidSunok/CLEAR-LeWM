@@ -3,4 +3,4 @@
 from .protocols import PRIMARY_PROTOCOLS, PROTOCOLS, ProtocolSpec, get_protocol
 
 __all__ = ["PRIMARY_PROTOCOLS", "PROTOCOLS", "ProtocolSpec", "get_protocol"]
-__version__ = "0.2.3"
+__version__ = "0.3.0"

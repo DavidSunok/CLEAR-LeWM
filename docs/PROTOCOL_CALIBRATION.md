@@ -1,58 +1,61 @@
 # Protocol calibration record
 
-Calibration date: 2026-07-21. All values are SR on fixed 100-pair seed-42
-manifests with official LeWM checkpoints and upstream `300 x 30` CEM. Thresholds
-were accepted only when a converged model remained measurably above a seeded
-random policy.
+Calibration date: 2026-07-22. This document records the v0.3 task-semantic
+protocol. All values use official high-epoch LeWM checkpoints, 100 fixed
+seed-42 pairs, `300 x 30` CEM, and solver batch size 1.
 
-## Final four-task matrix
+## Final v0.3 matrix
 
-| Task | Official model/random | Moderate model/random | Strict model/random |
-|---|---:|---:|---:|
-| PushT | 89% / 7% | 74% / 0% | 42% / 0% |
-| Reacher | 87% / 16% | 63% / 6% | 22% / 0% |
-| TwoRoom | 85% / 30% | 70% / 17% | 41% / 1% |
-| Cube | 62% / 47% | 36% / 3% | 17% / 2% |
+| Task | Moderate model/random | Strict model/random |
+|---|---:|---:|
+| PushT | **93% / 7%** | **79% / 2%** |
+| Cube | **43% / 4%** | **18% / 3%** |
+| Reacher | **90% / 17%** | **36% / 4%** |
+| TwoRoom | **61% / 2%** | **24% / 0%** |
 
-## Reacher temporal calibration
+Official compatibility remains available for historical comparison. It is not
+reinterpreted under v0.3.
 
-Reacher is dynamic: the upstream controller often reaches the target joint
-configuration with non-zero velocity. Requiring three or five consecutive
-steps inside the original 0.05 rad band made both the official checkpoint and
-random policy score 0%, so that criterion was rejected.
+## Why calibration changed
 
-| Criterion | Official LeWM | Random | Decision |
-|---|---:|---:|---|
-| 0.05 rad, first hit | 39% | 5% | diagnostic only |
-| 0.05 rad, hold 2 | 0% | 0% | reject: no model discrimination |
-| 0.075 rad, hold 2 | 29% | 0% | Strict candidate |
-| 0.10 rad, hold 2 | 56% | 5% | Moderate candidate |
-| 0.035 rad, first hit | 14% | 1% | reject: loses temporal robustness |
-| 0.025 rad, first hit | 6% | 1% | reject: weak discrimination |
+### PushT
 
-Final manifests resampled after applying the selected initial-success filters
-and difficulty rule. Their final SR is 63%/6% for Moderate and 22%/0% for
-Strict.
+The v0.2 predicate included final pusher position in both success and pair
+difficulty. v0.3 evaluates only T-block pose and uses block translation. The
+new manifests contain no block-semantic initial successes.
 
-## PushT strict calibration
+### Cube
 
-All candidates below had 0% random SR on strict distance-filtered pairs.
+Target yaw is present in the dataset, but raw quaternion matching rejects
+physically equivalent cube rotations. v0.3 minimizes orientation error over the
+24-element cube rotation group. This changes Moderate from 36% to 43% on the
+same pair IDs.
 
-| Position / angle / hold | Official LeWM | Decision |
-|---|---:|---|
-| 10 / 10 deg / 3 | 10% | reject: over-constrained |
-| 10 / 10 deg / 2 | 30% | reject: weaker temporal rule |
-| 15 / 15 deg / 3 | 49% | select |
-| 20 / 20 deg / 5 | 39% | reject: geometry unchanged |
-| 15 / 15 deg / 5 | 13% | reject: excessive hold |
+### Reacher
 
-After regenerating the final 15/15/hold-3 manifest, official LeWM scores 42%
-and random scores 0%.
+The released task is first-hit. v0.3 preserves that meaning and wraps periodic
+joint angles. A separate Strict `0.05 rad, hold 2` audit yielded 1% model and 0%
+random, demonstrating that stabilization is a materially different claim.
 
-## Interpretation
+### TwoRoom
 
-The tiers are task-calibrated rather than forced to share one hold duration.
-They remain monotonic within each task: Moderate is stricter than Official, and
-Strict tightens Moderate geometry and/or pair difficulty without shortening its
-task hold. Calibration used only official checkpoints and random policies; no
-SICJEPA result influenced threshold selection.
+The released endpoint collision can accept paths through a wall or doorframe.
+On 100 cross-room Strict goals, original dynamics produced 37% endpoint SR;
+only 6% of the unchanged trajectories were route-valid. Swept-disk collision
+produced 24% legal SR with 0 invalid routes. Moderate produced 61% / 2%, also
+with 0 invalid routes.
+
+## Selection guardrails
+
+Thresholds were accepted only when all of the following held:
+
+1. selected pairs were initially unsolved under the rollout predicate;
+2. model and random used the exact same manifest;
+3. the official checkpoint remained measurably above random;
+4. task-equivalent states were not separated by representation artifacts;
+5. physics or topology constraints could not be bypassed by endpoint checks.
+
+The 2026-07-21 v0.2 matrix remains preserved under
+[`results/reference/`](../results/reference/) and its embedded manifest
+protocols remain executable. New reports should use
+[`results/v0.3/`](../results/v0.3/).

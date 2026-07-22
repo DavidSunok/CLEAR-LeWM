@@ -1,4 +1,4 @@
-# CLEAR-LeWM Evaluation Specification v0.2
+# CLEAR-LeWM Evaluation Specification v0.3
 
 This document is normative. A result may use a CLEAR-LeWM tier name only when
 it follows the corresponding rules below.
@@ -40,8 +40,9 @@ This tier is compatibility evidence, not a strict benchmark.
 ### Moderate
 
 `moderate` samples episodes uniformly, removes pairs already successful at the
-start, and requires a task-calibrated stable target predicate. Hold duration is
-two steps for dynamic Reacher and three for the other tasks.
+start, and applies a task-semantic predicate. Temporal requirements are explicit
+per task: object placement uses a short hold, while Reacher preserves its
+released first-hit meaning.
 
 ### Strict
 
@@ -51,15 +52,14 @@ and task-specific hold durations.
 
 | Task | Official | Moderate | Strict |
 |---|---|---|---|
-| PushT | position `<20`, angle `<20 deg`, first hit | same geometry, hold 3 | position `<15`, angle `<15 deg`, hold 3 |
-| Reacher | every joint `<0.05 rad`, first hit | every joint `<0.10 rad`, hold 2 | every joint `<0.075 rad`, hold 2 |
-| TwoRoom | distance `<16`, first hit | distance `<12`, hold 3 | distance `<8`, hold 5 |
-| Cube | position `<=0.04 m`, first hit | position `<=0.04 m`, orientation `<=30 deg`, hold 3 | position `<=0.03 m`, orientation `<=15 deg`, hold 5 |
+| PushT | pusher + block position `<20`, block angle `<20 deg`, first hit | block position `<20`, angle `<20 deg`, hold 3 | block position `<15`, angle `<15 deg`, hold 5 |
+| Reacher | raw joint error `<0.05 rad`, first hit | wrapped joint error `<0.075 rad`, first hit | wrapped joint error `<0.05 rad`, first hit |
+| TwoRoom | distance `<16`, first hit | cross-room, swept route, distance `<12`, hold 3 | cross-room, swept route, distance `<8`, hold 5 |
+| Cube | position `<=0.04 m`, first hit | position `<=0.04 m`, symmetry angle `<=30 deg`, hold 3 | position `<=0.03 m`, symmetry angle `<=15 deg`, hold 5 |
 
-Cube orientation uses quaternion geodesic distance
-`2 * acos(abs(dot(q, q_goal)))`, which is invariant to the equivalent
-representations `q` and `-q`. The criterion tests stable target-pose attainment;
-it is not called grasp success because contact is not required.
+Cube orientation minimizes geodesic distance over the 24 proper rotational
+symmetries of a cube. Reacher uses the shortest periodic angle. TwoRoom erodes
+each visible door by the complete agent radius and requires `route_valid=true`.
 
 ## 3. Pair construction
 
@@ -73,10 +73,13 @@ Strict minimum start-goal displacement is:
 
 | Task | Statistic | Minimum |
 |---|---|---:|
-| PushT | norm over the first four official state coordinates | 50.0 |
-| Reacher | maximum absolute joint-angle difference | 0.25 rad |
-| TwoRoom | Euclidean position distance | 32.0 |
+| PushT | T-block translation | 50.0 px |
+| Reacher | maximum wrapped joint-angle difference | 0.25 rad |
+| TwoRoom | shortest full-clearance door path | 32.0 px |
 | Cube | cube position distance | 0.08 m |
+
+Moderate additionally requires 25 px of PushT block translation and a 24 px
+valid-door path for TwoRoom. Both TwoRoom robust modes use cross-room pairs.
 
 ## 4. Data split is orthogonal
 
@@ -105,6 +108,9 @@ The primary report contains:
 - paired bootstrap interval for method minus random;
 - normalized success `(method - random) / (100 - random)`;
 - per-difficulty-bin SR and individual episode outcomes.
+
+Task diagnostics are reported separately from primary SR: PushT block speed,
+Cube linear/angular speed, Reacher `SR@hold2`, and TwoRoom invalid-route count.
 
 Random normalization does not replace a meaningful success predicate. Report
 all three tiers separately; never mix their numbers in one ranking column.
