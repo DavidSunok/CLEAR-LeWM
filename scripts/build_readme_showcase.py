@@ -81,10 +81,13 @@ def _draw_hero() -> None:
     )
     draw.line((70, 382, 622, 382), fill="#344054", width=2)
     facts = (("4", "TASKS"), ("2", "MODES"), ("16", "RUNS"))
+    fact_value_font = _font(38, True)
+    fact_label_font = _font(15, True)
     for index, (value, label) in enumerate(facts):
         x = 72 + index * 180
-        draw.text((x, 408), value, fill="#80E1D3", font=_font(38, True))
-        draw.text((x + 54, 426), label, fill="#98A2B3", font=_font(15, True))
+        draw.text((x, 408), value, fill="#80E1D3", font=fact_value_font)
+        label_x = x + draw.textlength(value, font=fact_value_font) + 16
+        draw.text((label_x, 426), label, fill="#98A2B3", font=fact_label_font)
     draw.text(
         (72, 524),
         "PAIR-LOCKED  /  RANDOM-CONTROLLED  /  RUNTIME-HASHED",
