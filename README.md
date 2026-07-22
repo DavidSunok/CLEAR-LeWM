@@ -1,18 +1,10 @@
 <p align="center">
-  <a href="assets/showcase/clear_lewm_v03_overview_1080p.mp4">
-    <img src="assets/showcase/clear_lewm_v03_overview_preview.gif" width="100%" alt="CLEAR-LeWM v0.3 four-task evaluation audit across PushT, Cube, Reacher, and TwoRoom">
-  </a>
-</p>
-
-<p align="center">
-  <strong>Click the animation for the 1080p four-task film</strong><br>
-  21 seconds · H.264 · real benchmark RGB · verified rollout traces · legal TwoRoom trajectories
+  <img src="assets/readme_hero.png" width="100%" alt="CLEAR-LeWM task-semantic world-model evaluation">
 </p>
 
 <h1 align="center">CLEAR-LeWM</h1>
 
 <p align="center">
-  <a href="https://github.com/DavidSunok/CLEAR-LeWM/releases"><img src="https://img.shields.io/github/v/release/DavidSunok/CLEAR-LeWM?color=25b6a2&label=release" alt="Release"></a>
   <a href="pyproject.toml"><img src="https://img.shields.io/badge/version-0.3.0-f26b5e" alt="v0.3.0"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-101828" alt="MIT License"></a>
   <a href="tests"><img src="https://img.shields.io/badge/tests-37%20passed-15803d" alt="37 tests passed"></a>
@@ -29,10 +21,23 @@
 <p align="center">
   <a href="#results"><strong>Results</strong></a> ·
   <a href="#two-auditable-modes"><strong>Modes</strong></a> ·
-  <a href="#four-tasks-four-specific-fixes"><strong>Task Audits</strong></a> ·
+  <a href="#01-pusht"><strong>Task Guides</strong></a> ·
   <a href="#quick-start"><strong>Quick Start</strong></a> ·
   <a href="EVALUATION_SPEC.md"><strong>Specification</strong></a> ·
   <a href="checkpoints/official-v0.3.json"><strong>Checkpoints</strong></a>
+</p>
+
+<h2 align="center">Four tasks. Eight judgements. One clear standard.</h2>
+
+<p align="center">
+  <a href="assets/showcase/clear_lewm_v03_overview_1080p.mp4">
+    <img src="assets/showcase/clear_lewm_v03_overview_preview.gif" width="100%" alt="Released or naive task judgements compared directly with CLEAR-LeWM task-semantic judgements">
+  </a>
+</p>
+
+<p align="center">
+  <strong>Left: released or naive rule. Right: CLEAR v0.3 task semantics.</strong><br>
+  1280×720 animated preview. Click it for the 1920×1080 H.264 film. Every task segment uses benchmark RGB, verified metrics, or recorded rollout traces.
 </p>
 
 > [!IMPORTANT]
@@ -109,9 +114,14 @@ in [`EVALUATION_SPEC.md`](EVALUATION_SPEC.md).
 
 </details>
 
-## Four tasks, four specific fixes
+<p align="center">
+  <strong>TASK-BY-TASK EVALUATION</strong><br>
+  Each guide separates the released predicate, the failure mode, the corrected rule, and the paired random floor.
+</p>
 
-### PushT · Success belongs to the object
+## 01. PushT
+
+**Success belongs to the object.**
 
 The released predicate includes both pusher and block position. A correctly
 placed T block can therefore fail because the pusher stops elsewhere; pusher
@@ -125,7 +135,9 @@ translation only.
 **Moderate 93% / 7% · Strict 79% / 2%.**
 [Read the PushT evaluation guide](docs/tasks/PUSHT.md).
 
-### Cube · Equivalent rotations stay equivalent
+## 02. Cube
+
+**Equivalent rotations stay equivalent.**
 
 The dataset samples target yaw, while upstream success checks only position.
 Raw quaternion matching is not a complete repair because a cube has 24 proper
@@ -138,7 +150,9 @@ rotational symmetries. CLEAR minimizes geodesic error over that symmetry group.
 **Moderate 43% / 4% · Strict 18% / 3%.**
 [Read the Cube evaluation guide](docs/tasks/CUBE.md).
 
-### Reacher · Arrival is not stabilization
+## 03. Reacher
+
+**Arrival is not stabilization.**
 
 The released task is first-hit joint matching. CLEAR wraps periodic angles and
 keeps first-hit SR as the primary metric. Multi-step holding and terminal speed
@@ -152,14 +166,16 @@ are reported as separate control diagnostics.
 changes the model/random result to 1% / 0%, which is a different claim.
 [Read the Reacher evaluation guide](docs/tasks/REACHER.md).
 
-### TwoRoom · An endpoint is not a route
+## 04. TwoRoom
+
+**An endpoint is not a route.**
 
 When start and goal are separated by a wall, the complete agent disk must pass
 through a door. CLEAR performs continuous swept-circle collision, erodes each
 door by the agent radius, and requires a valid room crossing before success.
 
 <p align="center">
-  <img src="assets/task_gifs/tworoom.gif" width="900" alt="TwoRoom endpoint collision versus swept-circle route evaluation">
+  <img src="assets/task_gifs/tworoom.gif" width="900" alt="TwoRoom legal swept-circle rollout and route-valid distance trace">
 </p>
 
 **Moderate 61% / 2% · Strict 24% / 0% · invalid routes 0/100.**
@@ -284,13 +300,16 @@ normalization, and RGB tensors pass [`DATA_SPEC.md`](DATA_SPEC.md).
 | [`docs/tasks/`](docs/tasks) | task-by-task evaluation guides |
 | [`checkpoints/`](checkpoints) | official revision and hash registry |
 | [`assets/showcase/`](assets/showcase) | 1080p overview and topology films |
-| [`scripts/`](scripts) | checkpoint, FAST, environment, and media builders |
+| [`scripts/build_v03_media.py`](scripts/build_v03_media.py) | synchronized task GIF and 1080p comparison-film generator |
+| [`assets/media_sources/`](assets/media_sources) | recorded comparison traces and result summaries used by the media builder |
+| [`scripts/`](scripts) | checkpoint, FAST, environment, and remaining utility scripts |
 | [`third_party/le-wm/`](third_party/le-wm) | pinned upstream LeWM submodule |
 
 ## Scope and attribution
 
 LeWorldModel remains authored and licensed by its upstream authors. CLEAR-LeWM
 contains no private SICJEPA code, private checkpoints, datasets, or unpublished
-training logs. Public dataset RGB frames are used only as benchmark context;
-quantitative media traces are identified separately. See [`NOTICE.md`](NOTICE.md)
-and [`docs/AUDIT_FINDINGS.md`](docs/AUDIT_FINDINGS.md).
+training logs. PushT, Cube, and Reacher media sample RGB and metrics from the
+same canonical episode indices; TwoRoom uses recorded rollout trajectories.
+See [`NOTICE.md`](NOTICE.md) and
+[`docs/AUDIT_FINDINGS.md`](docs/AUDIT_FINDINGS.md).

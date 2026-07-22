@@ -38,10 +38,12 @@ def _rounded(draw, box, fill, outline=None, width=1, radius=8):
 
 
 def _task_images() -> dict[str, Image.Image]:
-    return {
-        task: Image.open(ASSETS / "task_gifs" / f"{task}.gif").convert("RGB")
-        for task in TASKS
-    }
+    images = {}
+    for task in TASKS:
+        image = Image.open(ASSETS / "task_gifs" / f"{task}.gif")
+        image.seek(image.n_frames // 2)
+        images[task] = image.convert("RGB")
+    return images
 
 
 def _draw_hero() -> None:
@@ -52,23 +54,29 @@ def _draw_hero() -> None:
     draw.rectangle((14, 0, 20, height), fill="#F97066")
 
     draw.text(
-        (74, 58),
-        "AUDITABLE ROBOT WORLD-MODEL EVALUATION",
+        (72, 52),
+        "TASK-SEMANTIC WORLD-MODEL EVALUATION",
         fill="#80E1D3",
-        font=_font(22, bold=True),
+        font=_font(20, bold=True),
     )
-    draw.text((70, 102), "CLEAR-LeWM", fill="#FFFFFF", font=_font(78, bold=True))
+    draw.text((68, 94), "CLEAR-LeWM", fill="#FFFFFF", font=_font(72, bold=True))
     draw.text(
-        (74, 203),
-        "A benchmark is only as credible as what it controls.",
-        fill="#D0D5DD",
-        font=_font(27),
-    )
-    draw.text(
-        (74, 250),
-        "Fixed pairs. Explicit completion. Verifiable runtimes.",
+        (72, 198),
+        "SUCCESS SHOULD MEAN",
         fill="#FFFFFF",
-        font=_font(29, bold=True),
+        font=_font(38, bold=True),
+    )
+    draw.text(
+        (72, 246),
+        "COMPLETION.",
+        fill="#F4C95D",
+        font=_font(38, bold=True),
+    )
+    draw.text(
+        (74, 314),
+        "Fixed goals. Explicit task rules. Verifiable runtimes.",
+        fill="#C8D0DC",
+        font=_font(22),
     )
 
     metrics = (
@@ -78,35 +86,51 @@ def _draw_hero() -> None:
         ("303/303", "official tensors"),
     )
     for index, (value, label) in enumerate(metrics):
-        x = 74 + index * 214
+        x = 74 + index * 196
         if index:
-            draw.line((x - 22, 358, x - 22, 442), fill="#344054", width=2)
-        value_font = _font(36 if index == 3 else 43, bold=True)
-        draw.text((x, 354), value, fill="#F4C95D", font=value_font)
-        draw.text((x, 410), label, fill="#98A2B3", font=_font(16))
+            draw.line((x - 18, 394, x - 18, 472), fill="#344054", width=2)
+        value_font = _font(31 if index == 3 else 38, bold=True)
+        draw.text((x, 390), value, fill="#80E1D3", font=value_font)
+        draw.text((x, 442), label, fill="#98A2B3", font=_font(14))
 
     draw.text(
-        (74, 517),
+        (74, 532),
         "PAIR-LOCKED  /  RANDOM-CONTROLLED  /  RUNTIME-HASHED",
         fill="#80E1D3",
-        font=_font(18, bold=True),
+        font=_font(16, bold=True),
     )
 
     images = _task_images()
-    card_width, card_height = 262, 238
+    card_width, card_height = 300, 240
+    domains = {
+        "pusht": "OBJECT",
+        "cube": "SYMMETRY",
+        "reacher": "PERIODICITY",
+        "tworoom": "TOPOLOGY",
+    }
     for index, task in enumerate(TASKS):
         col, row = index % 2, index // 2
-        x = 1015 + col * 280
-        y = 48 + row * 254
+        x = 930 + col * 322
+        y = 46 + row * 258
         _rounded(draw, (x, y, x + card_width, y + card_height), "#FFFFFF", radius=6)
-        draw.rectangle((x, y, x + 7, y + card_height), fill=TASK_COLORS[task])
-        image = images[task].resize((226, 184))
-        canvas.paste(image, (x + 22, y + 38))
+        draw.rectangle((x, y, x + card_width, y + 7), fill=TASK_COLORS[task])
+        observation = images[task].crop((50, 132, 378, 460))
+        observation = ImageOps.fit(
+            observation, (276, 168), method=Image.Resampling.LANCZOS
+        )
+        canvas.paste(observation, (x + 12, y + 18))
         draw.text(
-            (x + 22, y + 9),
+            (x + 14, y + 198),
             TASK_LABELS[task],
             fill="#101828",
-            font=_font(18, bold=True),
+            font=_font(19, bold=True),
+        )
+        label_width = draw.textlength(domains[task], font=_font(12, True))
+        draw.text(
+            (x + card_width - label_width - 14, y + 204),
+            domains[task],
+            fill=TASK_COLORS[task],
+            font=_font(12, bold=True),
         )
 
     output = ASSETS / "readme_hero.png"
