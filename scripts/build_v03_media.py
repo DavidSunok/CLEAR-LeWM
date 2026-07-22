@@ -92,14 +92,14 @@ def font(size: int, bold: bool = False) -> ImageFont.FreeTypeFont:
 
 
 F = {
-    "task": font(38, True),
-    "title": font(28, True),
-    "h2": font(23, True),
-    "body": font(18),
-    "body_bold": font(18, True),
-    "small": font(14),
-    "small_bold": font(14, True),
-    "metric": font(28, True),
+    "task": font(42, True),
+    "title": font(31, True),
+    "h2": font(26, True),
+    "body": font(21),
+    "body_bold": font(21, True),
+    "small": font(16),
+    "small_bold": font(16, True),
+    "metric": font(31, True),
 }
 
 
@@ -498,12 +498,6 @@ def task_frame(
 
     steps = trace["steps"] if task != "tworoom" else None
     if task == "pusht":
-        released = np.asarray(
-            [
-                max(s["combined_position_error"] / 20, s["block_angle_error_deg"] / 20)
-                for s in steps
-            ]
-        )
         corrected = np.asarray(
             [
                 max(s["block_position_error"] / 20, s["block_angle_error_deg"] / 20)
@@ -513,22 +507,13 @@ def task_frame(
         line_chart(
             draw,
             (490, 324, 1160, 502),
-            [
-                ("Pusher + block", "#9199A4", released),
-                ("Block pose", COLORS[task], corrected),
-            ],
+            [("CLEAR block-pose error", COLORS[task], corrected)],
             progress,
-            max(2.8, float(np.percentile(released, 95))),
+            max(2.8, float(np.percentile(corrected, 95))),
             (1.0, RED, "success < 1"),
             "Normalized error",
         )
     elif task == "cube":
-        raw = np.asarray(
-            [
-                max(s["position_error_m"] / 0.04, s["raw_orientation_error_deg"] / 30)
-                for s in steps
-            ]
-        )
         symmetric = np.asarray(
             [
                 max(
@@ -541,12 +526,9 @@ def task_frame(
         line_chart(
             draw,
             (490, 324, 1160, 502),
-            [
-                ("Raw rotation", "#7D8794", raw),
-                ("24-fold pose", COLORS[task], symmetric),
-            ],
+            [("CLEAR 24-fold pose error", COLORS[task], symmetric)],
             progress,
-            max(3.6, float(np.percentile(raw, 95))),
+            max(3.6, float(np.percentile(symmetric, 95))),
             (1.0, RED, "success <= 1"),
             "Normalized pose error",
         )
@@ -739,17 +721,6 @@ def _metric_block(
     )
 
 
-def _interpolated_value(
-    steps: list[dict], key: str, progress: float, end_index: int | None = None
-) -> float:
-    final = len(steps) - 1 if end_index is None else min(end_index, len(steps) - 1)
-    location = np.clip(progress, 0.0, 1.0) * final
-    lower = int(np.floor(location))
-    upper = min(lower + 1, final)
-    fraction = location - lower
-    return float(steps[lower][key] * (1 - fraction) + steps[upper][key] * fraction)
-
-
 def _angle_dial(
     draw,
     box,
@@ -847,46 +818,22 @@ def comparison_frame(
         display_end = len(steps) - 1 if comparison_end is None else comparison_end
         step_index = int(round(progress * display_end))
         if task == "pusht":
-            angle = _interpolated_value(
-                steps,
-                "block_angle_error_deg",
-                progress,
-                comparison_end,
-            )
+            current_step = steps[step_index]
+            angle = current_step["block_angle_error_deg"]
             old_value = max(
-                _interpolated_value(
-                    steps,
-                    "combined_position_error",
-                    progress,
-                    comparison_end,
-                )
-                / 20,
+                current_step["combined_position_error"] / 20,
                 angle / 20,
             )
             new_value = max(
-                _interpolated_value(
-                    steps,
-                    "block_position_error",
-                    progress,
-                    comparison_end,
-                )
-                / 20,
+                current_step["block_position_error"] / 20,
                 angle / 20,
             )
-            pusher_term = (
-                _interpolated_value(
-                    steps,
-                    "agent_position_error",
-                    progress,
-                    comparison_end,
-                )
-                / 20
-            )
+            pusher_term = current_step["agent_position_error"] / 20
             old_pass, new_pass = old_value < 1, new_value < 1
             _metric_block(
                 draw,
                 (520, 314),
-                f"NORMALIZED ERROR  ·  STEP {step_index:03d}",
+                f"OLD RULE ERROR  ·  STEP {step_index:03d}",
                 f"{old_value:.2f}",
                 f"Pusher {pusher_term:.2f}; block {new_value:.2f}; both included.",
                 RED,
@@ -894,7 +841,7 @@ def comparison_frame(
             _metric_block(
                 draw,
                 (1456, 314),
-                f"NORMALIZED ERROR  ·  STEP {step_index:03d}",
+                f"CLEAR RULE ERROR  ·  STEP {step_index:03d}",
                 f"{new_value:.2f}",
                 f"Block {new_value:.2f}; pusher excluded from this rule.",
                 GREEN,
@@ -902,15 +849,9 @@ def comparison_frame(
             old_detail = "The pusher keeps changing this score after the block settles."
             new_detail = "Only block position and angle determine this output."
         else:
-            position = _interpolated_value(
-                steps, "position_error_m", progress, comparison_end
-            )
-            symmetry = _interpolated_value(
-                steps,
-                "symmetry_orientation_error_deg",
-                progress,
-                comparison_end,
-            )
+            current_step = steps[step_index]
+            position = current_step["position_error_m"]
+            symmetry = current_step["symmetry_orientation_error_deg"]
             old_value = position * 100
             new_value = max(position / 0.04, symmetry / 30)
             old_pass, new_pass = old_value <= 4, new_value <= 1
@@ -956,16 +897,12 @@ def comparison_frame(
         image.paste(thumbnail, (88, 282))
         image.paste(thumbnail, (1024, 282))
         steps = source[task]["steps"]
-        raw_error = np.degrees(
-            _interpolated_value(steps, "joint_1_raw_error_rad", progress)
-        )
-        wrapped_error = np.degrees(
-            _interpolated_value(steps, "joint_1_wrapped_error_rad", progress)
-        )
-        joint_current = _interpolated_value(
-            steps, "joint_1_current_angle_deg", progress
-        )
-        joint_target = _interpolated_value(steps, "joint_1_target_angle_deg", progress)
+        step_index = int(round(progress * (len(steps) - 1)))
+        current_step = steps[step_index]
+        raw_error = np.degrees(current_step["joint_1_raw_error_rad"])
+        wrapped_error = np.degrees(current_step["joint_1_wrapped_error_rad"])
+        joint_current = current_step["joint_1_current_angle_deg"]
+        joint_target = current_step["joint_1_target_angle_deg"]
         _angle_dial(
             draw,
             (260, 270, 670, 700),
@@ -1215,7 +1152,7 @@ def build_overview(
             if task != "tworoom":
                 frames = rgb_sequences[task]
                 end_index = source[task].get("comparison_end_index", len(frames) - 1)
-                frame_index = min(int(progress * end_index), len(frames) - 1)
+                frame_index = min(int(round(progress * end_index)), len(frames) - 1)
                 rgb = frames[frame_index]
             emit(comparison_frame(task, rgb, source, comparison, progress))
     final = summary_frame(results)

@@ -65,9 +65,9 @@ def test_primary_reference_results_match_manifests_and_provenance():
 
 def test_v03_task_semantic_results_match_versioned_manifests():
     root = Path(__file__).resolve().parents[1]
-    registry = json.loads(
-        (root / "checkpoints" / "official-v0.3.json").read_text()
-    )["models"]
+    registry = json.loads((root / "checkpoints" / "official-v0.3.json").read_text())[
+        "models"
+    ]
     for task, tiers in EXPECTED_V03_SR.items():
         for tier, (model_sr, random_sr) in tiers.items():
             manifest_path = (

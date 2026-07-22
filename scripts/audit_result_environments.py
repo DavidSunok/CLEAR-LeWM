@@ -61,12 +61,8 @@ def main() -> int:
             missing.append(str(path))
             continue
         task = payload.get("task", "unknown")
-        groups["physics"][task][environment["physics_fingerprint"]].append(
-            str(path)
-        )
-        groups["numerics"][task][environment["numerics_fingerprint"]].append(
-            str(path)
-        )
+        groups["physics"][task][environment["physics_fingerprint"]].append(str(path))
+        groups["numerics"][task][environment["numerics_fingerprint"]].append(str(path))
         execution_fingerprint = environment.get("execution_fingerprint")
         if execution_fingerprint is None:
             missing_execution.append(str(path))

@@ -50,87 +50,112 @@ def _draw_hero() -> None:
     width, height = 1600, 600
     canvas = Image.new("RGB", (width, height), "#0B1220")
     draw = ImageDraw.Draw(canvas)
-    draw.rectangle((0, 0, 14, height), fill="#37B5A5")
-    draw.rectangle((14, 0, 20, height), fill="#F97066")
+    draw.rectangle((0, 0, 664, height), fill="#25143D")
+    draw.rectangle((0, 0, 15, height), fill="#B45CFF")
+    draw.rectangle((15, 0, 21, height), fill="#37B5A5")
 
     draw.text(
-        (72, 52),
-        "TASK-SEMANTIC WORLD-MODEL EVALUATION",
-        fill="#80E1D3",
-        font=_font(20, bold=True),
+        (70, 54),
+        "AUDITABLE WORLD-MODEL EVALUATION",
+        fill="#C995FF",
+        font=_font(19, bold=True),
     )
-    draw.text((68, 94), "CLEAR-LeWM", fill="#FFFFFF", font=_font(72, bold=True))
+    draw.text((66, 96), "CLEAR-LeWM", fill="#FFFFFF", font=_font(66, bold=True))
     draw.text(
-        (72, 198),
-        "SUCCESS SHOULD MEAN",
+        (70, 198),
+        "TASK COMPLETION,",
         fill="#FFFFFF",
-        font=_font(38, bold=True),
+        font=_font(37, bold=True),
     )
     draw.text(
-        (72, 246),
-        "COMPLETION.",
-        fill="#F4C95D",
-        font=_font(38, bold=True),
+        (70, 246),
+        "NOT PROXY SUCCESS.",
+        fill="#C995FF",
+        font=_font(37, bold=True),
     )
     draw.text(
-        (74, 314),
-        "Fixed goals. Explicit task rules. Verifiable runtimes.",
+        (72, 320),
+        "Fixed goals. Explicit rules. Paired random floors.",
         fill="#C8D0DC",
-        font=_font(22),
+        font=_font(20),
     )
-
-    metrics = (
-        ("4", "benchmark tasks"),
-        ("2", "auditable modes"),
-        ("16", "v0.3 audited runs"),
-        ("303/303", "official tensors"),
-    )
-    for index, (value, label) in enumerate(metrics):
-        x = 74 + index * 196
-        if index:
-            draw.line((x - 18, 394, x - 18, 472), fill="#344054", width=2)
-        value_font = _font(31 if index == 3 else 38, bold=True)
-        draw.text((x, 390), value, fill="#80E1D3", font=value_font)
-        draw.text((x, 442), label, fill="#98A2B3", font=_font(14))
-
+    draw.line((70, 382, 622, 382), fill="#344054", width=2)
+    facts = (("4", "TASKS"), ("2", "MODES"), ("16", "RUNS"))
+    for index, (value, label) in enumerate(facts):
+        x = 72 + index * 180
+        draw.text((x, 408), value, fill="#80E1D3", font=_font(38, True))
+        draw.text((x + 54, 426), label, fill="#98A2B3", font=_font(15, True))
     draw.text(
-        (74, 532),
+        (72, 524),
         "PAIR-LOCKED  /  RANDOM-CONTROLLED  /  RUNTIME-HASHED",
         fill="#80E1D3",
-        font=_font(16, bold=True),
+        font=_font(15, bold=True),
     )
 
-    images = _task_images()
-    card_width, card_height = 300, 240
-    domains = {
-        "pusht": "OBJECT",
-        "cube": "SYMMETRY",
-        "reacher": "PERIODICITY",
-        "tworoom": "TOPOLOGY",
+    draw.line((664, 46, 664, 554), fill="#344054", width=2)
+    draw.text(
+        (712, 48),
+        "FROM LOOSE SIGNALS TO TASK CONTRACTS",
+        fill="#FFFFFF",
+        font=_font(25, True),
+    )
+    headers = (
+        (712, "TASK"),
+        (890, "RELEASED SIGNAL"),
+        (1160, "CLEAR CONTRACT"),
+        (1432, "STRICT SR"),
+    )
+    for x, label in headers:
+        draw.text((x, 94), label, fill="#98A2B3", font=_font(13, True))
+
+    old_rules = {
+        "pusht": "Pusher + block",
+        "cube": "Position only",
+        "reacher": "Linear angles",
+        "tworoom": "Endpoint only",
+    }
+    clear_rules = {
+        "pusht": "Object pose",
+        "cube": "24-fold pose",
+        "reacher": "Wrapped joints",
+        "tworoom": "Legal route",
     }
     for index, task in enumerate(TASKS):
-        col, row = index % 2, index // 2
-        x = 930 + col * 322
-        y = 46 + row * 258
-        _rounded(draw, (x, y, x + card_width, y + card_height), "#FFFFFF", radius=6)
-        draw.rectangle((x, y, x + card_width, y + 7), fill=TASK_COLORS[task])
-        observation = images[task].crop((50, 132, 378, 460))
-        observation = ImageOps.fit(
-            observation, (276, 168), method=Image.Resampling.LANCZOS
-        )
-        canvas.paste(observation, (x + 12, y + 18))
+        y = 128 + index * 102
+        draw.rectangle((700, y, 1560, y + 82), fill="#111B2D")
+        draw.rectangle((700, y, 708, y + 82), fill=TASK_COLORS[task])
         draw.text(
-            (x + 14, y + 198),
+            (728, y + 24),
             TASK_LABELS[task],
-            fill="#101828",
-            font=_font(19, bold=True),
+            fill="#FFFFFF",
+            font=_font(23, True),
         )
-        label_width = draw.textlength(domains[task], font=_font(12, True))
         draw.text(
-            (x + card_width - label_width - 14, y + 204),
-            domains[task],
+            (890, y + 28),
+            old_rules[task],
+            fill="#AAB3C1",
+            font=_font(18, True),
+        )
+        draw.text((1107, y + 25), "→", fill="#FFFFFF", font=_font(24, True))
+        draw.text(
+            (1160, y + 28),
+            clear_rules[task],
             fill=TASK_COLORS[task],
-            font=_font(12, bold=True),
+            font=_font(19, True),
+        )
+        model = _success_rate(task, "strict", "official-lewm")
+        random = _success_rate(task, "strict", "random")
+        draw.text(
+            (1432, y + 18),
+            f"{model:.0f} / {random:.0f}",
+            fill="#FFFFFF",
+            font=_font(24, True),
+        )
+        draw.text(
+            (1434, y + 52),
+            "model / random",
+            fill="#98A2B3",
+            font=_font(12, True),
         )
 
     output = ASSETS / "readme_hero.png"

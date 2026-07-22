@@ -66,24 +66,31 @@ task guides. v0.2 artifacts remain executable and are not silently rewritten.
 
 ## Results
 
-Official high-epoch LeWM checkpoints on 100 fixed pairs per cell, seed 42,
-`300 x 30` CEM, solver batch 1. Each model is compared with deterministic
-random actions on the exact same manifest.
+Official high-epoch LeWM checkpoints on 100 deterministic pairs per protocol,
+seed 42, `300 x 30` CEM, solver batch 1. Within every cell, the model and
+random policy use the exact same manifest.
 
-| Task | Moderate model / random | Strict model / random | Strict excess |
-|---|---:|---:|---:|
-| **PushT** | **93% / 7%** | **79% / 2%** | **+77 pp** |
-| **Cube** | **43% / 4%** | **18% / 3%** | **+15 pp** |
-| **Reacher** | **90% / 17%** | **36% / 4%** | **+32 pp** |
-| **TwoRoom** | **61% / 2%** | **24% / 0%** | **+24 pp** |
+| Task | Historical Official model / random | Moderate model / random | Strict model / random | Strict excess |
+|---|---:|---:|---:|---:|
+| **PushT** | **89% / 7%** | **93% / 7%** | **79% / 2%** | **+77 pp** |
+| **Cube** | **62% / 47%** | **43% / 4%** | **18% / 3%** | **+15 pp** |
+| **Reacher** | **87% / 16%** | **90% / 17%** | **36% / 4%** | **+32 pp** |
+| **TwoRoom** | **85% / 30%** | **61% / 2%** | **24% / 0%** | **+24 pp** |
+
+Historical Official preserves upstream row-uniform sampling, initially solved
+pairs, first-hit predicates, and the released sampling range. Its random floor
+is therefore diagnostic; it is not a matched replacement for Moderate or
+Strict.
 
 TwoRoom is the strongest integrity check. On the same 100 Strict cross-room
 goals, original endpoint dynamics reported 37%; only 6% of those unchanged
 trajectories were route-valid. Swept collision recovers **24% legal SR** with
 **0/100 invalid routes**.
 
-All manifests and JSON outputs are versioned under
-[`manifests/v0.3/`](manifests/v0.3/) and [`results/v0.3/`](results/v0.3/).
+Historical Official outputs are under
+[`results/reference/`](results/reference/); v0.3 manifests and robust outputs
+are versioned under [`manifests/v0.3/`](manifests/v0.3/) and
+[`results/v0.3/`](results/v0.3/).
 Calibration decisions are recorded in
 [`docs/PROTOCOL_CALIBRATION.md`](docs/PROTOCOL_CALIBRATION.md).
 
@@ -132,6 +139,13 @@ translation only.
   <img src="assets/task_gifs/pusht.gif" width="900" alt="PushT object-pose evaluation and rollout trace">
 </p>
 
+| Audit question | PushT definition |
+|---|---|
+| **Evaluation target** | Place the T block at the goal pose; the pusher endpoint is irrelevant. |
+| **Released issue** | Combined pusher-plus-block position can reject a correct object placement and lets pusher travel masquerade as task difficulty. |
+| **CLEAR correction** | Evaluate block position and angle only; define pair difficulty from block displacement. |
+| **What this prevents** | False failures caused by where the pusher stops, and inflated capability from pusher-only motion. |
+
 **Moderate 93% / 7% · Strict 79% / 2%.**
 [Read the PushT evaluation guide](docs/tasks/PUSHT.md).
 
@@ -146,6 +160,13 @@ rotational symmetries. CLEAR minimizes geodesic error over that symmetry group.
 <p align="center">
   <img src="assets/task_gifs/cube.gif" width="900" alt="Cube symmetry-aware evaluation and rollout trace">
 </p>
+
+| Audit question | Cube definition |
+|---|---|
+| **Evaluation target** | Match cube position and physical orientation at the target. |
+| **Released issue** | Position-only success credits an unfinished pose; raw quaternion matching can reject physically equivalent cube rotations. |
+| **CLEAR correction** | Require position accuracy and minimize geodesic rotation error over all 24 proper cube symmetries. |
+| **What this prevents** | Both loose position-only false positives and symmetry-blind false negatives. |
 
 **Moderate 43% / 4% · Strict 18% / 3%.**
 [Read the Cube evaluation guide](docs/tasks/CUBE.md).
@@ -162,6 +183,13 @@ are reported as separate control diagnostics.
   <img src="assets/task_gifs/reacher.gif" width="900" alt="Reacher wrapped-angle first-hit evaluation">
 </p>
 
+| Audit question | Reacher definition |
+|---|---|
+| **Evaluation target** | Reach the goal joint configuration under periodic joint geometry. |
+| **Released issue** | Linear joint subtraction is distorted at the periodic boundary, while first-hit success alone does not establish stabilization. |
+| **CLEAR correction** | Use wrapped first-hit joint error as SR; report holding and terminal speed as separate diagnostics. |
+| **What this prevents** | Coordinate-seam errors and claims that silently conflate arrival with stable control. |
+
 **Moderate 90% / 17% · Strict 36% / 4%.** Requiring Strict hold-2 instead
 changes the model/random result to 1% / 0%, which is a different claim.
 [Read the Reacher evaluation guide](docs/tasks/REACHER.md).
@@ -177,6 +205,13 @@ door by the agent radius, and requires a valid room crossing before success.
 <p align="center">
   <img src="assets/task_gifs/tworoom.gif" width="900" alt="TwoRoom legal swept-circle rollout and route-valid distance trace">
 </p>
+
+| Audit question | TwoRoom definition |
+|---|---|
+| **Evaluation target** | Reach a cross-room goal through the door with the complete agent disk. |
+| **Released issue** | Endpoint proximity and endpoint-only collision can credit trajectories that pass through a wall or an unusable door edge. |
+| **CLEAR correction** | Apply swept-circle collision, full-radius door clearance, and a mandatory valid-route gate. |
+| **What this prevents** | Success credit for physically impossible wall penetration or invalid room crossings. |
 
 **Moderate 61% / 2% · Strict 24% / 0% · invalid routes 0/100.**
 [Read the TwoRoom guide](docs/tasks/TWOROOM.md) or
