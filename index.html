@@ -1,0 +1,374 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#101a19">
+    <meta
+      name="description"
+      content="CLEAR-LeWM is a task-semantic evaluation suite for the four LeWM control tasks, with Moderate and Strict protocols, random-floor audits, and reproducible scoring."
+    >
+    <meta property="og:title" content="CLEAR-LeWM">
+    <meta property="og:description" content="Task completion, not proxy success.">
+    <meta property="og:type" content="website">
+    <meta property="og:image" content="assets/showcase/clear_lewm_v03_overview_poster.png">
+    <title>CLEAR-LeWM | Task-semantic evaluation for LeWM</title>
+    <link rel="stylesheet" href="website.css">
+    <script src="website.js" defer></script>
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+
+    <header class="site-header" data-header>
+      <div class="nav-shell">
+        <a class="brand" href="#top" aria-label="CLEAR-LeWM home">
+          <span class="brand-mark" aria-hidden="true">C</span>
+          <span>CLEAR-LeWM</span>
+        </a>
+        <nav class="nav-links" aria-label="Primary navigation">
+          <a href="#protocol">Protocol</a>
+          <a href="#tasks">Tasks</a>
+          <a href="#results">Results</a>
+          <a href="#reproduce">Reproduce</a>
+        </nav>
+        <a class="nav-github" href="https://github.com/DavidSunok/CLEAR-LeWM">GitHub</a>
+      </div>
+    </header>
+
+    <main id="main">
+      <section class="hero" id="top" aria-labelledby="hero-title">
+        <div class="hero-mosaic" aria-hidden="true">
+          <img src="assets/site/hero_pusht.webp" alt="">
+          <img src="assets/site/hero_cube.webp" alt="">
+          <img src="assets/site/hero_reacher.webp" alt="">
+          <img src="assets/site/hero_tworoom.webp" alt="">
+        </div>
+        <div class="hero-scrim" aria-hidden="true"></div>
+        <div class="hero-content page-shell">
+          <p class="hero-kicker">A task-semantic evaluation suite for LeWM</p>
+          <h1 id="hero-title">CLEAR-LeWM</h1>
+          <p class="hero-lead">Task completion, not proxy success.</p>
+          <p class="hero-copy">
+            Four corrected task contracts, two calibrated protocols, and complete provenance for
+            measuring world-model control beyond permissive endpoint proxies.
+          </p>
+          <div class="hero-actions">
+            <a class="button button-primary" href="#protocol">Explore the protocol</a>
+            <a class="button button-secondary" href="https://github.com/DavidSunok/CLEAR-LeWM">View on GitHub</a>
+          </div>
+          <dl class="hero-facts" aria-label="Project facts">
+            <div><dt>4</dt><dd>task contracts</dd></div>
+            <div><dt>2</dt><dd>difficulty modes</dd></div>
+            <div><dt>16</dt><dd>audited v0.3 runs</dd></div>
+            <div><dt>37</dt><dd>automated tests</dd></div>
+          </dl>
+        </div>
+      </section>
+
+      <section class="positioning section-pad" id="why">
+        <div class="page-shell positioning-grid">
+          <div class="section-intro">
+            <p class="section-label">Why CLEAR-LeWM</p>
+            <h2>A high score should mean the task was actually solved.</h2>
+          </div>
+          <div class="positioning-copy">
+            <p>
+              The historical LeWM evaluator can assign stable success to random actions and can
+              reward physically invalid or task-irrelevant endpoints. This weakens its ability to
+              distinguish improvements to the model itself.
+            </p>
+            <p>
+              CLEAR-LeWM replaces those proxies with task-native geometry, temporal hold rules,
+              route legality, and deterministic evaluation pairs. Every score remains traceable to
+              a frozen goal, seed, solver budget, checkpoint, and protocol version.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section class="random-floor section-pad" aria-labelledby="floor-title">
+        <div class="page-shell">
+          <div class="split-heading">
+            <div>
+              <p class="section-label">Random-floor audit</p>
+              <h2 id="floor-title">Historical success can survive without a useful controller.</h2>
+            </div>
+            <p>
+              Random-policy success rate, 100 deterministic evaluation pairs per protocol.
+              Lower is better.
+            </p>
+          </div>
+
+          <div class="bar-chart" role="img" aria-label="Historical versus Strict random-policy success rates for all four tasks">
+            <div class="chart-legend" aria-hidden="true">
+              <span><i class="legend-swatch historical"></i>Historical</span>
+              <span><i class="legend-swatch strict"></i>CLEAR-LeWM Strict</span>
+            </div>
+
+            <div class="chart-row">
+              <div class="chart-task">PushT</div>
+              <div class="bar-pair">
+                <div class="bar-line"><span class="bar historical" style="--value: 14%"></span><b>7%</b></div>
+                <div class="bar-line"><span class="bar strict" style="--value: 4%"></span><b>2%</b></div>
+              </div>
+            </div>
+            <div class="chart-row">
+              <div class="chart-task">Cube</div>
+              <div class="bar-pair">
+                <div class="bar-line"><span class="bar historical" style="--value: 94%"></span><b>47%</b></div>
+                <div class="bar-line"><span class="bar strict" style="--value: 6%"></span><b>3%</b></div>
+              </div>
+            </div>
+            <div class="chart-row">
+              <div class="chart-task">Reacher</div>
+              <div class="bar-pair">
+                <div class="bar-line"><span class="bar historical" style="--value: 32%"></span><b>16%</b></div>
+                <div class="bar-line"><span class="bar strict" style="--value: 8%"></span><b>4%</b></div>
+              </div>
+            </div>
+            <div class="chart-row">
+              <div class="chart-task">TwoRoom</div>
+              <div class="bar-pair">
+                <div class="bar-line"><span class="bar historical" style="--value: 60%"></span><b>30%</b></div>
+                <div class="bar-line"><span class="bar strict" style="--value: 0%"></span><b>0%</b></div>
+              </div>
+            </div>
+            <div class="chart-axis" aria-hidden="true"><span>0</span><span>25</span><span>50% SR</span></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="overview section-pad" aria-labelledby="overview-title">
+        <div class="page-shell">
+          <div class="split-heading">
+            <div>
+              <p class="section-label">At a glance</p>
+              <h2 id="overview-title">One benchmark. Four task-semantic contracts.</h2>
+            </div>
+            <p>
+              The same planner can now be judged against what each environment visibly asks it to
+              accomplish, without changing the underlying LeWM model.
+            </p>
+          </div>
+          <video
+            class="overview-video"
+            controls
+            muted
+            loop
+            playsinline
+            preload="metadata"
+            poster="assets/showcase/clear_lewm_v03_overview_poster.png"
+          >
+            <source src="assets/showcase/clear_lewm_v03_overview_1080p.mp4" type="video/mp4">
+            Your browser does not support embedded video.
+          </video>
+        </div>
+      </section>
+
+      <section class="protocol section-pad" id="protocol" aria-labelledby="protocol-title">
+        <div class="page-shell">
+          <div class="protocol-heading">
+            <div>
+              <p class="section-label light">Two calibrated modes</p>
+              <h2 id="protocol-title">Choose the question your experiment needs to answer.</h2>
+            </div>
+            <div class="mode-switch" role="tablist" aria-label="Evaluation protocol">
+              <button id="tab-moderate" role="tab" aria-selected="true" aria-controls="panel-moderate" tabindex="0">Moderate</button>
+              <button id="tab-strict" role="tab" aria-selected="false" aria-controls="panel-strict" tabindex="-1">Strict</button>
+            </div>
+          </div>
+
+          <div class="protocol-panel" id="panel-moderate" role="tabpanel" aria-labelledby="tab-moderate">
+            <div class="panel-summary">
+              <p class="panel-number">01</p>
+              <div>
+                <h3>Moderate</h3>
+                <p>Practical model-selection protocol with corrected semantics and attainable tolerances.</p>
+              </div>
+            </div>
+            <div class="criteria-table" role="table" aria-label="Moderate criteria">
+              <div class="criteria-row criteria-head" role="row">
+                <span role="columnheader">Task</span><span role="columnheader">Success contract</span>
+              </div>
+              <div class="criteria-row" role="row"><strong role="cell">PushT</strong><span role="cell">Block pose &lt; 20 px / &lt; 20 deg, held for 3 frames; displacement &gt;= 25 px</span></div>
+              <div class="criteria-row" role="row"><strong role="cell">Cube</strong><span role="cell">Position &lt;= 4 cm; symmetry-aware angle &lt;= 30 deg, held for 3 frames</span></div>
+              <div class="criteria-row" role="row"><strong role="cell">Reacher</strong><span role="cell">Wrapped joint error &lt; 0.075 rad; first valid arrival</span></div>
+              <div class="criteria-row" role="row"><strong role="cell">TwoRoom</strong><span role="cell">Legal swept-disk route across rooms; endpoint &lt; 12 px, held for 3 frames</span></div>
+            </div>
+          </div>
+
+          <div class="protocol-panel" id="panel-strict" role="tabpanel" aria-labelledby="tab-strict" hidden>
+            <div class="panel-summary">
+              <p class="panel-number">02</p>
+              <div>
+                <h3>Strict</h3>
+                <p>Publication-grade stress test with tighter geometry, topology, and temporal stability.</p>
+              </div>
+            </div>
+            <div class="criteria-table" role="table" aria-label="Strict criteria">
+              <div class="criteria-row criteria-head" role="row">
+                <span role="columnheader">Task</span><span role="columnheader">Success contract</span>
+              </div>
+              <div class="criteria-row" role="row"><strong role="cell">PushT</strong><span role="cell">Block pose &lt; 15 px / &lt; 15 deg, held for 5 frames; displacement &gt;= 50 px</span></div>
+              <div class="criteria-row" role="row"><strong role="cell">Cube</strong><span role="cell">Position &lt;= 3 cm; symmetry-aware angle &lt;= 15 deg, held for 5 frames</span></div>
+              <div class="criteria-row" role="row"><strong role="cell">Reacher</strong><span role="cell">Wrapped joint error &lt; 0.05 rad; first valid arrival</span></div>
+              <div class="criteria-row" role="row"><strong role="cell">TwoRoom</strong><span role="cell">Legal swept-disk route across rooms; endpoint &lt; 8 px, held for 5 frames</span></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="tasks section-pad" id="tasks" aria-labelledby="tasks-title">
+        <div class="page-shell">
+          <div class="split-heading">
+            <div>
+              <p class="section-label">Task corrections</p>
+              <h2 id="tasks-title">The metric follows the task, frame by frame.</h2>
+            </div>
+            <p>
+              Each evaluator isolates the object, geometry, or route that determines completion and
+              exposes its decision trace for audit.
+            </p>
+          </div>
+
+          <div class="task-grid">
+            <article class="task-card pusht-card">
+              <img src="assets/task_gifs/pusht.gif" loading="lazy" alt="PushT trace showing the block pose metric over time">
+              <div class="task-body">
+                <p class="task-index">01 / PushT</p>
+                <h3>Score the T-block, not the pusher.</h3>
+                <p>Object pose, angular error, displacement, and temporal hold determine success. The pusher endpoint is task-irrelevant.</p>
+                <a href="https://github.com/DavidSunok/CLEAR-LeWM/blob/main/docs/tasks/PUSHT.md">Read the task contract</a>
+              </div>
+            </article>
+
+            <article class="task-card cube-card">
+              <img src="assets/task_gifs/cube.gif" loading="lazy" alt="Cube trace showing symmetry-aware position and orientation metrics">
+              <div class="task-body">
+                <p class="task-index">02 / Cube</p>
+                <h3>Respect the cube's 24 rotational symmetries.</h3>
+                <p>Orientation error is minimized over proper cube rotations, then combined with target position and a hold requirement.</p>
+                <a href="https://github.com/DavidSunok/CLEAR-LeWM/blob/main/docs/tasks/CUBE.md">Read the task contract</a>
+              </div>
+            </article>
+
+            <article class="task-card reacher-card">
+              <img src="assets/task_gifs/reacher.gif" loading="lazy" alt="Reacher trace showing wrapped joint error and first arrival">
+              <div class="task-body">
+                <p class="task-index">03 / Reacher</p>
+                <h3>Measure joint geometry without angle-wrap artifacts.</h3>
+                <p>Wrapped joint distance defines arrival, while the trace keeps arrival and later stabilization conceptually separate.</p>
+                <a href="https://github.com/DavidSunok/CLEAR-LeWM/blob/main/docs/tasks/REACHER.md">Read the task contract</a>
+              </div>
+            </article>
+
+            <article class="task-card tworoom-card">
+              <img src="assets/task_gifs/tworoom.gif" loading="lazy" alt="TwoRoom trace showing a collision-free cross-room route">
+              <div class="task-body">
+                <p class="task-index">04 / TwoRoom</p>
+                <h3>Require a physically legal route through the door.</h3>
+                <p>Swept-disk collision, eroded door clearance, cross-room topology, and endpoint accuracy jointly define success.</p>
+                <a href="https://github.com/DavidSunok/CLEAR-LeWM/blob/main/docs/tasks/TWOROOM.md">Read the task contract</a>
+              </div>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="results section-pad" id="results" aria-labelledby="results-title">
+        <div class="page-shell">
+          <div class="split-heading">
+            <div>
+              <p class="section-label">Reference evaluation</p>
+              <h2 id="results-title">A lower random floor reveals useful separation.</h2>
+            </div>
+            <p>
+              Official high-epoch LeWM checkpoints, seed 42, 100 deterministic pairs, 300 x 30 CEM,
+              solver batch size 1. Cells report model / random SR (%).
+            </p>
+          </div>
+
+          <div class="table-scroll">
+            <table>
+              <thead>
+                <tr>
+                  <th scope="col">Task</th>
+                  <th scope="col">Historical</th>
+                  <th scope="col">Moderate</th>
+                  <th scope="col">Strict</th>
+                  <th scope="col">Strict excess</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr><th scope="row">PushT</th><td>89 / 7</td><td>93 / 7</td><td>79 / 2</td><td class="excess">+77 pp</td></tr>
+                <tr><th scope="row">Cube</th><td>62 / 47</td><td>43 / 4</td><td>18 / 3</td><td class="excess">+15 pp</td></tr>
+                <tr><th scope="row">Reacher</th><td>87 / 16</td><td>90 / 17</td><td>36 / 4</td><td class="excess">+32 pp</td></tr>
+                <tr><th scope="row">TwoRoom</th><td>85 / 30</td><td>61 / 2</td><td>24 / 0</td><td class="excess">+24 pp</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="table-note">Strict excess is model SR minus the matched random-policy SR.</p>
+        </div>
+      </section>
+
+      <section class="reproduce section-pad" id="reproduce" aria-labelledby="reproduce-title">
+        <div class="page-shell reproduce-grid">
+          <div>
+            <p class="section-label">Reproduce the score</p>
+            <h2 id="reproduce-title">Install, audit, evaluate.</h2>
+            <p>
+              CLEAR-LeWM is MIT-licensed and ships task contracts, deterministic protocols,
+              provenance records, and automated tests in one public repository.
+            </p>
+            <div class="resource-links">
+              <a href="https://github.com/DavidSunok/CLEAR-LeWM#quick-start">Quick start guide</a>
+              <a href="https://github.com/DavidSunok/CLEAR-LeWM/blob/main/docs/PROTOCOL_CALIBRATION.md">Protocol calibration</a>
+              <a href="https://github.com/DavidSunok/CLEAR-LeWM/blob/main/docs/RUNTIME_REPRODUCIBILITY.md">Reproduction guide</a>
+            </div>
+          </div>
+          <div class="code-block">
+            <div class="code-toolbar">
+              <span>Shell</span>
+              <button type="button" data-copy-code>Copy</button>
+            </div>
+            <pre><code data-install-code>git clone --recurse-submodules https://github.com/DavidSunok/CLEAR-LeWM.git
+cd CLEAR-LeWM
+python -m venv .venv
+source .venv/bin/activate
+pip install -e '.[dev,lewm]'</code></pre>
+          </div>
+        </div>
+      </section>
+
+      <section class="citation section-pad" aria-labelledby="citation-title">
+        <div class="page-shell citation-grid">
+          <div>
+            <p class="section-label">Open evaluation infrastructure</p>
+            <h2 id="citation-title">Built for comparable world-model control research.</h2>
+          </div>
+          <p>
+            Versioned criteria keep future model changes comparable to the same physical and
+            task-semantic standard. Cite the repository and protocol version used in your report.
+          </p>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="page-shell footer-grid">
+        <div>
+          <a class="brand footer-brand" href="#top">
+            <span class="brand-mark" aria-hidden="true">C</span>
+            <span>CLEAR-LeWM</span>
+          </a>
+          <p>Evaluation should measure the task, not an implementation accident.</p>
+        </div>
+        <div class="footer-links">
+          <a href="https://github.com/DavidSunok/CLEAR-LeWM">GitHub</a>
+          <a href="https://github.com/DavidSunok/CLEAR-LeWM/releases">Releases</a>
+          <a href="LICENSE">MIT License</a>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>
