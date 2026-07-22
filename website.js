@@ -8,6 +8,7 @@ updateHeader();
 window.addEventListener("scroll", updateHeader, { passive: true });
 
 const tabs = Array.from(document.querySelectorAll('[role="tab"]'));
+const protocolSection = document.querySelector(".protocol");
 
 function selectTab(nextTab) {
   tabs.forEach((tab) => {
@@ -17,6 +18,9 @@ function selectTab(nextTab) {
     tab.tabIndex = selected ? 0 : -1;
     if (panel) panel.hidden = !selected;
   });
+  if (protocolSection) {
+    protocolSection.dataset.mode = nextTab.id === "tab-strict" ? "strict" : "moderate";
+  }
 }
 
 tabs.forEach((tab, index) => {
