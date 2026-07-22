@@ -798,6 +798,37 @@ code {
   font-size: 18px;
 }
 
+.project-authors {
+  margin-top: 18px;
+}
+
+.author-names {
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 18px;
+  font-size: 17px;
+  font-weight: 750;
+}
+
+.author-names a,
+.author-contact a {
+  color: inherit;
+  text-underline-offset: 3px;
+}
+
+.author-affiliations {
+  margin: 6px 0 0;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.author-contact {
+  margin: 3px 0 0;
+  color: var(--muted);
+  font-size: 13px;
+}
+
 .site-footer {
   padding-block: 34px;
   background: white;
@@ -1061,6 +1092,23 @@ code {
   .resource-links {
     display: grid;
     gap: 10px;
+  }
+
+  .project-authors {
+    margin-top: 14px;
+  }
+
+  .author-names {
+    gap: 4px 12px;
+    font-size: 15px;
+  }
+
+  .author-affiliations {
+    font-size: 12px;
+  }
+
+  .author-contact {
+    font-size: 12px;
   }
 
   .code-block {

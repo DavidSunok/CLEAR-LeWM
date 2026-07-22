@@ -19,6 +19,17 @@
 </p>
 
 <p align="center">
+  <a href="mailto:luoliibaqi4747@gmail.com"><strong>Junhan Sun</strong></a><sup>1</sup>
+  &nbsp;&nbsp;
+  <strong>Guofeng Zhang</strong><sup>1,&#8224;</sup>
+  &nbsp;&nbsp;
+  <strong>Hao Zhao</strong><sup>2,&#8224;</sup><br>
+  <sub><sup>1</sup>State Key Laboratory of CAD&amp;CG, Zhejiang University &nbsp;|&nbsp;
+  <sup>2</sup>Tsinghua University &nbsp;|&nbsp;
+  <sup>&#8224;</sup>Corresponding authors</sub>
+</p>
+
+<p align="center">
   <a href="#results"><strong>Results</strong></a> ·
   <a href="#two-auditable-modes"><strong>Modes</strong></a> ·
   <a href="#01-pusht"><strong>Task Guides</strong></a> ·
