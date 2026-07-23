@@ -159,7 +159,8 @@ def _draw_hero() -> None:
         (1478, "FAST"),
     )
     for x, label in headers:
-        draw.text((x, 94), label, fill="#AEB7C5", font=_font(15, True))
+        header_size = 17 if label in {"RELEASED", "CLEAR CONTRACT"} else 15
+        draw.text((x, 92), label, fill="#C0C8D4", font=_font(header_size, True))
 
     old_rules = {
         "pusht": "Pusher + block",
@@ -184,17 +185,17 @@ def _draw_hero() -> None:
             font=_font(22, True),
         )
         draw.text(
-            (865, y + 29),
+            (865, y + 26),
             old_rules[task],
-            fill="#AAB3C1",
-            font=_font(17, True),
+            fill="#C2CAD6",
+            font=_font(20, True),
         )
         draw.text((1048, y + 23), "→", fill="#FFFFFF", font=_font(27, True))
         draw.text(
-            (1090, y + 28),
+            (1090, y + 25),
             clear_rules[task],
             fill=TASK_COLORS[task],
-            font=_font(18, True),
+            font=_font(21, True),
         )
         model = _success_rate(task, "strict", "official-lewm")
         random = _success_rate(task, "strict", "random")

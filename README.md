@@ -19,8 +19,8 @@
 </p>
 
 <p align="center">
-  <a href="PERFORMANCE.md"><strong>FAST training I/O: 17.87× geometric-mean loader speedup across four tasks</strong></a><br>
-  <sub>5.79× PushT · 37.72× Cube · 30.77× Reacher · 15.15× TwoRoom · exact source-equivalence audits</sub>
+  <strong>FAST training I/O: 17.87× geometric-mean loader speedup across four tasks</strong><br>
+  <sub>5.79× PushT · 37.72× Cube · 30.77× Reacher · 15.15× TwoRoom · exact source-equivalence audits · <a href="PERFORMANCE.md">Performance audit</a></sub>
 </p>
 
 <p align="center">
