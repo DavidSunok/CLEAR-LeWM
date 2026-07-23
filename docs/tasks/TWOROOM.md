@@ -42,7 +42,7 @@ episodes because its tighter endpoint rule marks fewer starts as pre-solved.
 
 ## Official reference
 
-- Moderate seed 42: official LeWM **81%**, paired random **6%**.
+- Moderate seeds 0/1/42: official LeWM **87/84/81%**; random **8/6/6%**.
 - Strict seeds 0/1/42: official LeWM **61/57/57%**; random **5/0/0%**.
 - All checked-in Strict rollouts report zero invalid routes.
 

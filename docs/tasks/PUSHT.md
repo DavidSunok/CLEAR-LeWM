@@ -41,7 +41,7 @@ object-masked, or task-aware.
 
 ## Official reference
 
-- Moderate seed 42: official LeWM **88%**, paired random **3%**.
+- Moderate seeds 0/1/42: official LeWM **84/87/88%**; random **4/5/3%**.
 - Strict seeds 0/1/42: official LeWM **66/74/71%**; random **4/4/7%**.
 
 ## Reproduce

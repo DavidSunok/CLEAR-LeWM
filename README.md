@@ -5,7 +5,7 @@
 <h1 align="center">CLEAR-LeWM</h1>
 
 <p align="center">
-  <a href="pyproject.toml"><img src="https://img.shields.io/badge/version-0.5.0-f26b5e" alt="v0.5.0"></a>
+  <a href="pyproject.toml"><img src="https://img.shields.io/badge/version-0.5.1-f26b5e" alt="v0.5.1"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-101828" alt="MIT License"></a>
   <a href=".github/workflows/ci.yml"><img src="https://img.shields.io/badge/CI-pytest%20%2B%20ruff-15803d" alt="pytest and ruff CI"></a>
   <a href="results/v0.5"><img src="https://img.shields.io/badge/protocol-v0.5-e5b94f" alt="v0.5 protocol"></a>
@@ -91,14 +91,16 @@ Only pinned official high-epoch LeWM checkpoints and paired random policies are
 checked in. All official runs use 100 episodes, `300 x 30` CEM, top-k 30,
 solver batch size 1, and strict 303/303 tensor loading.
 
-### Moderate: canonical seed 42
+### Moderate: seeds 0, 1, and 42
+
+Mean +/- sample standard deviation across complete paired runs:
 
 | Task | Official LeWM | Paired random | Excess |
 |---|---:|---:|---:|
-| **PushT** | **88%** | 3% | **+85 pp** |
-| **Cube** | **51%** | 15% | **+36 pp** |
-| **Reacher** | **40%** | 5% | **+35 pp** |
-| **TwoRoom** | **81%** | 6% | **+75 pp** |
+| **PushT** | **86.33 +/- 2.08%** | 4.00 +/- 1.00% | **+82.33 pp** |
+| **Cube** | **50.33 +/- 4.04%** | 15.67 +/- 6.03% | **+34.67 pp** |
+| **Reacher** | **46.00 +/- 5.57%** | 4.33 +/- 1.15% | **+41.67 pp** |
+| **TwoRoom** | **84.00 +/- 3.00%** | 6.67 +/- 1.15% | **+77.33 pp** |
 
 ### Strict: seeds 0, 1, and 42
 

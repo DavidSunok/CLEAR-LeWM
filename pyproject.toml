@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "clear-lewm"
-version = "0.5.0"
+version = "0.5.1"
 description = "Auditable and reproducible evaluation for LeWM-compatible latent world models"
 readme = "README.md"
 requires-python = ">=3.10"

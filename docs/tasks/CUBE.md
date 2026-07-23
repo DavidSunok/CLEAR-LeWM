@@ -29,7 +29,7 @@ equivalent cube rotations.
 
 ## Official reference
 
-- Moderate seed 42: official LeWM **51%**, paired random **15%**.
+- Moderate seeds 0/1/42: official LeWM **46/54/51%**; random **10/22/15%**.
 - Strict seeds 0/1/42: official LeWM **28/26/25%**; random **3/7/8%**.
 
 ## Reproduce

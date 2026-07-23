@@ -24,10 +24,10 @@ EXPECTED_SR = {
 }
 
 EXPECTED_V05_MODERATE_SR = {
-    "pusht": (88.0, 3.0),
-    "cube": (51.0, 15.0),
-    "reacher": (40.0, 5.0),
-    "tworoom": (81.0, 6.0),
+    "pusht": {0: (84.0, 4.0), 1: (87.0, 5.0), 42: (88.0, 3.0)},
+    "cube": {0: (46.0, 10.0), 1: (54.0, 22.0), 42: (51.0, 15.0)},
+    "reacher": {0: (51.0, 5.0), 1: (47.0, 3.0), 42: (40.0, 5.0)},
+    "tworoom": {0: (87.0, 8.0), 1: (84.0, 6.0), 42: (81.0, 6.0)},
 }
 
 EXPECTED_V05_STRICT_SR = {
@@ -75,43 +75,49 @@ def test_v05_moderate_results_are_paired_and_strictly_loaded():
     registry = json.loads((root / "checkpoints" / "official-v0.5.json").read_text())[
         "models"
     ]
-    for task, (model_sr, random_sr) in EXPECTED_V05_MODERATE_SR.items():
-        manifest_path = root / "manifests" / "v0.5" / task / "moderate-seed42-n100.json"
-        manifest_hash = hashlib.sha256(manifest_path.read_bytes()).hexdigest()
-        random_result = json.loads(
-            (
-                root / "results" / "v0.5" / f"{task}-moderate-random-seed42-n100.json"
-            ).read_text()
-        )
-        model_result = json.loads(
-            (
-                root
-                / "results"
-                / "v0.5"
-                / f"{task}-moderate-official-lewm-seed42-n100.json"
-            ).read_text()
-        )
-        assert random_result["manifest_sha256"] == manifest_hash
-        assert model_result["manifest_sha256"] == manifest_hash
-        assert random_result["metrics"]["success_rate_percent"] == random_sr
-        assert model_result["metrics"]["success_rate_percent"] == model_sr
-        assert model_result["metrics"]["random_success_rate_percent"] == random_sr
-        assert model_result["solver"] == {
-            "batch_size": 1,
-            "n_steps": 30,
-            "num_samples": 300,
-            "topk": 30,
-        }
-        audit = model_result["checkpoint"]["state_dict_audit"]
-        assert audit["missing_keys"] == []
-        assert audit["unexpected_keys"] == []
-        assert (
-            model_result["checkpoint"]["runtime_sha256"]
-            == registry[task]["runtime_weights_sha256"]
-        )
-        if task == "tworoom":
-            assert model_result["topology"]["invalid_routes"] == 0
-            assert random_result["topology"]["invalid_routes"] == 0
+    for task, seeds in EXPECTED_V05_MODERATE_SR.items():
+        for seed, (model_sr, random_sr) in seeds.items():
+            manifest_path = (
+                root / "manifests" / "v0.5" / task / f"moderate-seed{seed}-n100.json"
+            )
+            manifest_hash = hashlib.sha256(manifest_path.read_bytes()).hexdigest()
+            random_result = json.loads(
+                (
+                    root
+                    / "results"
+                    / "v0.5"
+                    / f"{task}-moderate-random-seed{seed}-n100.json"
+                ).read_text()
+            )
+            model_result = json.loads(
+                (
+                    root
+                    / "results"
+                    / "v0.5"
+                    / f"{task}-moderate-official-lewm-seed{seed}-n100.json"
+                ).read_text()
+            )
+            assert random_result["manifest_sha256"] == manifest_hash
+            assert model_result["manifest_sha256"] == manifest_hash
+            assert random_result["metrics"]["success_rate_percent"] == random_sr
+            assert model_result["metrics"]["success_rate_percent"] == model_sr
+            assert model_result["metrics"]["random_success_rate_percent"] == random_sr
+            assert model_result["solver"] == {
+                "batch_size": 1,
+                "n_steps": 30,
+                "num_samples": 300,
+                "topk": 30,
+            }
+            audit = model_result["checkpoint"]["state_dict_audit"]
+            assert audit["missing_keys"] == []
+            assert audit["unexpected_keys"] == []
+            assert (
+                model_result["checkpoint"]["runtime_sha256"]
+                == registry[task]["runtime_weights_sha256"]
+            )
+            if task == "tworoom":
+                assert model_result["topology"]["invalid_routes"] == 0
+                assert random_result["topology"]["invalid_routes"] == 0
 
 
 def test_v05_strict_three_seed_results_match_manifests_and_provenance():

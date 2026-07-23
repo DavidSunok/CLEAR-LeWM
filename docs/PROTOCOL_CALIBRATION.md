@@ -6,14 +6,15 @@ size 1, and 100 fixed pairs per manifest.
 
 ## Moderate: minimal compatibility correction
 
-Moderate seed-42 results are:
+Moderate uses seeds 0, 1, and 42. Values are mean +/- sample standard
+deviation.
 
 | Task | Official LeWM | Paired random |
 |---|---:|---:|
-| PushT | 88% | 3% |
-| Cube | 51% | 15% |
-| Reacher | 40% | 5% |
-| TwoRoom | 81% | 6% |
+| PushT | 86.33 +/- 2.08% | 4.00 +/- 1.00% |
+| Cube | 50.33 +/- 4.04% | 15.67 +/- 6.03% |
+| Reacher | 46.00 +/- 5.57% | 4.33 +/- 1.15% |
+| TwoRoom | 84.00 +/- 3.00% | 6.67 +/- 1.15% |
 
 Moderate was accepted only after confirming that it changes no more than the
 released benchmark requires:

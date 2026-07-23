@@ -6,7 +6,7 @@ from __future__ import annotations
 import json
 from functools import cache
 from pathlib import Path
-from statistics import geometric_mean
+from statistics import geometric_mean, mean
 
 from PIL import Image, ImageDraw, ImageFont, ImageOps
 
@@ -97,7 +97,7 @@ def _draw_hero() -> None:
         font=_font(20),
     )
     draw.line((70, 382, 622, 382), fill="#344054", width=2)
-    facts = (("4", "TASKS"), ("2", "MODES"), ("32", "PAIRED RUNS"))
+    facts = (("4", "TASKS"), ("2", "MODES"), ("48", "PAIRED RUNS"))
     fact_value_font = _font(38, True)
     fact_label_font = _font(15, True)
     for index, (value, label) in enumerate(facts):
@@ -185,14 +185,14 @@ def _draw_hero() -> None:
             font=_font(22, True),
         )
         draw.text(
-            (865, y + 26),
+            (865, y + 30),
             old_rules[task],
             fill="#C2CAD6",
             font=_font(18, True),
         )
         draw.text((1050, y + 23), "→", fill="#FFFFFF", font=_font(27, True))
         draw.text(
-            (1090, y + 25),
+            (1090, y + 29),
             clear_rules[task],
             fill=TASK_COLORS[task],
             font=_font(18, True),
@@ -223,8 +223,13 @@ def _draw_hero() -> None:
 
 
 def _success_rate(task: str, tier: str, policy: str) -> float:
-    path = RESULTS / f"{task}-{tier}-{policy}-seed42-n100.json"
-    return float(json.loads(path.read_text())["metrics"]["success_rate_percent"])
+    values = []
+    for seed in (0, 1, 42):
+        path = RESULTS / f"{task}-{tier}-{policy}-seed{seed}-n100.json"
+        values.append(
+            float(json.loads(path.read_text())["metrics"]["success_rate_percent"])
+        )
+    return mean(values)
 
 
 def _legend(draw, x, y, entries, text_color="#344054"):
@@ -365,7 +370,7 @@ def _draw_results() -> None:
 
     draw.text(
         (54, 674),
-        "Official LeWM checkpoints  |  seed 42  |  per-task fixed manifests  |  "
+        "Official LeWM checkpoints  |  seeds 0, 1, 42  |  fixed manifests  |  "
         "raw success rate",
         fill="#667085",
         font=_font(13),

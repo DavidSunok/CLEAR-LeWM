@@ -34,7 +34,7 @@ distance `<= 0.01 m` for 2 consecutive steps.
 
 ## Official reference
 
-- Moderate seed 42: official LeWM **40%**, paired random **5%**.
+- Moderate seeds 0/1/42: official LeWM **51/47/40%**; random **5/3/5%**.
 - Strict seeds 0/1/42: official LeWM **41/37/51%**; random **1/7/7%**.
 
 ## Reproduce

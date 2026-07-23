@@ -8,6 +8,7 @@ import json
 import subprocess
 import sys
 from pathlib import Path
+from statistics import mean
 
 import h5py
 import hdf5plugin  # noqa: F401
@@ -570,14 +571,14 @@ def task_frame(
         draw,
         (30, 575, 360, 650),
         "MODERATE  model / random",
-        f"{results['moderate'][0]:g}% / {results['moderate'][1]:g}%",
+        f"{results['moderate'][0]:.1f}% / {results['moderate'][1]:.1f}%",
         COLORS[task],
     )
     result_card(
         draw,
         (378, 575, 708, 650),
         "STRICT  model / random",
-        f"{results['strict'][0]:g}% / {results['strict'][1]:g}%",
+        f"{results['strict'][0]:.1f}% / {results['strict'][1]:.1f}%",
         COLORS[task],
     )
     setting_card(draw, (726, 575, 1170, 650), task)
@@ -1030,12 +1031,15 @@ def summary_frame(results: dict) -> Image.Image:
         draw.text((x + 28, 286), LABELS[task], font=font(31, True), fill=INK)
         values = results[task]["strict"]
         draw.text(
-            (x + 28, 380), f"{values[0]:g}%", font=font(60, True), fill=COLORS[task]
+            (x + 28, 380),
+            f"{values[0]:.1f}%",
+            font=font(60, True),
+            fill=COLORS[task],
         )
-        draw.text((x + 205, 412), "LeWM model", font=font(21, True), fill=MUTED)
+        draw.text((x + 28, 452), "LeWM model", font=font(19, True), fill=MUTED)
         draw.text(
             (x + 28, 500),
-            f"{values[1]:g}% random policy",
+            f"{values[1]:.1f}% random policy",
             font=font(27, True),
             fill="#344054",
         )
@@ -1056,7 +1060,7 @@ def summary_frame(results: dict) -> Image.Image:
     )
     draw.text(
         (70, 882),
-        "100 fixed pairs per cell  |  seed 42  |  300 x 30 CEM  |  solver batch 1",
+        "100 fixed pairs per cell  |  seeds 0, 1, 42  |  300 x 30 CEM  |  batch 1",
         font=font(23),
         fill=MUTED,
     )
@@ -1157,16 +1161,16 @@ def _select_tworoom_trace(payload: dict) -> dict:
 
 def _result_pair(task: str, protocol: str) -> tuple[float, float]:
     directory = ROOT / "results" / "v0.5"
-    model = json.loads(
-        (directory / f"{task}-{protocol}-official-lewm-seed42-n100.json").read_text()
-    )
-    random = json.loads(
-        (directory / f"{task}-{protocol}-random-seed42-n100.json").read_text()
-    )
-    return (
-        float(model["metrics"]["success_rate_percent"]),
-        float(random["metrics"]["success_rate_percent"]),
-    )
+    values = {"official-lewm": [], "random": []}
+    for seed in (0, 1, 42):
+        for policy in values:
+            result = json.loads(
+                (
+                    directory / f"{task}-{protocol}-{policy}-seed{seed}-n100.json"
+                ).read_text()
+            )
+            values[policy].append(float(result["metrics"]["success_rate_percent"]))
+    return mean(values["official-lewm"]), mean(values["random"])
 
 
 def main() -> int:

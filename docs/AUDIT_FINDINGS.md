@@ -26,12 +26,12 @@ Moderate removes pre-solved pairs and repairs only demonstrated evaluator
 defects. Strict then asks whether the task-relevant object or endpoint is
 precisely complete.
 
-| Task | Moderate LeWM/random, seed 42 | Strict LeWM/random, 3-seed mean |
+| Task | Moderate LeWM/random, 3-seed mean | Strict LeWM/random, 3-seed mean |
 |---|---:|---:|
-| PushT | 88% / 3% | 70.33% / 5.00% |
-| Cube | 51% / 15% | 26.33% / 6.00% |
-| Reacher | 40% / 5% | 43.00% / 5.00% |
-| TwoRoom | 81% / 6% | 58.33% / 1.67% |
+| PushT | 86.33% / 4.00% | 70.33% / 5.00% |
+| Cube | 50.33% / 15.67% | 26.33% / 6.00% |
+| Reacher | 46.00% / 4.33% | 43.00% / 5.00% |
+| TwoRoom | 84.00% / 6.67% | 58.33% / 1.67% |
 
 The strict TwoRoom evaluator recorded zero invalid routes in all six checked-in
 official/random runs for seeds 0, 1, and 42. It also requires a legal room

@@ -6,7 +6,7 @@ under v0.5 Moderate and Strict.
 
 | Mode | Coverage | Purpose |
 |---|---|---|
-| Moderate | official seed 42; random seeds 0/1/42 | minimally repaired LeWM-compatible comparison |
+| Moderate | official and random seeds 0/1/42 | minimally repaired LeWM-compatible comparison |
 | Strict | official and random seeds 0/1/42 | task-semantic precision comparison |
 
 Every model result records raw SR, confidence intervals, excess over its paired
