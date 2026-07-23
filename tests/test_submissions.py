@@ -57,12 +57,65 @@ def _bundle(tmp_path: Path) -> Path:
     return path
 
 
+def _v05_bundle(tmp_path: Path) -> Path:
+    bundle = tmp_path / "example-v05" / "v1"
+    results = bundle / "results"
+    results.mkdir(parents=True)
+    result_path = results / "pusht-moderate.json"
+    result_path.write_bytes(
+        (
+            ROOT / "results/v0.5/pusht-moderate-official-lewm-seed42-n100.json"
+        ).read_bytes()
+    )
+    submission = {
+        "schema_version": "clear-lewm-submission-v1",
+        "method": {
+            "name": "Example v0.5 Method",
+            "repository": "https://github.com/example/method",
+            "revision": "0123456789abcdef",
+            "license": "MIT",
+        },
+        "contact": {"github": "example"},
+        "benchmark": {
+            "version": "v0.5",
+            "training_data_track": "standard-data",
+            "training_data": {
+                "description": "Canonical LeWM expert training datasets",
+                "source": "LeWM public release",
+                "revision": "public-v1",
+                "license": "upstream terms",
+            },
+        },
+        "verification": {"requested": "self-reported"},
+        "results": [
+            {
+                "task": "pusht",
+                "protocol": "moderate",
+                "path": "results/pusht-moderate.json",
+                "sha256": _sha256(result_path),
+            }
+        ],
+    }
+    path = bundle / "submission.json"
+    path.write_text(json.dumps(submission))
+    return path
+
+
 def test_valid_submission_checks_canonical_manifest_and_trace(tmp_path):
     report = validate_submission(_bundle(tmp_path), repo_root=ROOT)
     assert report["status"] == "valid"
     assert report["results"][0]["success_rate_percent"] == 79.0
     assert report["complete_four_task_matrix"] is False
     assert "cube/moderate" in report["missing_results"]
+
+
+def test_v05_submission_accepts_moderate_and_uses_v05_random_floor(tmp_path):
+    report = validate_submission(_v05_bundle(tmp_path), repo_root=ROOT)
+    assert report["status"] == "valid"
+    assert report["benchmark_version"] == "v0.5"
+    assert report["results"][0]["success_rate_percent"] == 88.0
+    assert report["results"][0]["random_success_rate_percent"] == 3.0
+    assert "pusht/strict" not in report["missing_results"]
 
 
 def test_submission_rejects_tampered_result_hash(tmp_path):

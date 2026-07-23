@@ -10,7 +10,7 @@ from .protocols import TASKS, protocol_from_dict
 
 SUBMISSION_SCHEMA = "clear-lewm-submission-v1"
 RESULT_SCHEMA = "clear-lewm-result-v1"
-BENCHMARK_VERSIONS = ("v0.3",)
+BENCHMARK_VERSIONS = ("v0.3", "v0.5")
 TRAINING_DATA_TRACKS = ("standard-data", "reduced-data", "external-data")
 VERIFICATION_REQUESTS = ("self-reported", "reproducible")
 PRIMARY_PROTOCOLS = ("moderate", "strict")
@@ -93,8 +93,12 @@ def _canonical_manifest(
     return path, _load_object(path, "manifest")
 
 
-def _canonical_random_rate(repo_root: Path, task: str, protocol: str) -> float:
-    path = repo_root / "results" / "v0.3" / f"{task}-{protocol}-random-seed42-n100.json"
+def _canonical_random_rate(
+    repo_root: Path, version: str, task: str, protocol: str
+) -> float:
+    path = (
+        repo_root / "results" / version / f"{task}-{protocol}-random-seed42-n100.json"
+    )
     payload = _load_object(path, "canonical random result")
     try:
         return float(payload["metrics"]["success_rate_percent"])
@@ -186,7 +190,9 @@ def _validate_result(
             f"Result metrics do not match its trace: {label}"
         )
 
-    random_rate = _canonical_random_rate(repo_root, expected_task, expected_protocol)
+    random_rate = _canonical_random_rate(
+        repo_root, version, expected_task, expected_protocol
+    )
     if not math.isclose(
         float(metrics.get("random_success_rate_percent", math.nan)),
         random_rate,
@@ -231,7 +237,10 @@ def _validate_result(
 
 def _find_repo_root(submission_path: Path) -> Path:
     for candidate in (submission_path.parent, *submission_path.parents):
-        if (candidate / "manifests" / "v0.3").is_dir():
+        if any(
+            (candidate / "manifests" / version).is_dir()
+            for version in BENCHMARK_VERSIONS
+        ):
             return candidate
     raise SubmissionValidationError(
         "Cannot locate the CLEAR-LeWM repository; pass repo_root explicitly"
@@ -264,6 +273,7 @@ def validate_submission(
     version = _required_string(benchmark, "version", "submission.benchmark")
     if version not in BENCHMARK_VERSIONS:
         raise SubmissionValidationError(f"Unsupported benchmark version: {version}")
+    accepted_protocols = ("moderate",) if version == "v0.5" else PRIMARY_PROTOCOLS
     track = _required_string(benchmark, "training_data_track", "submission.benchmark")
     if track not in TRAINING_DATA_TRACKS:
         raise SubmissionValidationError(f"Unsupported training-data track: {track}")
@@ -301,9 +311,9 @@ def validate_submission(
         protocol = _required_string(entry, "protocol", label)
         if task not in TASKS:
             raise SubmissionValidationError(f"Unsupported task in {label}: {task}")
-        if protocol not in PRIMARY_PROTOCOLS:
+        if protocol not in accepted_protocols:
             raise SubmissionValidationError(
-                f"Only Moderate and Strict results are accepted: {label}"
+                f"Protocol {protocol!r} is not accepted for {version}: {label}"
             )
         identity = (task, protocol)
         if identity in seen:
@@ -329,7 +339,7 @@ def validate_submission(
             )
         )
 
-    full_matrix = {(task, mode) for task in TASKS for mode in PRIMARY_PROTOCOLS}
+    full_matrix = {(task, mode) for task in TASKS for mode in accepted_protocols}
     missing = sorted(full_matrix - seen)
     return {
         "schema_version": SUBMISSION_SCHEMA,

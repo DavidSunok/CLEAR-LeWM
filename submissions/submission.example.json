@@ -7,7 +7,7 @@
       "source": "https://example.org/dataset-card"
     },
     "training_data_track": "standard-data",
-    "version": "v0.3"
+    "version": "v0.5"
   },
   "contact": {
     "github": "example-user"
@@ -20,8 +20,8 @@
   },
   "results": [
     {
-      "path": "results/pusht-strict.json",
-      "protocol": "strict",
+      "path": "results/pusht-moderate.json",
+      "protocol": "moderate",
       "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
       "task": "pusht"
     }
@@ -29,7 +29,7 @@
   "schema_version": "clear-lewm-submission-v1",
   "verification": {
     "checkpoint": "https://example.org/checkpoints/example-method.pt",
-    "command": "clear-lewm evaluate --manifest manifests/v0.3/pusht/strict-seed42-n100.json ...",
+    "command": "clear-lewm evaluate --manifest manifests/v0.5/pusht/moderate-seed42-n100.json ...",
     "requested": "reproducible"
   }
 }

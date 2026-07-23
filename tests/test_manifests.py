@@ -38,3 +38,17 @@ def test_manifest_generation_is_deterministic_except_timestamp(cube_dataset):
     first.pop("created_utc")
     second.pop("created_utc")
     assert first == second
+
+
+def test_moderate_tworoom_rejects_contaminated_source_windows(tworoom_dataset):
+    manifest = generate_manifest(
+        tworoom_dataset,
+        task="tworoom",
+        protocol="moderate",
+        num_eval=2,
+        seed=42,
+    )
+    assert manifest["statistics"]["pairs_after_filters"] == 14
+    assert manifest["statistics"]["unique_episodes"] == 2
+    assert all(pair["cross_room"] is True for pair in manifest["pairs"])
+    assert all(pair["source_window_clean"] is True for pair in manifest["pairs"])

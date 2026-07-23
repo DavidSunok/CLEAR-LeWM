@@ -25,23 +25,30 @@ def test_protocol_contracts():
     assert standard.sustained_steps == 5
 
 
-def test_primary_protocols_have_increasing_rigor():
+def test_v05_moderate_preserves_task_semantics_and_filters_trivial_pairs():
     assert PRIMARY_PROTOCOLS == ("official", "moderate", "strict")
     official = get_protocol("official")
     moderate = get_protocol("moderate")
     strict = get_protocol("strict")
     assert official.success_mode == "upstream"
-    assert moderate.sustained_steps == 3
+    assert moderate.sustained_steps == 1
     assert strict.sustained_steps == 5
     assert moderate.hold_steps("reacher") == 1
     assert strict.hold_steps("pusht") == 5
     assert strict.hold_steps("cube") == 5
-    assert moderate.pusht_block_only
+    assert not moderate.pusht_block_only
+    assert moderate.cube_orientation_threshold_deg is None
+    assert moderate.resolved_reacher_angle_mode() == "shoulder-periodic"
+    assert moderate.reacher_joint_threshold_rad == 0.05
+    assert moderate.tworoom_crossroom_only
+    assert moderate.tworoom_source_window_clean
+    assert not moderate.tworoom_route_required
+    assert moderate.tworoom_distance_threshold == 16.0
     assert strict.cube_symmetry_aware
     assert strict.reacher_wrap_angles
     assert strict.tworoom_route_required
     assert strict.tworoom_distance_threshold < moderate.tworoom_distance_threshold
-    assert strict.reacher_joint_threshold_rad < moderate.reacher_joint_threshold_rad
+    assert strict.reacher_joint_threshold_rad == moderate.reacher_joint_threshold_rad
     assert strict.pusht_position_threshold < moderate.pusht_position_threshold
 
 
@@ -50,7 +57,7 @@ def test_manifest_protocol_is_restored_without_registry_drift():
     saved["tworoom_distance_threshold"] = 11.5
     restored = protocol_from_dict(saved)
     assert restored.tworoom_distance_threshold == 11.5
-    assert get_protocol("moderate").tworoom_distance_threshold == 12.0
+    assert get_protocol("moderate").tworoom_distance_threshold == 16.0
 
     old_strict = get_protocol("strict").to_dict()
     old_strict["pusht_sustained_steps"] = 3

@@ -20,7 +20,7 @@ from .runtime import audit_hydra_targets, configure_import_paths
 from .tasks import (
     cube_symmetry_angle_deg,
     quaternion_angle_deg,
-    wrapped_angle_error,
+    reacher_joint_error,
 )
 from .tworoom_runtime import install_topology_success, topology_audit_records
 
@@ -232,7 +232,7 @@ def _compose_config(task: str, upstream_dir: Path):
 def _install_cube_success(
     world,
     position_threshold_m: float,
-    orientation_threshold_deg: float,
+    orientation_threshold_deg: float | None,
     sustained_steps: int,
     symmetry_aware: bool = False,
 ) -> None:
@@ -254,11 +254,13 @@ def _install_cube_success(
             target_pos = np.asarray(self._data.mocap_pos[target_id])
             target_quat = np.asarray(self._data.mocap_quat[target_id])
             position_ok = np.linalg.norm(qpos[:3] - target_pos) <= position_threshold_m
-            angle_function = (
-                cube_symmetry_angle_deg if symmetry_aware else quaternion_angle_deg
-            )
-            angle_deg = float(angle_function(qpos[None, 3:7], target_quat[None])[0])
-            pose_ok = bool(position_ok and angle_deg <= orientation_threshold_deg)
+            pose_ok = bool(position_ok)
+            if orientation_threshold_deg is not None:
+                angle_function = (
+                    cube_symmetry_angle_deg if symmetry_aware else quaternion_angle_deg
+                )
+                angle_deg = float(angle_function(qpos[None, 3:7], target_quat[None])[0])
+                pose_ok = bool(pose_ok and angle_deg <= orientation_threshold_deg)
             self._clear_lewm_hold_count = (
                 self._clear_lewm_hold_count + 1 if pose_ok else 0
             )
@@ -361,10 +363,8 @@ def _install_reacher_success(world, protocol: ProtocolSpec) -> None:
             observation, reward, _, truncated, info = original_step(action)
             qpos = np.asarray(self.env.physics.data.qpos)
             target = np.asarray(self.env.task.target_qpos)
-            errors = (
-                wrapped_angle_error(qpos, target)
-                if protocol.reacher_wrap_angles
-                else np.abs(qpos - target)
+            errors = reacher_joint_error(
+                qpos, target, protocol.resolved_reacher_angle_mode()
             )
             joint_error = float(np.max(errors))
             success = joint_error < protocol.reacher_joint_threshold_rad
@@ -385,7 +385,6 @@ def _install_reacher_success(world, protocol: ProtocolSpec) -> None:
 
 def _install_task_success(world, task: str, protocol: ProtocolSpec) -> None:
     if task == "cube":
-        assert protocol.cube_orientation_threshold_deg is not None
         _install_cube_success(
             world,
             position_threshold_m=protocol.cube_position_threshold_m,
@@ -397,7 +396,7 @@ def _install_task_success(world, task: str, protocol: ProtocolSpec) -> None:
         _install_pusht_success(world, protocol)
     elif task == "reacher":
         _install_reacher_success(world, protocol)
-    elif protocol.tworoom_route_required:
+    elif protocol.tworoom_collision_mode == "swept":
         install_topology_success(world, protocol)
     else:
         _install_tworoom_success(world, protocol)
@@ -640,7 +639,7 @@ def evaluate_manifest(
     episode_successes = np.asarray(raw_metrics["episode_successes"], dtype=bool)
     topology_records = (
         topology_audit_records()
-        if task == "tworoom" and protocol.tworoom_route_required
+        if task == "tworoom" and protocol.tworoom_collision_mode == "swept"
         else []
     )
     summary = summarize_success(
@@ -673,7 +672,10 @@ def evaluate_manifest(
             "pusht_block_only": protocol.pusht_block_only,
             "reacher_joint_threshold_rad": protocol.reacher_joint_threshold_rad,
             "reacher_wrap_angles": protocol.reacher_wrap_angles,
+            "reacher_angle_mode": protocol.resolved_reacher_angle_mode(),
             "tworoom_distance_threshold": protocol.tworoom_distance_threshold,
+            "tworoom_crossroom_only": protocol.tworoom_crossroom_only,
+            "tworoom_source_window_clean": protocol.tworoom_source_window_clean,
             "tworoom_route_required": protocol.tworoom_route_required,
             "tworoom_collision_mode": protocol.tworoom_collision_mode,
             "sustained_steps": protocol.hold_steps(task),

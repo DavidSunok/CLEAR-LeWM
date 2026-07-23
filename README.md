@@ -5,16 +5,16 @@
 <h1 align="center">CLEAR-LeWM</h1>
 
 <p align="center">
-  <a href="pyproject.toml"><img src="https://img.shields.io/badge/version-0.3.0-f26b5e" alt="v0.3.0"></a>
+  <a href="pyproject.toml"><img src="https://img.shields.io/badge/version-0.5.0-f26b5e" alt="v0.5.0"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-101828" alt="MIT License"></a>
-  <a href="tests"><img src="https://img.shields.io/badge/tests-43%20passed-15803d" alt="43 tests passed"></a>
-  <a href="results/v0.3"><img src="https://img.shields.io/badge/audited%20runs-16-e5b94f" alt="16 v0.3 audited runs"></a>
-  <a href="manifests/v0.3"><img src="https://img.shields.io/badge/tasks-4-65ae6e" alt="4 tasks"></a>
+  <a href="tests"><img src="https://img.shields.io/badge/tests-48%20passed-15803d" alt="48 tests passed"></a>
+  <a href="results/v0.5"><img src="https://img.shields.io/badge/protocol-v0.5-e5b94f" alt="v0.5 Moderate protocol"></a>
+  <a href="manifests/v0.5"><img src="https://img.shields.io/badge/tasks-4-65ae6e" alt="4 tasks"></a>
 </p>
 
 <p align="center">
-  <strong>Target-aligned success · Physics-valid trajectories · No task-irrelevant state · No pre-solved pairs</strong><br>
-  CLEAR-LeWM freezes comparable goals, repairs task semantics, audits random floors,
+  <strong>Official task semantics · Corrected physics · No pre-solved pairs · Fixed paired manifests</strong><br>
+  CLEAR-LeWM freezes comparable goals, repairs demonstrated evaluator defects, audits random floors,
   and records enough provenance to reproduce every reported success.
 </p>
 
@@ -49,73 +49,64 @@
 
 <p align="center">
   <a href="assets/showcase/clear_lewm_v03_overview_1080p.mp4">
-    <img src="assets/showcase/clear_lewm_v03_overview_preview.gif" width="100%" alt="Released or naive task judgements compared directly with CLEAR-LeWM task-semantic judgements">
+    <img src="assets/showcase/clear_lewm_v03_overview_preview.gif" width="100%" alt="Historical v0.3 evaluator audit showcase">
   </a>
 </p>
 
 <p align="center">
-  <strong>Left: released or naive rule. Right: CLEAR v0.3 task semantics.</strong><br>
-  1280×720 animated preview. Click it for the 1920×1080 H.264 film. Every task segment uses benchmark RGB, verified metrics, or recorded rollout traces.
+  <strong>Historical v0.3 mechanism audit.</strong><br>
+  The current normative protocol is v0.5 Moderate; archived v0.3 media and results remain available for reproducibility.
 </p>
 
 > [!IMPORTANT]
 > CLEAR-LeWM is an independent community evaluation project, not an official
 > LeWM release. The historical `official` track is preserved unchanged;
-> `moderate` and `strict` make stronger, explicitly versioned claims.
+> `moderate` makes the explicitly versioned v0.5 claim. Archived v0.3 Strict
+> artifacts keep their embedded protocol and are not silently reinterpreted.
 
 > [!WARNING]
 > Published comparisons use **solver batch size 1**. Batch 16 is a development
 > throughput mode: it changes CEM random-number ordering and flipped 99/400
 > episode outcomes in a controlled four-task audit.
 
-## What v0.3 fixes
+## What v0.5 fixes
 
 <table>
   <tr>
-    <td width="25%"><a href="docs/tasks/PUSHT.md"><strong>PushT · object semantics</strong></a><br>Evaluate the T block, not the final pusher location.<br><sub><a href="docs/tasks/PUSHT.md">Manifest + rollout gates →</a></sub></td>
-    <td width="25%"><a href="docs/tasks/CUBE.md"><strong>Cube · physical symmetry</strong></a><br>Respect all 24 equivalent cube rotations.<br><sub><a href="docs/tasks/CUBE.md">Manifest + rollout gates →</a></sub></td>
-    <td width="25%"><a href="docs/tasks/REACHER.md"><strong>Reacher · honest dynamics</strong></a><br>Report wrapped first-hit SR and holding separately.<br><sub><a href="docs/tasks/REACHER.md">Manifest + rollout gates →</a></sub></td>
-    <td width="25%"><a href="docs/tasks/TWOROOM.md"><strong>TwoRoom · valid topology</strong></a><br>Sweep the full agent disk and reject routes through walls.<br><sub><a href="docs/tasks/TWOROOM.md">Manifest + rollout gates →</a></sub></td>
+    <td width="25%"><a href="docs/tasks/PUSHT.md"><strong>PushT · aligned goal state</strong></a><br>Keep the official pusher + T pose contract.<br><sub><a href="docs/tasks/PUSHT.md">Manifest + rollout gates →</a></sub></td>
+    <td width="25%"><a href="docs/tasks/CUBE.md"><strong>Cube · official object goal</strong></a><br>Score cube position, not robot pose or added orientation.<br><sub><a href="docs/tasks/CUBE.md">Manifest + rollout gates →</a></sub></td>
+    <td width="25%"><a href="docs/tasks/REACHER.md"><strong>Reacher · joint topology</strong></a><br>Wrap the periodic shoulder, not the bounded wrist.<br><sub><a href="docs/tasks/REACHER.md">Manifest + rollout gates →</a></sub></td>
+    <td width="25%"><a href="docs/tasks/TWOROOM.md"><strong>TwoRoom · clean physics</strong></a><br>Reject polluted source windows and sweep the full disk.<br><sub><a href="docs/tasks/TWOROOM.md">Manifest + rollout gates →</a></sub></td>
   </tr>
 </table>
 
-The four fixes live in the evaluator, manifests, tests, reference outputs, and
-task guides. v0.2 artifacts remain executable and are not silently rewritten.
+The four contracts live in the evaluator, fixed manifests, tests, reference
+outputs, and task guides. All older artifacts remain executable because every
+manifest embeds its complete protocol.
 
 ## Results
 
-Official high-epoch LeWM checkpoints on 100 deterministic pairs per protocol,
-seed 42, `300 x 30` CEM, solver batch 1. Within every cell, the model and
-random policy use the exact same manifest.
+Official high-epoch LeWM checkpoints are reevaluated on 100 deterministic v0.5
+Moderate pairs, seed 42, `300 x 30` CEM, top-k 30, solver batch 1. Model and
+random use the exact same manifest. The checked-in v0.5 result files are the
+source of truth for the table below.
 
-| Task | Historical Official model / random | Moderate model / random | Strict model / random | Strict excess |
-|---|---:|---:|---:|---:|
-| **PushT** | **89% / 7%** | **93% / 7%** | **79% / 2%** | **+77 pp** |
-| **Cube** | **62% / 47%** | **43% / 4%** | **18% / 3%** | **+15 pp** |
-| **Reacher** | **87% / 16%** | **90% / 17%** | **36% / 4%** | **+32 pp** |
-| **TwoRoom** | **85% / 30%** | **61% / 2%** | **24% / 0%** | **+24 pp** |
+| Task | Official LeWM | Paired random | Excess |
+|---|---:|---:|---:|
+| **PushT** | **88%** | 3% | **+85 pp** |
+| **Cube** | **51%** | 15% | **+36 pp** |
+| **Reacher** | **40%** | 5% | **+35 pp** |
+| **TwoRoom** | **81%** | 6% | **+75 pp** |
 
-Historical Official preserves upstream row-uniform sampling, initially solved
-pairs, first-hit predicates, and the released sampling range. Its random floor
-is therefore diagnostic; it is not a matched replacement for Moderate or
-Strict.
-
-TwoRoom is the strongest integrity check. On the same 100 Strict cross-room
-goals, original endpoint dynamics reported 37%; only 6% of those unchanged
-trajectories were route-valid. Swept collision recovers **24% legal SR** with
-**0/100 invalid routes**.
-
-Historical Official outputs are under
-[`results/reference/`](results/reference/); v0.3 manifests and robust outputs
-are versioned under [`manifests/v0.3/`](manifests/v0.3/) and
-[`results/v0.3/`](results/v0.3/).
-Calibration decisions are recorded in
-[`docs/PROTOCOL_CALIBRATION.md`](docs/PROTOCOL_CALIBRATION.md).
+Historical v0.3 Moderate/Strict outputs remain under
+[`results/v0.3/`](results/v0.3/) with their immutable manifests in
+[`manifests/v0.3/`](manifests/v0.3/). They answer different task definitions
+and must not be mixed into a v0.5 ranking column.
 
 ## Community results
 
 CLEAR-LeWM accepts public method results through auditable pull requests. A
-submission keeps the fixed v0.3 manifests, records its training-data track and
+submission keeps fixed versioned manifests, records its training-data track and
 inference budget, includes every episode outcome, and passes automated hash,
 protocol, provenance, and metric checks. Results are labeled `self-reported`,
 `reproducible`, or `maintainer-verified`; CI validity is never presented as an
@@ -123,32 +114,17 @@ independent reproduction.
 
 [Submit a result or propose a new data track](docs/SUBMITTING_RESULTS.md).
 
-## Two auditable modes
+## v0.5 Moderate
 
-The robust benchmark has two modes. The separate `official` track exists only
-for historical compatibility.
-
-| Mode | Pair contract | Success contract | Intended claim |
-|---|---|---|---|
-| **Moderate** | episode-balanced, initially unsolved, task-level difficulty | semantically correct task completion with practical tolerance | robust in-distribution planning |
-| **Strict** | initially unsolved, harder start-goal change | tighter geometry or topology with explicit temporal rule | conservative completion |
-
-The words Moderate and Strict do not mean “use one threshold everywhere.” A
-dynamic reach task, symmetric object, planar pushing task, and obstacle
-navigation task require different predicates. Exact definitions are normative
-in [`EVALUATION_SPEC.md`](EVALUATION_SPEC.md).
-
-<details>
-<summary><strong>Complete v0.3 mode matrix</strong></summary>
-
-| Task | Moderate | Strict |
+| Task | Pair contract | Success contract |
 |---|---|---|
-| PushT | block `<20 px`, `<20 deg`, hold 3, translation `>=25 px` | block `<15 px`, `<15 deg`, hold 5, translation `>=50 px` |
-| Cube | `<=4 cm`, symmetry angle `<=30 deg`, hold 3 | `<=3 cm`, symmetry angle `<=15 deg`, hold 5 |
-| Reacher | wrapped joint error `<0.075 rad`, first hit | wrapped joint error `<0.05 rad`, first hit |
-| TwoRoom | cross-room, swept route, `<12 px`, hold 3 | cross-room, swept route, `<8 px`, hold 5 |
+| PushT | episode-balanced, initially unsolved | pusher + block `<20 px`, T angle `<20 deg`, first hit |
+| Cube | episode-balanced, initially unsolved | cube position `<=4 cm`, first hit |
+| Reacher | episode-balanced, initially unsolved | periodic shoulder + bounded wrist, max `<0.05 rad`, first hit |
+| TwoRoom | cross-room, endpoint-clear, clean `+25` source window | swept-disk runtime, endpoint `<16 px`, first hit |
 
-</details>
+No Moderate task uses an arbitrary minimum displacement or multi-step hold.
+Exact definitions are normative in [`EVALUATION_SPEC.md`](EVALUATION_SPEC.md).
 
 <p align="center">
   <strong>TASK-BY-TASK EVALUATION</strong><br>
@@ -157,15 +133,14 @@ in [`EVALUATION_SPEC.md`](EVALUATION_SPEC.md).
 
 ## 01. PushT
 
-**Success belongs to the object.**
+**Keep the benchmark target aligned with the full goal image.**
 
 > **FAST input: 5.79x loader throughput vs Lance.** Exact-audited pixels,
 > action chunks, proprio, state, and episode boundaries.
 
-The released predicate includes both pusher and block position. A correctly
-placed T block can therefore fail because the pusher stops elsewhere; pusher
-travel can also masquerade as task difficulty. CLEAR uses block pose and block
-translation only.
+v0.5 keeps the released combined pusher-plus-block position error and wrapped
+T-block angle. It removes only initially solved pairs and episode imbalance;
+it does not redefine PushT as a block-only endpoint task.
 
 <p align="center">
   <img src="assets/task_gifs/pusht.gif" width="900" alt="PushT object-pose evaluation and rollout trace">
@@ -173,24 +148,23 @@ translation only.
 
 | Audit question | PushT definition |
 |---|---|
-| **Evaluation target** | Place the T block at the goal pose; the pusher endpoint is irrelevant. |
-| **Released issue** | Combined pusher-plus-block position can reject a correct object placement and lets pusher travel masquerade as task difficulty. |
-| **CLEAR correction** | Evaluate block position and angle only; define pair difficulty from block displacement. |
-| **What this prevents** | False failures caused by where the pusher stops, and inflated capability from pusher-only motion. |
+| **Evaluation target** | Match the released pusher and T-block goal state. |
+| **Manifest correction** | Remove starts already within the exact rollout threshold; sample episodes uniformly. |
+| **Success** | Combined position `<20 px`, wrapped T angle `<20 deg`, first hit. |
+| **Not added** | No block-only reinterpretation, minimum displacement, or hold. |
 
-**Moderate 93% / 7% · Strict 79% / 2%.**
 [Read the PushT evaluation guide](docs/tasks/PUSHT.md).
 
 ## 02. Cube
 
-**Equivalent rotations stay equivalent.**
+**Follow the OGBench object-position task.**
 
 > **FAST input: 37.72x loader throughput vs HDF5.** Exact-audited pixels,
 > action chunks, observations, merged 19-D proprio, and episode boundaries.
 
-The dataset samples target yaw, while upstream success checks only position.
-Raw quaternion matching is not a complete repair because a cube has 24 proper
-rotational symmetries. CLEAR minimizes geodesic error over that symmetry group.
+v0.5 scores cube center position within 4 cm, exactly as the OGBench task
+defines it. Cube orientation and terminal robot/gripper pose remain diagnostics,
+not Moderate success conditions.
 
 <p align="center">
   <img src="assets/task_gifs/cube.gif" width="900" alt="Cube symmetry-aware evaluation and rollout trace">
@@ -198,24 +172,23 @@ rotational symmetries. CLEAR minimizes geodesic error over that symmetry group.
 
 | Audit question | Cube definition |
 |---|---|
-| **Evaluation target** | Match cube position and physical orientation at the target. |
-| **Released issue** | Position-only success credits an unfinished pose; raw quaternion matching can reject physically equivalent cube rotations. |
-| **CLEAR correction** | Require position accuracy and minimize geodesic rotation error over all 24 proper cube symmetries. |
-| **What this prevents** | Both loose position-only false positives and symmetry-blind false negatives. |
+| **Evaluation target** | Move the cube center to the target. |
+| **Manifest correction** | Remove starts already within 4 cm; sample episodes uniformly. |
+| **Success** | Cube position `<=0.04 m`, first hit. |
+| **Not scored** | Cube orientation and terminal robot/gripper pose. |
 
-**Moderate 43% / 4% · Strict 18% / 3%.**
 [Read the Cube evaluation guide](docs/tasks/CUBE.md).
 
 ## 03. Reacher
 
-**Arrival is not stabilization.**
+**Use the topology of each joint, not one rule for both.**
 
 > **FAST input: 30.77x loader throughput vs HDF5.** Exact-audited pixels,
 > action chunks, observations, and episode boundaries.
 
-The released task is first-hit joint matching. CLEAR wraps periodic angles and
-keeps first-hit SR as the primary metric. Multi-step holding and terminal speed
-are reported as separate control diagnostics.
+The shoulder is periodic and uses shortest wrapped error. The wrist is bounded
+and uses raw absolute error. Moderate preserves the released `<0.05 rad`
+first-hit meaning; holding remains a separately labeled diagnostic.
 
 <p align="center">
   <img src="assets/task_gifs/reacher.gif" width="900" alt="Reacher wrapped-angle first-hit evaluation">
@@ -223,25 +196,24 @@ are reported as separate control diagnostics.
 
 | Audit question | Reacher definition |
 |---|---|
-| **Evaluation target** | Reach the goal joint configuration under periodic joint geometry. |
-| **Released issue** | Linear joint subtraction is distorted at the periodic boundary, while first-hit success alone does not establish stabilization. |
-| **CLEAR correction** | Use wrapped first-hit joint error as SR; report holding and terminal speed as separate diagnostics. |
-| **What this prevents** | Coordinate-seam errors and claims that silently conflate arrival with stable control. |
+| **Evaluation target** | Reach the goal joint configuration. |
+| **Topology correction** | Wrap the unbounded shoulder; do not wrap the limited wrist. |
+| **Success** | Maximum corrected joint error `<0.05 rad`, first hit. |
+| **Not added** | No relaxed threshold or hold requirement. |
 
-**Moderate 90% / 17% · Strict 36% / 4%.** Requiring Strict hold-2 instead
-changes the model/random result to 1% / 0%, which is a different claim.
 [Read the Reacher evaluation guide](docs/tasks/REACHER.md).
 
 ## 04. TwoRoom
 
-**An endpoint is not a route.**
+**Correct the environment defect without inventing a second task.**
 
 > **FAST input: 15.15x loader throughput vs HDF5.** Exact-audited pixels,
 > action chunks, proprio, and episode boundaries.
 
-When start and goal are separated by a wall, the complete agent disk must pass
-through a door. CLEAR performs continuous swept-circle collision, erodes each
-door by the agent radius, and requires a valid room crossing before success.
+Moderate restores canonical cross-room sampling, rejects any `+25` source
+window containing an illegal transition, and installs continuous swept-disk
+collision at runtime. Success itself stays the released endpoint distance
+`<16 px`, first hit.
 
 <p align="center">
   <img src="assets/task_gifs/tworoom.gif" width="900" alt="TwoRoom legal swept-circle rollout and route-valid distance trace">
@@ -249,12 +221,11 @@ door by the agent radius, and requires a valid room crossing before success.
 
 | Audit question | TwoRoom definition |
 |---|---|
-| **Evaluation target** | Reach a cross-room goal through the door with the complete agent disk. |
-| **Released issue** | Endpoint proximity and endpoint-only collision can credit trajectories that pass through a wall or an unusable door edge. |
-| **CLEAR correction** | Apply swept-circle collision, full-radius door clearance, and a mandatory valid-route gate. |
-| **What this prevents** | Success credit for physically impossible wall penetration or invalid room crossings. |
+| **Evaluation target** | Reach a goal sampled in the other room. |
+| **Data correction** | Require clear endpoints and 25/25 legal source transitions. |
+| **Physics correction** | Resolve each requested move as a complete swept disk. |
+| **Success** | Endpoint distance `<16 px`, first hit; route remains an audit field. |
 
-**Moderate 61% / 2% · Strict 24% / 0% · invalid routes 0/100.**
 [Read the TwoRoom guide](docs/tasks/TWOROOM.md) or
 [watch the dedicated 1080p topology film](assets/showcase/tworoom_topology_1080p.mp4).
 
@@ -285,20 +256,20 @@ Binary weights are intentionally not committed to ordinary Git.
 
 ```bash
 clear-lewm evaluate \
-  --manifest manifests/v0.3/tworoom/strict-seed42-n100.json \
+  --manifest manifests/v0.5/tworoom/moderate-seed42-n100.json \
   --policy random --cache-dir "$STABLEWM_HOME" \
   --dataset-path /path/to/tworoom.h5 \
   --solver-batch-size 1 \
-  --output results/tworoom-strict-random.json
+  --output results/tworoom-v05-moderate-random.json
 
 clear-lewm evaluate \
-  --manifest manifests/v0.3/tworoom/strict-seed42-n100.json \
-  --policy official/tworoom --policy-label official-lewm \
+  --manifest manifests/v0.5/tworoom/moderate-seed42-n100.json \
+  --policy official/tworoom/weights.pt --policy-label official-lewm \
   --cache-dir "$STABLEWM_HOME" \
   --dataset-path /path/to/tworoom.h5 \
   --solver-batch-size 1 --strict-checkpoint \
-  --random-results results/tworoom-strict-random.json \
-  --output results/tworoom-strict-lewm.json
+  --random-results results/tworoom-v05-moderate-random.json \
+  --output results/tworoom-v05-moderate-lewm.json
 ```
 
 The output contains the manifest hash, embedded criterion, per-episode outcomes,
@@ -337,8 +308,8 @@ for historical comparison, not a strong completion benchmark.
 
 The v0.2 manifests and 24 reference outputs remain under
 [`manifests/`](manifests/) and [`results/reference/`](results/reference/).
-Their embedded protocols remain executable. v0.3 never mutates an archived
-result in place.
+Their embedded protocols remain executable. v0.3 artifacts remain under their
+versioned directories, and v0.5 never mutates an archived result in place.
 
 ## FAST and runtime performance
 
@@ -379,8 +350,10 @@ normalization, and RGB tensors pass [`DATA_SPEC.md`](DATA_SPEC.md).
 | Path | Purpose |
 |---|---|
 | [`clear_lewm/`](clear_lewm) | task semantics, topology, manifests, metrics, and runner |
-| [`manifests/v0.3/`](manifests/v0.3) | immutable Moderate and Strict pair sets |
-| [`results/v0.3/`](results/v0.3) | 16 official-LeWM and random audited outputs |
+| [`manifests/v0.5/`](manifests/v0.5) | canonical v0.5 Moderate pair sets |
+| [`results/v0.5/`](results/v0.5) | paired v0.5 official-LeWM and random outputs |
+| [`manifests/v0.3/`](manifests/v0.3) | archived v0.3 Moderate and Strict pair sets |
+| [`results/v0.3/`](results/v0.3) | 16 archived v0.3 audited outputs |
 | [`docs/tasks/`](docs/tasks) | task-by-task evaluation guides |
 | [`checkpoints/`](checkpoints) | official revision and hash registry |
 | [`assets/showcase/`](assets/showcase) | 1080p overview and topology films |

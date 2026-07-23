@@ -87,20 +87,22 @@ def _assert_sustained(env, steps: int):
 def test_moderate_success_uses_task_specific_hold_steps():
     protocol = get_protocol("moderate")
     for env, installer, steps in (
-        (FakePushT(), _install_pusht_success, 3),
-        (FakeTwoRoom(), _install_tworoom_success, 3),
+        (FakePushT(), _install_pusht_success, 1),
+        (FakeTwoRoom(), _install_tworoom_success, 1),
         (FakeReacher(), _install_reacher_success, 1),
     ):
         installer(_world(env), protocol)
         _assert_sustained(env, steps)
 
 
-def test_pusht_task_semantics_ignore_the_final_pusher_position():
+def test_pusht_moderate_keeps_the_official_pusher_and_block_state():
     env = FakePushT()
     env.goal_state = np.array([100.0, 100.0, 10.0, 20.0, 0.0, 0.0, 0.0])
     env.state = np.array([0.0, 0.0, 10.0, 20.0, 0.0, 0.0, 0.0])
     _install_pusht_success(_world(env), get_protocol("moderate"))
-    _assert_sustained(env, 3)
+    assert not env.step(np.zeros(2))[2]
+    env.state[:2] = env.goal_state[:2]
+    assert env.step(np.zeros(2))[2]
 
 
 def test_reacher_uses_shortest_periodic_joint_error():
@@ -108,6 +110,16 @@ def test_reacher_uses_shortest_periodic_joint_error():
     env.env.physics.data.qpos = np.array([-np.pi + 0.01, 0.0])
     env.env.task.target_qpos = np.array([np.pi - 0.01, 0.0])
     _install_reacher_success(_world(env), get_protocol("strict"))
+    assert env.step(np.zeros(2))[2]
+
+
+def test_reacher_moderate_wraps_shoulder_but_not_bounded_wrist():
+    env = FakeReacher()
+    env.env.physics.data.qpos = np.array([-np.pi + 0.01, -2.7])
+    env.env.task.target_qpos = np.array([np.pi - 0.01, 2.7])
+    _install_reacher_success(_world(env), get_protocol("moderate"))
+    assert not env.step(np.zeros(2))[2]
+    env.env.physics.data.qpos[1] = env.env.task.target_qpos[1]
     assert env.step(np.zeros(2))[2]
 
 

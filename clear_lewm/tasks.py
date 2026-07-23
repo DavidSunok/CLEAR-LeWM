@@ -31,6 +31,25 @@ def wrapped_angle_error(current: np.ndarray, target: np.ndarray) -> np.ndarray:
     return np.abs(np.arctan2(np.sin(delta), np.cos(delta)))
 
 
+def reacher_joint_error(
+    current: np.ndarray, target: np.ndarray, mode: str
+) -> np.ndarray:
+    """Return errors under the joint topology used by DMC Reacher."""
+    raw = np.abs(
+        np.asarray(current, dtype=np.float64) - np.asarray(target, dtype=np.float64)
+    )
+    if mode == "raw":
+        return raw
+    wrapped = wrapped_angle_error(current, target)
+    if mode == "all-periodic":
+        return wrapped
+    if mode == "shoulder-periodic":
+        result = raw.copy()
+        result[..., 0] = wrapped[..., 0]
+        return result
+    raise ValueError(f"Unknown Reacher angle mode: {mode}")
+
+
 def _cube_symmetry_matrices() -> np.ndarray:
     matrices = []
     identity = np.eye(3, dtype=np.float64)
@@ -141,12 +160,16 @@ def pair_diagnostics(
         start, goal = _read_pair(dataset, "qpos", starts, goals)
         raw_max_joint = np.max(np.abs(goal - start), axis=1)
         wrapped_max_joint = np.max(wrapped_angle_error(goal, start), axis=1)
+        topology_max_joint = np.max(
+            reacher_joint_error(goal, start, "shoulder-periodic"), axis=1
+        )
         return PairDiagnostics(
-            difficulty=wrapped_max_joint,
+            difficulty=topology_max_joint,
             initial_success=raw_max_joint < 0.05,
             extras={
                 "max_joint_distance_rad": raw_max_joint,
                 "max_wrapped_joint_distance_rad": wrapped_max_joint,
+                "max_topology_joint_distance_rad": topology_max_joint,
             },
         )
 
@@ -180,3 +203,56 @@ def pair_diagnostics(
             "goal_clear": goal_clear,
         },
     )
+
+
+def tworoom_invalid_transition_prefix(dataset: h5py.File) -> np.ndarray:
+    """Prefix count of physically invalid transitions in a TwoRoom dataset."""
+    from .datasets import episode_column
+    from .topology import canonical_tworoom_geometry, check_route_segment
+
+    positions = np.asarray(dataset["proprio"][:], dtype=np.float64)
+    episodes = np.asarray(dataset[episode_column(dataset)][:])
+    steps = np.asarray(dataset["step_idx"][:])
+    if len(positions) < 2:
+        return np.zeros(len(positions), dtype=np.int64)
+
+    adjacent = (episodes[1:] == episodes[:-1]) & (steps[1:] == steps[:-1] + 1)
+    starts = positions[:-1]
+    ends = positions[1:]
+    segment_min = np.minimum(starts, ends)
+    segment_max = np.maximum(starts, ends)
+    geometry = canonical_tworoom_geometry()
+
+    candidates = ~adjacent
+    low, high = geometry.center_bounds
+    candidates |= np.any((starts < low) | (starts > high), axis=1)
+    candidates |= np.any((ends < low) | (ends > high), axis=1)
+    radius = geometry.agent_radius
+    for rectangle in geometry.solid_wall_rectangles():
+        lower = np.asarray(
+            [rectangle.xmin - radius, rectangle.ymin - radius], dtype=np.float64
+        )
+        upper = np.asarray(
+            [rectangle.xmax + radius, rectangle.ymax + radius], dtype=np.float64
+        )
+        candidates |= np.all(segment_max >= lower, axis=1) & np.all(
+            segment_min <= upper, axis=1
+        )
+
+    invalid = ~adjacent
+    for index in np.flatnonzero(candidates & adjacent):
+        invalid[index] = not check_route_segment(
+            geometry, starts[index], ends[index]
+        ).valid
+    return np.concatenate(
+        (np.zeros(1, dtype=np.int64), np.cumsum(invalid, dtype=np.int64))
+    )
+
+
+def tworoom_source_window_clean(
+    invalid_prefix: np.ndarray, starts: np.ndarray, goals: np.ndarray
+) -> np.ndarray:
+    """Return whether every transition in each [start, goal] window is legal."""
+    starts = np.asarray(starts, dtype=np.int64)
+    goals = np.asarray(goals, dtype=np.int64)
+    return (invalid_prefix[goals] - invalid_prefix[starts]) == 0

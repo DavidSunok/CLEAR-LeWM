@@ -1,142 +1,114 @@
-# CLEAR-LeWM Evaluation Specification v0.3
+# CLEAR-LeWM Evaluation Specification v0.5
 
-This document is normative. A result may use a CLEAR-LeWM tier name only when
-it follows the corresponding rules below.
+This document is normative for the v0.5 Moderate protocol. A result may use
+the `v0.5 Moderate` label only when it follows every rule below.
 
-## 1. Shared task setup
+## 1. Scope
 
-Every tier uses a future state from the same offline episode as the visual goal.
-The default goal offset is 25 environment steps and the control budget is 50
-steps. A versioned manifest fixes every
-`(episode_id, start_step, goal_step)` tuple before any policy is evaluated.
+v0.5 defines a conservative benchmark correction:
 
-All methods and baselines in one comparison must use the same:
+- keep each task's upstream success semantics;
+- remove start-goal pairs that are already successful at the start;
+- sample episodes rather than over-weighting long trajectories;
+- repair only demonstrated implementation defects;
+- freeze model and random-policy evaluation to the same manifest.
 
-1. manifest and dataset fingerprint;
-2. environment, action bounds, and evaluation budget;
-3. policy, solver, and environment seeds;
-4. planning horizon, samples, iterations, and top-k;
-5. task success tier.
+The historical `official` protocol remains available for LeWM-compatible
+reproduction. The v0.3 Strict protocol and its manifests remain immutable
+historical artifacts; v0.5 does not silently reinterpret them.
 
-For matched paper comparisons, they must also share the per-task physics and
-numerical fingerprints defined in
-[`docs/RUNTIME_REPRODUCIBILITY.md`](docs/RUNTIME_REPRODUCIBILITY.md). An
-environment directory name is not a version record.
+## 2. Shared pair contract
 
-## 2. Three success tiers
+Every Moderate pair satisfies all of the following:
 
-### Official
+1. `goal_row = start_row + 25` in the same offline episode;
+2. the start fails the exact task predicate used during rollout;
+3. sampling is episode-balanced, with one pair per episode when `n <=` the
+   number of eligible episodes;
+4. no additional minimum-displacement or difficulty threshold is applied;
+5. seed 42 and `n=100` define the canonical release manifests.
 
-`official` reproduces upstream LeWM evaluation for historical comparison:
+The control budget is 50 environment steps. Expert actions between the start
+and goal rows are never replayed during evaluation. The tested policy acts in
+the simulator from the recorded start state.
 
-- row-uniform sampling over all valid start rows;
-- initially successful pairs retained;
-- the upstream `N - 1` sampling range retained;
-- original task thresholds and first-hit termination;
-- deterministic policy seeding added and recorded.
+## 3. Moderate task contracts
 
-This tier is compatibility evidence, not a strict benchmark.
-
-### Moderate
-
-`moderate` samples episodes uniformly, removes pairs already successful at the
-start, and applies a task-semantic predicate. Temporal requirements are explicit
-per task: object placement uses a short hold, while Reacher preserves its
-released first-hit meaning.
-
-### Strict
-
-`strict` uses episode-balanced sampling, removes initially successful pairs,
-requires a larger start-goal displacement, and applies tighter task tolerances
-and task-specific hold durations.
-
-| Task | Official | Moderate | Strict |
+| Task | Pair gate | Runtime success | Temporal rule |
 |---|---|---|---|
-| PushT | pusher + block position `<20`, block angle `<20 deg`, first hit | block position `<20`, angle `<20 deg`, hold 3 | block position `<15`, angle `<15 deg`, hold 5 |
-| Reacher | raw joint error `<0.05 rad`, first hit | wrapped joint error `<0.075 rad`, first hit | wrapped joint error `<0.05 rad`, first hit |
-| TwoRoom | distance `<16`, first hit | cross-room, swept route, distance `<12`, hold 3 | cross-room, swept route, distance `<8`, hold 5 |
-| Cube | position `<=0.04 m`, first hit | position `<=0.04 m`, symmetry angle `<=30 deg`, hold 3 | position `<=0.03 m`, symmetry angle `<=15 deg`, hold 5 |
+| PushT | remove starts already satisfying the official pose predicate | L2 over pusher and block positions `<20`, wrapped T angle `<20 deg` | first hit |
+| Cube | remove starts with cube position error `<=0.04 m` | cube position error `<=0.04 m`; orientation and robot pose are not scored | first hit |
+| Reacher | remove starts satisfying the corrected joint-topology error `<0.05 rad` | shoulder uses shortest periodic error; bounded wrist uses raw absolute error; max error `<0.05 rad` | first hit |
+| TwoRoom | cross-room; start and goal disks clear; every transition in the 25-step source window legal | corrected swept-disk collision; endpoint distance `<16 px` | first hit |
 
-Cube orientation minimizes geodesic distance over the 24 proper rotational
-symmetries of a cube. Reacher uses the shortest periodic angle. TwoRoom erodes
-each visible door by the complete agent radius and requires `route_valid=true`.
-PushT success scores the T block but not the terminal pusher position. Cube
-success scores the cube pose but not the terminal robot or gripper pose.
+### PushT
 
-These predicates define external task completion after physical rollout. They
-do not prescribe or alter a method's internal planning objective; in
-particular, the reference LeWM/CEM policy retains its full-goal-image latent
-cost.
+v0.5 intentionally retains the released five-dimensional goal-state meaning.
+The position term contains both pusher and T-block coordinates, while the angle
+term contains the wrapped T orientation. This matches the full goal-image
+planning objective and avoids introducing a new block-only task.
 
-## 3. Pair construction
+### Cube
 
-A start row is valid only when a row from the same episode exists exactly 25
-steps later. `official` samples valid rows without replacement. `moderate` and
-`strict` sample episode IDs uniformly, then one valid start per selected
-episode. When more pairs than episodes are requested, independently shuffled
-episode cycles are used.
+OGBench Cube defines success from object position only. Cube orientation,
+gripper pose, and robot pose remain useful diagnostics but are not Moderate
+success conditions. The 24-way cube-symmetry metric is retained in code for
+archived v0.3 Strict manifests, not folded into v0.5 Moderate.
 
-Strict minimum start-goal displacement is:
+### Reacher
 
-| Task | Statistic | Minimum |
-|---|---|---:|
-| PushT | T-block translation | 50.0 px |
-| Reacher | maximum wrapped joint-angle difference | 0.25 rad |
-| TwoRoom | shortest full-clearance door path | 32.0 px |
-| Cube | cube position distance | 0.08 m |
+The DMC model has different joint topologies. The shoulder hinge is unbounded
+and periodic, so its error is
 
-Moderate additionally requires 25 px of PushT block translation and a 24 px
-valid-door path for TwoRoom. Both TwoRoom robust modes use cross-room pairs.
+```text
+abs(atan2(sin(q - q_goal), cos(q - q_goal))).
+```
 
-## 4. Data split is orthogonal
+The wrist hinge is range-limited, so wrapping it across `-pi/pi` would identify
+physically distant states. Its error is ordinary absolute subtraction.
 
-Success rigor and trajectory generalization answer different questions.
+### TwoRoom
 
-- `--split all` is the default in-distribution setting and is valid for released
-  official checkpoints trained on the full public dataset.
-- `--split heldout` deterministically assigns 20% of episode IDs to evaluation.
-  It is a held-out claim only if those IDs were excluded from training.
+Cross-room is a sampling gate inherited from the canonical PLDM/DINO-WM task,
+not an extra success condition. At runtime, the complete radius-7 agent disk is
+resolved continuously against the wall and door. Success itself remains the
+released endpoint distance `<16 px`.
 
-Episode IDs are ranked by the first 64 bits of
-`SHA256("clear-lewm:{seed}:{episode_id}")`; the lowest-ranked IDs are held out.
-An official full-data checkpoint may be measured on those rows, but that number
-must not be labeled held-out generalization.
+The released TwoRoom dataset was generated with an endpoint collision defect.
+Therefore v0.5 additionally requires `source_window_clean=true`: every one of
+the 25 recorded transitions between start and goal must be legal under the
+corrected swept-disk geometry. This prevents a corrupted demonstration window
+from defining the benchmark goal. It does not replay those transitions during
+evaluation.
 
-The physical training reader is governed by [`DATA_SPEC.md`](DATA_SPEC.md).
-Evaluation manifests always reference the canonical HDF5 row space.
+## 4. Matched evaluation
 
-## 5. Metrics
+All methods and baselines in one comparison must share:
 
-The primary report contains:
+1. manifest SHA-256 and dataset fingerprint;
+2. task environment, action bounds, and 50-step budget;
+3. policy, solver, and environment seeds;
+4. planner samples, iterations, top-k, and solver batch size;
+5. success protocol and evaluator commit.
 
-- raw success rate and 95% episode-bootstrap confidence interval;
-- deterministic random-policy SR on the identical manifest;
-- excess over random in percentage points;
-- paired bootstrap interval for method minus random;
-- normalized success `(method - random) / (100 - random)`;
-- per-difficulty-bin SR and individual episode outcomes.
+Reference v0.5 runs use seed 42, `300 x 30` CEM, top-k 30, and solver batch
+size 1. The paired random baseline uses the exact same 100 manifest pairs.
 
-Task diagnostics are reported separately from primary SR: PushT block speed,
-Cube linear/angular speed, Reacher `SR@hold2`, and TwoRoom invalid-route count.
+## 5. Reporting
 
-Random normalization does not replace a meaningful success predicate. Report
-all three tiers separately; never mix their numbers in one ranking column.
+The primary report includes success rate, episode-bootstrap 95% interval,
+paired random SR, excess over random, all episode outcomes, checkpoint identity,
+solver parameters, dataset fingerprint, environment fingerprint, and manifest
+SHA-256. TwoRoom additionally records route and collision diagnostics even
+though route validity is not a second success predicate in Moderate.
 
-## 6. Reproducibility record
+Training-seed uncertainty and evaluation-episode uncertainty are different.
+Aggregate across training seeds when available while preserving paired episode
+outcomes for each seed.
 
-A published result retains the manifest JSON, dataset revision or SHA-256,
-training-data record, LeWM/stable-worldmodel/CLEAR-LeWM commits, checkpoint
-SHA-256, solver parameters, package lock, and every random seed.
+## 6. Compatibility
 
-When reporting paired gain over random, the random result must carry the same
-manifest SHA-256, task, protocol, and policy seed. The runner rejects a random
-trace whose identity differs even when its episode count happens to match.
-
-Training-seed and evaluation-episode uncertainty are different. Aggregate
-across training seeds, while retaining paired per-episode outcomes per seed.
-
-## 7. v0.1 compatibility
-
-`official-compat`, `clear-id`, `clear-standard`, and `clear-hard` remain accepted
-so v0.1 manifests are executable. New reports should use `official`, `moderate`,
-and `strict`; old names are not silently reinterpreted.
+Every manifest embeds its complete `ProtocolSpec`. Older v0.1-v0.3 manifests
+therefore continue to execute with their original thresholds, hold durations,
+and task semantics after v0.5 is installed. Published artifacts must never be
+edited in place.

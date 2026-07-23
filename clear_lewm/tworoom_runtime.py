@@ -1,4 +1,4 @@
-"""Route-valid TwoRoom runtime hooks for Moderate and Strict evaluation."""
+"""Corrected TwoRoom collision and optional route-gated success hooks."""
 
 from __future__ import annotations
 
@@ -64,7 +64,7 @@ ACTIVE_AUDITS: list[EpisodeAudit] = []
 
 
 def install_topology_success(world, protocol) -> None:
-    """Install swept-disk collision and route-gated success on every env."""
+    """Install swept-disk collision and protocol-selected success on every env."""
     if protocol.tworoom_collision_mode != "swept":
         raise ValueError(
             "Route-required TwoRoom currently supports only swept collision"
@@ -141,11 +141,9 @@ def install_topology_success(world, protocol) -> None:
                 )
             )
             crossing_ok = not _audit.cross_room_goal or _audit.valid_room_crossings > 0
-            success = bool(
-                distance < protocol.tworoom_distance_threshold
-                and _audit.route_valid
-                and crossing_ok
-            )
+            success = distance < protocol.tworoom_distance_threshold
+            if protocol.tworoom_route_required:
+                success = bool(success and _audit.route_valid and crossing_ok)
             _audit.hold_count = _audit.hold_count + 1 if success else 0
             self._clear_lewm_hold_count = _audit.hold_count
             terminated = _audit.hold_count >= protocol.hold_steps("tworoom")

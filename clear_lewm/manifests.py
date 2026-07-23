@@ -16,7 +16,11 @@ from .datasets import (
     valid_pairs,
 )
 from .protocols import ProtocolSpec, get_protocol, normalize_task
-from .tasks import pair_diagnostics
+from .tasks import (
+    pair_diagnostics,
+    tworoom_invalid_transition_prefix,
+    tworoom_source_window_clean,
+)
 
 SCHEMA_VERSION = "clear-lewm-manifest-v1"
 
@@ -45,11 +49,11 @@ def _criterion_initial_success(diagnostics, task: str, spec: ProtocolSpec):
             extras["angle_distance_deg"] < spec.pusht_angle_threshold_deg
         )
     if task == "reacher":
-        distance_key = (
-            "max_wrapped_joint_distance_rad"
-            if spec.reacher_wrap_angles
-            else "max_joint_distance_rad"
-        )
+        distance_key = {
+            "raw": "max_joint_distance_rad",
+            "all-periodic": "max_wrapped_joint_distance_rad",
+            "shoulder-periodic": "max_topology_joint_distance_rad",
+        }[spec.resolved_reacher_angle_mode()]
         return extras[distance_key] < spec.reacher_joint_threshold_rad
     return extras["euclidean_distance"] < spec.tworoom_distance_threshold
 
@@ -58,8 +62,13 @@ def _criterion_difficulty(diagnostics, task: str, spec: ProtocolSpec):
     extras = diagnostics.extras
     if task == "pusht" and not spec.pusht_block_only:
         return extras["position_distance"]
-    if task == "reacher" and not spec.reacher_wrap_angles:
-        return extras["max_joint_distance_rad"]
+    if task == "reacher":
+        distance_key = {
+            "raw": "max_joint_distance_rad",
+            "all-periodic": "max_wrapped_joint_distance_rad",
+            "shoulder-periodic": "max_topology_joint_distance_rad",
+        }[spec.resolved_reacher_angle_mode()]
+        return extras[distance_key]
     if task == "tworoom" and not spec.tworoom_route_required:
         return extras["euclidean_distance"]
     return diagnostics.difficulty
@@ -105,6 +114,12 @@ def generate_manifest(
         goals = goals[split_mask]
 
         diagnostics = pair_diagnostics(dataset, task, starts, goals)
+        invalid_transition_prefix = None
+        if task == "tworoom" and spec.tworoom_source_window_clean:
+            invalid_transition_prefix = tworoom_invalid_transition_prefix(dataset)
+            diagnostics.extras["source_window_clean"] = tworoom_source_window_clean(
+                invalid_transition_prefix, starts, goals
+            )
         criterion_difficulty = _criterion_difficulty(diagnostics, task, spec)
         criterion_initial = _criterion_initial_success(diagnostics, task, spec)
         initial_success_rate = float(criterion_initial.mean() * 100.0)
@@ -118,6 +133,8 @@ def generate_manifest(
             keep &= diagnostics.extras["cross_room"]
             keep &= diagnostics.extras["start_clear"]
             keep &= diagnostics.extras["goal_clear"]
+        if task == "tworoom" and spec.tworoom_source_window_clean:
+            keep &= diagnostics.extras["source_window_clean"]
         min_difficulty = spec.min_difficulty.get(task)
         if min_difficulty is not None:
             keep &= criterion_difficulty >= min_difficulty
@@ -135,6 +152,10 @@ def generate_manifest(
         )
         chosen_goals = chosen + spec.goal_offset
         chosen_diag = pair_diagnostics(dataset, task, chosen, chosen_goals)
+        if invalid_transition_prefix is not None:
+            chosen_diag.extras["source_window_clean"] = tworoom_source_window_clean(
+                invalid_transition_prefix, chosen, chosen_goals
+            )
         chosen_difficulty = _criterion_difficulty(chosen_diag, task, spec)
         chosen_initial = _criterion_initial_success(chosen_diag, task, spec)
         ep_key = episode_column(dataset)
@@ -153,7 +174,12 @@ def generate_manifest(
                 "upstream_initial_success": bool(chosen_diag.initial_success[index]),
             }
             for name, values in chosen_diag.extras.items():
-                pair[name] = float(values[index])
+                value = _json_scalar(values[index])
+                pair[name] = (
+                    bool(value)
+                    if np.issubdtype(values.dtype, np.bool_)
+                    else float(value)
+                )
             pairs.append(pair)
 
     fingerprint = {
@@ -182,6 +208,9 @@ def generate_manifest(
             "initial_success_rate_percent": initial_success_rate,
             "upstream_initial_success_rate_percent": (upstream_initial_success_rate),
             "pairs_after_filters": int(len(filtered_starts)),
+            "eligible_episodes_after_filters": int(
+                len(np.unique(episodes[filtered_starts]))
+            ),
             "pairs_available_to_sampler": int(len(sampling_candidates)),
             "num_eval": num_eval,
             "unique_episodes": int(len(np.unique(episodes[chosen]))),

@@ -22,8 +22,10 @@ class ProtocolSpec:
     pusht_block_only: bool = False
     reacher_joint_threshold_rad: float = 0.05
     reacher_wrap_angles: bool = False
+    reacher_angle_mode: str | None = None
     tworoom_distance_threshold: float = 16.0
     tworoom_crossroom_only: bool = False
+    tworoom_source_window_clean: bool = False
     tworoom_route_required: bool = False
     tworoom_collision_mode: str = "official"
     cube_symmetry_aware: bool = False
@@ -42,6 +44,11 @@ class ProtocolSpec:
     def hold_steps(self, task: str) -> int:
         task_value = getattr(self, f"{task}_sustained_steps")
         return int(task_value if task_value is not None else self.sustained_steps)
+
+    def resolved_reacher_angle_mode(self) -> str:
+        if self.reacher_angle_mode is not None:
+            return self.reacher_angle_mode
+        return "all-periodic" if self.reacher_wrap_angles else "raw"
 
 
 PROTOCOLS: dict[str, ProtocolSpec] = {
@@ -66,21 +73,21 @@ PROTOCOLS: dict[str, ProtocolSpec] = {
         ),
         sampling="episode-balanced",
         split="all",
-        heldout_fraction=0.2,
+        heldout_fraction=0.0,
         exclude_initial_success=True,
-        cube_orientation_threshold_deg=30.0,
-        cube_symmetry_aware=True,
-        pusht_block_only=True,
-        reacher_joint_threshold_rad=0.075,
-        reacher_wrap_angles=True,
-        tworoom_distance_threshold=12.0,
+        cube_orientation_threshold_deg=None,
+        cube_symmetry_aware=False,
+        pusht_block_only=False,
+        reacher_joint_threshold_rad=0.05,
+        reacher_angle_mode="shoulder-periodic",
+        tworoom_distance_threshold=16.0,
         tworoom_crossroom_only=True,
-        tworoom_route_required=True,
+        tworoom_source_window_clean=True,
+        tworoom_route_required=False,
         tworoom_collision_mode="swept",
-        sustained_steps=3,
-        reacher_sustained_steps=1,
+        sustained_steps=1,
         success_mode="task-sustained",
-        min_difficulty={"pusht": 25.0, "tworoom": 24.0},
+        min_difficulty={},
     ),
     "strict": ProtocolSpec(
         name="strict",
