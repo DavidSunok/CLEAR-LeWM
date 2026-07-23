@@ -55,3 +55,27 @@ def tworoom_dataset(tmp_path: Path) -> Path:
         dataset["proprio"] = proprio
         dataset["action"] = np.zeros((episodes * length, 2), dtype=np.float32)
     return path
+
+
+@pytest.fixture
+def reacher_dataset(tmp_path: Path) -> Path:
+    path = tmp_path / "reacher.h5"
+    episodes = 4
+    length = 32
+    total = episodes * length
+    ep_idx = np.repeat(np.arange(episodes), length)
+    step_idx = np.tile(np.arange(length), episodes)
+    qpos = np.zeros((total, 2), dtype=np.float64)
+    finger_pos = np.zeros((total, 2), dtype=np.float64)
+    for episode in range(episodes):
+        rows = slice(episode * length, (episode + 1) * length)
+        qpos[rows, 0] = np.linspace(0.0, 1.0, length)
+        finger_pos[rows, 0] = np.linspace(0.0, 0.1, length)
+
+    with h5py.File(path, "w") as dataset:
+        dataset["ep_idx"] = ep_idx
+        dataset["step_idx"] = step_idx
+        dataset["qpos"] = qpos
+        dataset["finger_pos"] = finger_pos
+        dataset["action"] = np.zeros((total, 2), dtype=np.float32)
+    return path

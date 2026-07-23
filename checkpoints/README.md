@@ -9,4 +9,4 @@ python scripts/prepare_official_checkpoints.py --cache-dir "$STABLEWM_HOME"
 
 The script verifies the downloaded source hash, reconstructs the canonical
 architecture, strictly loads all 303 tensors, and writes a runtime hash sidecar.
-The release registry is [`official-v0.3.json`](official-v0.3.json).
+The release registry is [`official-v0.5.json`](official-v0.5.json).

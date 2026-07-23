@@ -1,61 +1,61 @@
-# Protocol calibration record
+# CLEAR-LeWM v0.5 protocol calibration
 
-Calibration date: 2026-07-22. This document records the v0.3 task-semantic
-protocol. All values use official high-epoch LeWM checkpoints, 100 fixed
-seed-42 pairs, `300 x 30` CEM, and solver batch size 1.
+Calibration dates: 2026-07-22 to 2026-07-23. All model values use the pinned
+official high-epoch LeWM checkpoints, `300 x 30` CEM, top-k 30, solver batch
+size 1, and 100 fixed pairs per manifest.
 
-## Final v0.3 matrix
+## Moderate: minimal compatibility correction
 
-| Task | Moderate model/random | Strict model/random |
+Moderate seed-42 results are:
+
+| Task | Official LeWM | Paired random |
 |---|---:|---:|
-| PushT | **93% / 7%** | **79% / 2%** |
-| Cube | **43% / 4%** | **18% / 3%** |
-| Reacher | **90% / 17%** | **36% / 4%** |
-| TwoRoom | **61% / 2%** | **24% / 0%** |
+| PushT | 88% | 3% |
+| Cube | 51% | 15% |
+| Reacher | 40% | 5% |
+| TwoRoom | 81% | 6% |
 
-Official compatibility remains available for historical comparison. It is not
-reinterpreted under v0.3.
+Moderate was accepted only after confirming that it changes no more than the
+released benchmark requires:
 
-## Why calibration changed
+- all tasks remove initially solved pairs and sample episodes uniformly;
+- PushT keeps the complete released pusher-plus-block goal state;
+- Cube keeps OGBench's 4 cm object-position success;
+- Reacher wraps only the unbounded shoulder and leaves the bounded wrist raw;
+- TwoRoom restores cross-room sampling, rejects polluted source windows, and
+  replaces endpoint-only collision with continuous swept-disk physics while
+  retaining the released 16 px endpoint predicate.
 
-### PushT
+## Strict: task-semantic precision
 
-The v0.2 predicate included final pusher position in both success and pair
-difficulty. v0.3 evaluates only T-block pose and uses block translation. The
-new manifests contain no block-semantic initial successes.
+Strict uses seeds 0, 1, and 42. Values are mean +/- sample standard deviation.
 
-### Cube
+| Task | Official LeWM | Paired random |
+|---|---:|---:|
+| PushT | 70.33 +/- 4.04% | 5.00 +/- 1.73% |
+| Cube | 26.33 +/- 1.53% | 6.00 +/- 2.65% |
+| Reacher | 43.00 +/- 7.21% | 5.00 +/- 3.46% |
+| TwoRoom | 58.33 +/- 2.31% | 1.67 +/- 2.89% |
 
-Target yaw is present in the dataset, but raw quaternion matching rejects
-physically equivalent cube rotations. v0.3 minimizes orientation error over the
-24-element cube rotation group. This changes Moderate from 36% to 43% on the
-same pair IDs.
+Strict thresholds were selected to express each task's physical endpoint
+without collapsing the converged official checkpoint to zero:
 
-### Reacher
-
-The released task is first-hit. v0.3 preserves that meaning and wraps periodic
-joint angles. A separate Strict `0.05 rad, hold 2` audit yielded 1% model and 0%
-random, demonstrating that stabilization is a materially different claim.
-
-### TwoRoom
-
-The released endpoint collision can accept paths through a wall or doorframe.
-On 100 cross-room Strict goals, original dynamics produced 37% endpoint SR;
-only 6% of the unchanged trajectories were route-valid. Swept-disk collision
-produced 24% legal SR with 0 invalid routes. Moderate produced 61% / 2%, also
-with 0 invalid routes.
+- PushT: T-block `10 px / 10 deg`, hold 3;
+- Cube: cube center `3 cm` plus 24-fold orientation `15 deg`, hold 3;
+- Reacher: physical fingertip endpoint `1 cm`, hold 2;
+- TwoRoom: legal cross-room route, goal side reached, endpoint `8 px`.
 
 ## Selection guardrails
 
-Thresholds were accepted only when all of the following held:
+Every accepted threshold satisfies:
 
-1. selected pairs were initially unsolved under the rollout predicate;
-2. model and random used the exact same manifest;
-3. the official checkpoint remained measurably above random;
-4. task-equivalent states were not separated by representation artifacts;
-5. physics or topology constraints could not be bypassed by endpoint checks.
+1. selected pairs are initially unsolved under the same rollout predicate;
+2. model and random use identical manifests and policy seeds;
+3. the official checkpoint remains measurably above random;
+4. task-equivalent states are not separated by representation artifacts;
+5. TwoRoom wall geometry cannot be bypassed by endpoint checks;
+6. task-irrelevant robot pose is excluded only in Strict, where the semantic
+   change is explicit.
 
-The 2026-07-21 v0.2 matrix remains preserved under
-[`results/reference/`](../results/reference/) and its embedded manifest
-protocols remain executable. New reports should use
-[`results/v0.3/`](../results/v0.3/).
+Previous protocols are preserved by their Git release tags; their numbers are
+not renamed or pooled with v0.5.

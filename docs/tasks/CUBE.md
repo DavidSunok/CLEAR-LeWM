@@ -1,48 +1,47 @@
 # Cube evaluation guide
 
-> **v0.5 Moderate contract:** move the cube center to the target position.
-> Cube orientation and the terminal robot/gripper pose are not scored.
+> **Moderate follows OGBench's cube-position task. Strict requires precise cube
+> position and symmetry-aware orientation. Neither mode scores robot pose.**
 
-[Back to the task contracts](../../README.md#what-v05-fixes) | [Normative
+[Back to the task contracts](../../README.md#two-auditable-modes) | [Normative
 v0.5 specification](../../EVALUATION_SPEC.md)
 
-## Why position only
+## Why the cube is the target
 
-Cube is the OGBench goal-conditioned manipulation task. Its released success
-condition checks object position within 4 cm. v0.5 follows that task definition
-instead of adding an orientation requirement. The robot and gripper are tools;
-their final pose is never part of success.
+Cube is an OGBench goal-conditioned manipulation task. The robot and gripper
+are tools; their terminal configuration is not part of task completion. The
+external evaluator reads the cube pose after physical MuJoCo steps while the
+policy receives only its declared observations and goal image.
 
 ## Gates
 
-| Gate | v0.5 Moderate definition |
-|---|---|
-| Pair source | same episode, exact `+25` step future |
-| Sampling | episode-balanced |
-| Initial success | remove `||p_cube - p_goal||_2 <= 0.04 m` |
-| Runtime success | `||p_cube - p_goal||_2 <= 0.04 m` |
-| Orientation | not scored |
-| Robot/gripper pose | not scored |
-| Temporal rule | first hit; no hold |
-| Extra difficulty | none |
+| Gate | v0.5 Moderate | v0.5 Strict |
+|---|---|---|
+| Cube center | distance `<= 0.04 m` | distance `<= 0.03 m` |
+| Cube orientation | not scored | `<= 15 deg` over 24 equivalent cube rotations |
+| Robot/gripper pose | not scored | not scored |
+| Temporal rule | first hit | hold 3 steps |
 
-The evaluator reads privileged cube position only after each physical MuJoCo
-step. The policy receives the visual goal and emits its own actions; expert
-actions are not replayed. Orientation and the 24-way symmetry distance remain
-available as diagnostics and for archived v0.3 manifests.
+Moderate minimally preserves the released OGBench success predicate after
+removing initially solved pairs. Strict evaluates fine object placement. Raw
+quaternion distance is not used because it would separate physically
+equivalent cube rotations.
 
-Official LeWM reaches **51%** on the fixed v0.5 Moderate manifest; paired
-random reaches 15%.
+## Official reference
+
+- Moderate seed 42: official LeWM **51%**, paired random **15%**.
+- Strict seeds 0/1/42: official LeWM **28/26/25%**; random **3/7/8%**.
 
 ## Reproduce
 
 ```bash
 clear-lewm evaluate \
-  --manifest manifests/v0.5/cube/moderate-seed42-n100.json \
+  --manifest manifests/v0.5/cube/strict-seed42-n100.json \
   --policy official/cube/weights.pt --policy-label official-lewm \
   --cache-dir "$STABLEWM_HOME" \
   --dataset-path /path/to/cube_single_expert.h5 \
+  --num-samples 300 --n-steps 30 --topk 30 \
   --solver-batch-size 1 --strict-checkpoint \
-  --random-results results/v0.5/cube-moderate-random-seed42-n100.json \
-  --output results/cube-v05-moderate.json
+  --random-results results/v0.5/cube-strict-random-seed42-n100.json \
+  --output results/cube-v05-strict.json
 ```

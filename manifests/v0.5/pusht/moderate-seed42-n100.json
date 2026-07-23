@@ -24,8 +24,8 @@
       "upstream_initial_success": false
     },
     {
-      "angle_distance_deg": 0.0,
-      "block_position_distance": 0.0,
+      "angle_distance_deg": 0,
+      "block_position_distance": 0,
       "difficulty": 264.21649169921875,
       "episode_id": 1188,
       "goal_row": 145089,
@@ -66,8 +66,8 @@
       "upstream_initial_success": false
     },
     {
-      "angle_distance_deg": 0.0,
-      "block_position_distance": 0.0,
+      "angle_distance_deg": 0,
+      "block_position_distance": 0,
       "difficulty": 98.45670318603516,
       "episode_id": 1597,
       "goal_row": 195937,
@@ -94,8 +94,8 @@
       "upstream_initial_success": false
     },
     {
-      "angle_distance_deg": 0.0,
-      "block_position_distance": 0.0,
+      "angle_distance_deg": 0,
+      "block_position_distance": 0,
       "difficulty": 47.88726806640625,
       "episode_id": 1715,
       "goal_row": 212122,
@@ -122,8 +122,8 @@
       "upstream_initial_success": false
     },
     {
-      "angle_distance_deg": 0.0,
-      "block_position_distance": 0.0,
+      "angle_distance_deg": 0,
+      "block_position_distance": 0,
       "difficulty": 196.06790161132812,
       "episode_id": 1815,
       "goal_row": 221186,
@@ -248,8 +248,8 @@
       "upstream_initial_success": false
     },
     {
-      "angle_distance_deg": 0.0,
-      "block_position_distance": 0.0,
+      "angle_distance_deg": 0,
+      "block_position_distance": 0,
       "difficulty": 77.01549530029297,
       "episode_id": 3627,
       "goal_row": 442824,
@@ -584,8 +584,8 @@
       "upstream_initial_success": false
     },
     {
-      "angle_distance_deg": 0.0,
-      "block_position_distance": 0.0,
+      "angle_distance_deg": 0,
+      "block_position_distance": 0,
       "difficulty": 98.04387664794922,
       "episode_id": 8379,
       "goal_row": 1039315,
@@ -780,8 +780,8 @@
       "upstream_initial_success": false
     },
     {
-      "angle_distance_deg": 0.0,
-      "block_position_distance": 0.0,
+      "angle_distance_deg": 0,
+      "block_position_distance": 0,
       "difficulty": 213.5601348876953,
       "episode_id": 11757,
       "goal_row": 1473092,
@@ -836,8 +836,8 @@
       "upstream_initial_success": false
     },
     {
-      "angle_distance_deg": 0.0,
-      "block_position_distance": 0.0,
+      "angle_distance_deg": 0,
+      "block_position_distance": 0,
       "difficulty": 181.25552368164062,
       "episode_id": 12167,
       "goal_row": 1522196,
@@ -1416,16 +1416,16 @@
     "cube_position_threshold_m": 0.04,
     "cube_sustained_steps": null,
     "cube_symmetry_aware": false,
-    "description": "Episode-balanced in-distribution evaluation with initially solved pairs removed and task-semantic completion criteria applied.",
+    "description": "Minimal LeWM-compatible correction: remove initially solved pairs, repair Reacher joint topology and TwoRoom collision/data defects, and otherwise preserve the released task predicates.",
     "eval_budget": 50,
     "exclude_initial_success": true,
     "goal_offset": 25,
-    "heldout_fraction": 0.0,
+    "heldout_fraction": 0,
     "min_difficulty": {},
     "name": "moderate",
-    "pusht_angle_threshold_deg": 20.0,
+    "pusht_angle_threshold_deg": 20,
     "pusht_block_only": false,
-    "pusht_position_threshold": 20.0,
+    "pusht_position_threshold": 20,
     "pusht_sustained_steps": null,
     "reacher_angle_mode": "shoulder-periodic",
     "reacher_joint_threshold_rad": 0.05,
@@ -1438,7 +1438,7 @@
     "sustained_steps": 1,
     "tworoom_collision_mode": "swept",
     "tworoom_crossroom_only": true,
-    "tworoom_distance_threshold": 16.0,
+    "tworoom_distance_threshold": 16,
     "tworoom_route_required": false,
     "tworoom_source_window_clean": true,
     "tworoom_sustained_steps": null

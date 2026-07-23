@@ -25,7 +25,7 @@ body:
     attributes:
       label: Request type
       options:
-        - Standard v0.3 result submission
+        - Standard v0.5 result submission
         - New policy adapter
         - Reproduction assistance
         - Maintainer verification request
@@ -60,7 +60,7 @@ body:
     attributes:
       label: Submission contract
       options:
-        - label: I used canonical v0.3 manifests and did not modify success predicates.
+        - label: I used canonical v0.5 manifests and did not modify success predicates.
           required: true
         - label: I will disclose all training-data and inference-budget differences.
           required: true

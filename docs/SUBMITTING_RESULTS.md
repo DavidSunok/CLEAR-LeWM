@@ -8,8 +8,8 @@ store training datasets, model weights, or generated videos.
 
 | Contribution | Entry point | Comparison status |
 |---|---|---|
-| A method on fixed v0.5 Moderate manifests | result bundle PR | eligible for the current results table |
-| A method on archived v0.3 manifests | result bundle PR | eligible only for the archived v0.3 table |
+| A method on fixed v0.5 Moderate manifests | result bundle PR | eligible for the Moderate table |
+| A method on fixed v0.5 Strict manifests | result bundle PR | eligible for the Strict table |
 | A LeWM-compatible policy adapter | proposal issue, then code PR | eligible after tests and review |
 | Reduced or external training data | proposal issue, then a separate data-track PR | never mixed silently with standard-data results |
 | A success-rule or manifest change | protocol proposal issue | requires a new benchmark version |
@@ -32,9 +32,9 @@ Authors may request the first two levels. Only maintainers assign
 
 ## Fixed comparison contract
 
-Headline v0.5 submissions must use:
+v0.5 submissions must use:
 
-- the checked-in `v0.5` Moderate manifest;
+- the checked-in `v0.5` manifest for the declared Moderate or Strict mode;
 - all 100 selected episodes and the manifest policy seed;
 - the exact task predicate embedded in that manifest;
 - the canonical paired random output from `results/v0.5/`;

@@ -26,6 +26,7 @@ class EpisodeAudit:
     initial_state_clear: bool = True
     goal_state_clear: bool = True
     cross_room_goal: bool = False
+    goal_side_reached: bool = False
     positions: list[list[float]] = field(default_factory=list)
     goal_position: list[float] | None = None
     geometry: dict = field(default_factory=dict)
@@ -39,6 +40,7 @@ class EpisodeAudit:
         self.initial_state_clear = self.route_valid
         self.goal_state_clear = True
         self.cross_room_goal = False
+        self.goal_side_reached = False
         self.positions = [np.asarray(position, dtype=np.float64).tolist()]
         self.goal_position = None
         self.geometry = geometry.to_dict()
@@ -54,6 +56,7 @@ class EpisodeAudit:
             "initial_state_clear": self.initial_state_clear,
             "goal_state_clear": self.goal_state_clear,
             "cross_room_goal": self.cross_room_goal,
+            "goal_side_reached": self.goal_side_reached,
             "positions": self.positions,
             "goal_position": self.goal_position,
             "geometry": self.geometry,
@@ -114,6 +117,7 @@ def install_topology_success(world, protocol) -> None:
             _audit.cross_room_goal = geometry.is_cross_room(
                 self.agent_position, goal_state
             )
+            _audit.goal_side_reached = False
             _audit.route_valid &= _audit.goal_state_clear
             _audit.hold_count = 0
             self._clear_lewm_route_valid = _audit.route_valid
@@ -141,9 +145,14 @@ def install_topology_success(world, protocol) -> None:
                 )
             )
             crossing_ok = not _audit.cross_room_goal or _audit.valid_room_crossings > 0
+            _audit.goal_side_reached = geometry.room_side(
+                self.agent_position
+            ) == geometry.room_side(self.target_position)
             success = distance < protocol.tworoom_distance_threshold
             if protocol.tworoom_route_required:
                 success = bool(success and _audit.route_valid and crossing_ok)
+            if protocol.tworoom_goal_side_required:
+                success = bool(success and _audit.goal_side_reached)
             _audit.hold_count = _audit.hold_count + 1 if success else 0
             self._clear_lewm_hold_count = _audit.hold_count
             terminated = _audit.hold_count >= protocol.hold_steps("tworoom")

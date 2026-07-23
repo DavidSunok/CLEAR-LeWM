@@ -1,51 +1,59 @@
 # PushT evaluation guide
 
-> **v0.5 Moderate contract:** reproduce the released full goal-state pose:
-> pusher position, T-block position, and T-block orientation.
+> **Moderate preserves LeWM's full goal-state predicate. Strict scores only the
+> T block under a tighter pose gate.**
 
-[Back to the task contracts](../../README.md#what-v05-fixes) | [Normative
+[Back to the task contracts](../../README.md#two-auditable-modes) | [Normative
 v0.5 specification](../../EVALUATION_SPEC.md)
 
-## Evaluation flow
+## Task and evaluation flow
 
-1. Select `goal = start + 25` from the same expert episode.
-2. Remove the pair if its start already satisfies the rollout predicate.
-3. Reset Pymunk to the start and provide the future RGB goal image.
-4. Execute only the evaluated policy's actions for at most 50 steps.
-5. Declare first-hit success when both position and angle gates pass.
+The policy receives a future RGB goal and controls the Pymunk environment from
+a recorded start. CLEAR-LeWM never replays expert actions. After each policy
+step, the external evaluator reads pusher and T-block state only to decide
+success.
+
+1. Select `goal = start + 25` from the same episode.
+2. Remove the pair if its start already satisfies the selected mode.
+3. Reset to the start and provide the future RGB goal.
+4. Execute the evaluated policy for at most 50 steps.
+5. Apply the selected gate below.
 
 ## Gates
 
-| Gate | v0.5 Moderate definition |
-|---|---|
-| Pair source | same episode, exact `+25` step future |
-| Sampling | episode-balanced, one canonical pair per selected episode |
-| Initial success | removed with the same full-state predicate |
-| Position | `||state[:4] - goal[:4]||_2 < 20` |
-| T angle | shortest wrapped difference `< pi/9` (`20 deg`) |
-| Temporal rule | first hit; no hold |
-| Extra difficulty | none |
+| Gate | v0.5 Moderate | v0.5 Strict |
+|---|---|---|
+| Position state | pusher + T block, `||state[:4]-goal[:4]|| < 20 px` | T block only, `< 10 px` |
+| T orientation | shortest wrapped error `< 20 deg` | shortest wrapped error `< 10 deg` |
+| Temporal rule | first hit | hold 3 steps |
+| Extra displacement | none | none |
 
-**Important:** v0.5 does not use the v0.3 block-only reinterpretation. PushT's
-released goal image contains both the pusher and T block, and the upstream CEM
-cost attempts to match that complete image. Keeping the released predicate
-makes the benchmark and planning target semantically aligned.
+Moderate stays aligned with the released five-dimensional state predicate and
+with LeWM's full-goal-image latent-MSE planner. Strict deliberately changes the
+success semantics: once the T is correctly placed, the final pusher position
+is task-irrelevant.
 
-The evaluator still records block-only displacement and angle diagnostics.
-They are analysis variables, not alternate success gates.
+This distinction matters because a full-image latent cost may still penalize a
+successful Strict state when the pusher differs from the goal image. CLEAR-LeWM
+is the external completion evaluator; it does not silently change a method's
+planning cost. Authors should disclose whether their cost is full-image,
+object-masked, or task-aware.
 
-Official LeWM reaches **88%** on the fixed v0.5 Moderate manifest; paired
-random reaches 3%.
+## Official reference
+
+- Moderate seed 42: official LeWM **88%**, paired random **3%**.
+- Strict seeds 0/1/42: official LeWM **66/74/71%**; random **4/4/7%**.
 
 ## Reproduce
 
 ```bash
 clear-lewm evaluate \
-  --manifest manifests/v0.5/pusht/moderate-seed42-n100.json \
+  --manifest manifests/v0.5/pusht/strict-seed42-n100.json \
   --policy official/pusht/weights.pt --policy-label official-lewm \
   --cache-dir "$STABLEWM_HOME" \
   --dataset-path /path/to/pusht_expert_train.h5 \
+  --num-samples 300 --n-steps 30 --topk 30 \
   --solver-batch-size 1 --strict-checkpoint \
-  --random-results results/v0.5/pusht-moderate-random-seed42-n100.json \
-  --output results/pusht-v05-moderate.json
+  --random-results results/v0.5/pusht-strict-random-seed42-n100.json \
+  --output results/pusht-v05-strict.json
 ```

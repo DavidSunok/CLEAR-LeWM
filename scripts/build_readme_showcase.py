@@ -12,7 +12,7 @@ from PIL import Image, ImageDraw, ImageFont, ImageOps
 
 ROOT = Path(__file__).resolve().parents[1]
 ASSETS = ROOT / "assets"
-RESULTS = ROOT / "results" / "v0.3"
+RESULTS = ROOT / "results" / "v0.5"
 BENCHMARKS = ROOT / "benchmarks"
 TASKS = ("pusht", "cube", "reacher", "tworoom")
 TASK_LABELS = {
@@ -97,7 +97,7 @@ def _draw_hero() -> None:
         font=_font(20),
     )
     draw.line((70, 382, 622, 382), fill="#344054", width=2)
-    facts = (("4", "TASKS"), ("2", "MODES"), ("16", "RUNS"))
+    facts = (("4", "TASKS"), ("2", "MODES"), ("32", "PAIRED RUNS"))
     fact_value_font = _font(38, True)
     fact_label_font = _font(15, True)
     for index, (value, label) in enumerate(facts):
@@ -147,14 +147,14 @@ def _draw_hero() -> None:
     draw.line((664, 46, 664, 554), fill="#344054", width=2)
     draw.text(
         (712, 48),
-        "FROM LOOSE SIGNALS TO TASK CONTRACTS",
+        "FROM MINIMAL REPAIR TO PRECISE COMPLETION",
         fill="#FFFFFF",
         font=_font(29, True),
     )
     headers = (
         (712, "TASK"),
-        (865, "RELEASED"),
-        (1090, "CLEAR CONTRACT"),
+        (865, "MODERATE"),
+        (1090, "STRICT"),
         (1325, "STRICT SR"),
         (1478, "FAST"),
     )
@@ -163,16 +163,16 @@ def _draw_hero() -> None:
         draw.text((x, 92), label, fill="#C0C8D4", font=_font(header_size, True))
 
     old_rules = {
-        "pusht": "Pusher + block",
-        "cube": "Position only",
-        "reacher": "Linear angles",
-        "tworoom": "Endpoint only",
+        "pusht": "Full goal state",
+        "cube": "Position <= 4 cm",
+        "reacher": "Joint topology",
+        "tworoom": "Fixed physics",
     }
     clear_rules = {
-        "pusht": "Object pose",
-        "cube": "24-fold pose",
-        "reacher": "Wrapped joints",
-        "tworoom": "Legal route",
+        "pusht": "T pose only",
+        "cube": "3 cm + 24-fold pose",
+        "reacher": "Endpoint <= 1 cm",
+        "tworoom": "Route + 8 px",
     }
     for index, task in enumerate(TASKS):
         y = 128 + index * 102
@@ -188,14 +188,14 @@ def _draw_hero() -> None:
             (865, y + 26),
             old_rules[task],
             fill="#C2CAD6",
-            font=_font(20, True),
+            font=_font(18, True),
         )
-        draw.text((1048, y + 23), "→", fill="#FFFFFF", font=_font(27, True))
+        draw.text((1050, y + 23), "→", fill="#FFFFFF", font=_font(27, True))
         draw.text(
             (1090, y + 25),
             clear_rules[task],
             fill=TASK_COLORS[task],
-            font=_font(21, True),
+            font=_font(18, True),
         )
         model = _success_rate(task, "strict", "official-lewm")
         random = _success_rate(task, "strict", "random")
@@ -218,7 +218,7 @@ def _draw_hero() -> None:
             font=_font(20, True),
         )
 
-    output = ASSETS / "readme_hero_v03_fast.png"
+    output = ASSETS / "readme_hero_v05_fast.png"
     canvas.save(output, optimize=True)
 
 
@@ -247,8 +247,8 @@ def _draw_results() -> None:
     )
     draw.text(
         (56, 76),
-        "Fixed 100-pair manifests per tier. Same 300 x 30 planner. Stricter "
-        "protocols expose the floor while retaining capability.",
+        "Fixed 100-pair manifests per mode. Same 300 x 30 planner. Moderate "
+        "preserves comparability; Strict measures precise task completion.",
         fill="#B8C1D1",
         font=_font(18),
     )
@@ -378,7 +378,7 @@ def main() -> int:
     ASSETS.mkdir(parents=True, exist_ok=True)
     _draw_hero()
     _draw_results()
-    print(ASSETS / "readme_hero_v03_fast.png")
+    print(ASSETS / "readme_hero_v05_fast.png")
     print(ASSETS / "headline_results.png")
     return 0
 

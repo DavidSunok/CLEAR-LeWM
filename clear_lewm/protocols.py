@@ -23,10 +23,13 @@ class ProtocolSpec:
     reacher_joint_threshold_rad: float = 0.05
     reacher_wrap_angles: bool = False
     reacher_angle_mode: str | None = None
+    reacher_success_mode: str = "joint"
+    reacher_endpoint_threshold_m: float = 0.015
     tworoom_distance_threshold: float = 16.0
     tworoom_crossroom_only: bool = False
     tworoom_source_window_clean: bool = False
     tworoom_route_required: bool = False
+    tworoom_goal_side_required: bool = False
     tworoom_collision_mode: str = "official"
     cube_symmetry_aware: bool = False
     sustained_steps: int = 1
@@ -68,8 +71,9 @@ PROTOCOLS: dict[str, ProtocolSpec] = {
     "moderate": ProtocolSpec(
         name="moderate",
         description=(
-            "Episode-balanced in-distribution evaluation with initially solved "
-            "pairs removed and task-semantic completion criteria applied."
+            "Minimal LeWM-compatible correction: remove initially solved pairs, "
+            "repair Reacher joint topology and TwoRoom collision/data defects, "
+            "and otherwise preserve the released task predicates."
         ),
         sampling="episode-balanced",
         split="all",
@@ -92,34 +96,33 @@ PROTOCOLS: dict[str, ProtocolSpec] = {
     "strict": ProtocolSpec(
         name="strict",
         description=(
-            "Tighter task criteria sustained for five steps, episode-balanced "
-            "sampling, and minimum start-goal displacement."
+            "Task-semantic completion built on Moderate data hygiene and physics, "
+            "with tighter object, endpoint, persistence, and topology criteria."
         ),
         sampling="episode-balanced",
         split="all",
-        heldout_fraction=0.2,
+        heldout_fraction=0.0,
         exclude_initial_success=True,
         cube_position_threshold_m=0.03,
         cube_orientation_threshold_deg=15.0,
         cube_symmetry_aware=True,
-        pusht_position_threshold=15.0,
-        pusht_angle_threshold_deg=15.0,
+        pusht_position_threshold=10.0,
+        pusht_angle_threshold_deg=10.0,
         pusht_block_only=True,
-        reacher_joint_threshold_rad=0.05,
-        reacher_wrap_angles=True,
+        reacher_success_mode="endpoint",
+        reacher_endpoint_threshold_m=0.01,
         tworoom_distance_threshold=8.0,
         tworoom_crossroom_only=True,
+        tworoom_source_window_clean=True,
         tworoom_route_required=True,
+        tworoom_goal_side_required=True,
         tworoom_collision_mode="swept",
-        sustained_steps=5,
-        reacher_sustained_steps=1,
+        sustained_steps=1,
+        pusht_sustained_steps=3,
+        cube_sustained_steps=3,
+        reacher_sustained_steps=2,
         success_mode="task-sustained",
-        min_difficulty={
-            "cube": 0.08,
-            "pusht": 50.0,
-            "reacher": 0.25,
-            "tworoom": 32.0,
-        },
+        min_difficulty={},
     ),
     # v0.1 names remain registered so existing manifests stay executable.
     "official-compat": ProtocolSpec(

@@ -17,9 +17,7 @@
     "seed": 20260723,
     "warmup_batches": 3
   },
-  "fast_dir": "/data/junhan/clear_fast_four_task_20260723/snapshots/tworoom",
   "fast_speedup": 15.372543117267027,
-  "host": "zp-nc68",
   "median_samples_per_second": {
     "fast": 4291.441912231118,
     "source": 279.1627825984633

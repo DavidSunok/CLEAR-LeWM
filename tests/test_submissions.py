@@ -21,7 +21,7 @@ def _bundle(tmp_path: Path) -> Path:
     results.mkdir(parents=True)
     result_path = results / "pusht-strict.json"
     result_path.write_bytes(
-        (ROOT / "results/v0.3/pusht-strict-official-lewm-seed42-n100.json").read_bytes()
+        (ROOT / "results/v0.5/pusht-strict-official-lewm-seed42-n100.json").read_bytes()
     )
     submission = {
         "schema_version": "clear-lewm-submission-v1",
@@ -33,7 +33,7 @@ def _bundle(tmp_path: Path) -> Path:
         },
         "contact": {"github": "example"},
         "benchmark": {
-            "version": "v0.3",
+            "version": "v0.5",
             "training_data_track": "standard-data",
             "training_data": {
                 "description": "Canonical LeWM expert training datasets",
@@ -104,7 +104,7 @@ def _v05_bundle(tmp_path: Path) -> Path:
 def test_valid_submission_checks_canonical_manifest_and_trace(tmp_path):
     report = validate_submission(_bundle(tmp_path), repo_root=ROOT)
     assert report["status"] == "valid"
-    assert report["results"][0]["success_rate_percent"] == 79.0
+    assert report["results"][0]["success_rate_percent"] == 71.0
     assert report["complete_four_task_matrix"] is False
     assert "cube/moderate" in report["missing_results"]
 
@@ -115,7 +115,7 @@ def test_v05_submission_accepts_moderate_and_uses_v05_random_floor(tmp_path):
     assert report["benchmark_version"] == "v0.5"
     assert report["results"][0]["success_rate_percent"] == 88.0
     assert report["results"][0]["random_success_rate_percent"] == 3.0
-    assert "pusht/strict" not in report["missing_results"]
+    assert "pusht/strict" in report["missing_results"]
 
 
 def test_submission_rejects_tampered_result_hash(tmp_path):
@@ -136,7 +136,7 @@ def test_submission_rejects_noncanonical_manifest(tmp_path):
     result_path.write_text(json.dumps(result))
     submission["results"][0]["sha256"] = _sha256(result_path)
     path.write_text(json.dumps(submission))
-    with pytest.raises(SubmissionValidationError, match="canonical v0.3 manifest"):
+    with pytest.raises(SubmissionValidationError, match="canonical v0.5 manifest"):
         validate_submission(path, repo_root=ROOT)
 
 

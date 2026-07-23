@@ -237,7 +237,7 @@
     "solver_target": "stable_worldmodel.solver.CEMSolver"
   },
   "manifest": "manifests/v0.5/reacher/moderate-seed42-n100.json",
-  "manifest_sha256": "ef6a81c56fad6c74d4885d60de25177a83f6713ba759620816eb84f22ca4e5b0",
+  "manifest_sha256": "1ab745023ffc673aeef2f073aa7b7d1ba2ab00cd0caf39cc392a6a6ff54d387c",
   "metrics": {
     "episodes": 100,
     "success_rate_ci95_percent": [
@@ -253,16 +253,16 @@
     "cube_position_threshold_m": 0.04,
     "cube_sustained_steps": null,
     "cube_symmetry_aware": false,
-    "description": "Episode-balanced in-distribution evaluation with initially solved pairs removed and task-semantic completion criteria applied.",
+    "description": "Minimal LeWM-compatible correction: remove initially solved pairs, repair Reacher joint topology and TwoRoom collision/data defects, and otherwise preserve the released task predicates.",
     "eval_budget": 50,
     "exclude_initial_success": true,
     "goal_offset": 25,
-    "heldout_fraction": 0.0,
+    "heldout_fraction": 0,
     "min_difficulty": {},
     "name": "moderate",
-    "pusht_angle_threshold_deg": 20.0,
+    "pusht_angle_threshold_deg": 20,
     "pusht_block_only": false,
-    "pusht_position_threshold": 20.0,
+    "pusht_position_threshold": 20,
     "pusht_sustained_steps": null,
     "reacher_angle_mode": "shoulder-periodic",
     "reacher_joint_threshold_rad": 0.05,
@@ -275,7 +275,7 @@
     "sustained_steps": 1,
     "tworoom_collision_mode": "swept",
     "tworoom_crossroom_only": true,
-    "tworoom_distance_threshold": 16.0,
+    "tworoom_distance_threshold": 16,
     "tworoom_route_required": false,
     "tworoom_source_window_clean": true,
     "tworoom_sustained_steps": null

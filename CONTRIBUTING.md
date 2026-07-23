@@ -48,9 +48,10 @@ provenance, atomic result writes, and physics/numerical environment records.
 Evaluation changes should include one full-path smoke in the pinned reference
 environment in addition to synthetic unit tests.
 
-Do not commit datasets, model checkpoints, videos, credentials, private code,
-or machine-specific absolute paths. Public reference manifests and compact JSON
-results are welcome when they include immutable dataset and code revisions.
+Do not commit datasets, model checkpoints, submission videos, credentials,
+private code, or machine-specific absolute paths. Maintainer-generated website
+media, public reference manifests, and compact JSON results are welcome when
+they include immutable dataset and code revisions.
 
 ## Community result changes
 

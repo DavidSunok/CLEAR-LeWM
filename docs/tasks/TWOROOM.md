@@ -1,61 +1,61 @@
 # TwoRoom evaluation guide
 
-> **v0.5 Moderate contract:** evaluate cross-room navigation with corrected
-> swept-disk physics and the released endpoint success threshold.
+> **Moderate repairs the rewritten environment while preserving endpoint
+> success. Strict additionally requires a precise, legal cross-room route.**
 
-[Back to the task contracts](../../README.md#what-v05-fixes) | [Normative
+[Back to the task contracts](../../README.md#two-auditable-modes) | [Normative
 v0.5 specification](../../EVALUATION_SPEC.md)
 
-## What is corrected
+## What Moderate repairs
 
-The canonical PLDM/DINO-WM task samples start and goal in opposite rooms. The
+The PLDM/DINO-WM TwoRoom task places start and goal in opposite rooms. The
 released LeWM/stable-worldmodel rewrite checks collision at the requested
-endpoint, which can admit transitions whose segment crosses a solid wall or
-clips a doorway. v0.5 resolves every runtime move as a complete radius-7 disk
-against the wall continuously.
+endpoint, which can admit a segment through a solid wall or a radius-7 disk
+clipping a doorway. v0.5 continuously sweeps the full disk along every move.
 
-The released offline dataset also contains transitions produced by that defect.
-Moderate therefore accepts a start-goal pair only when every transition in its
-25-step source window is legal under the corrected geometry. This is a data
-quality gate, not expert-action replay.
+The released offline dataset also contains transitions produced by the faulty
+rewrite. A pair is eligible only when all 25 transitions in its source window
+are legal under corrected geometry. This is a data-quality gate; evaluation
+still executes only the tested policy's actions.
 
 ## Gates
 
-| Gate | v0.5 Moderate definition |
-|---|---|
-| Pair source | same episode, exact `+25` step future |
-| Sampling | episode-balanced, cross-room only |
-| Endpoint geometry | complete start and goal disks clear |
-| Source window | all 25 recorded transitions swept-disk legal |
-| Runtime collision | continuous swept disk with full-radius door clearance |
-| Runtime success | endpoint distance `<16 px` |
-| Temporal rule | first hit; no hold |
-| Route condition | diagnostic only; not a second success predicate |
+| Gate | v0.5 Moderate | v0.5 Strict |
+|---|---|---|
+| Pair | cross-room, clear endpoints, 25/25 clean source transitions | same |
+| Runtime physics | continuous swept disk with full-radius doorway clearance | same |
+| Endpoint | distance `< 16 px` | distance `< 8 px` |
+| Route | recorded diagnostic | `route_valid=true` and at least one legal crossing |
+| Goal side | implied by endpoint in most cases | explicitly required |
+| Temporal rule | first hit | first hit after all gates pass |
 
-Cross-room is a pair-construction rule. Once evaluation starts, success remains
-the official endpoint threshold because corrected collision already makes wall
-penetration impossible. The result still stores wall contacts, blocked steps,
-valid crossings, positions, and route-valid diagnostics.
+`route_valid=true` means no executed segment crosses solid wall geometry. A
+valid room crossing is counted only when the complete disk moves through a
+doorway from one room side to the other. Strict also verifies that the final
+agent lies on the goal side of the wall.
 
-## Canonical v0.5 manifest audit
+## Canonical dataset audit
 
-The released dataset contains 670,809 valid `+25` pairs. Exactly 8,294 pairs
-from 1,415 episodes remain after initial-success, cross-room, endpoint-clear,
-and source-window-clean filtering. The fixed seed-42 manifest selects 100
-distinct episodes; all 100 have `source_window_clean=true`.
+The released dataset has 670,809 valid `+25` pairs. After Moderate filters,
+8,294 pairs from 1,415 episodes remain; Strict retains 8,325 pairs from 1,421
+episodes because its tighter endpoint rule marks fewer starts as pre-solved.
 
-Official LeWM reaches **81%** on the fixed v0.5 Moderate manifest; paired
-random reaches 6%, with corrected swept-disk execution.
+## Official reference
+
+- Moderate seed 42: official LeWM **81%**, paired random **6%**.
+- Strict seeds 0/1/42: official LeWM **61/57/57%**; random **5/0/0%**.
+- All checked-in Strict rollouts report zero invalid routes.
 
 ## Reproduce
 
 ```bash
 clear-lewm evaluate \
-  --manifest manifests/v0.5/tworoom/moderate-seed42-n100.json \
+  --manifest manifests/v0.5/tworoom/strict-seed42-n100.json \
   --policy official/tworoom/weights.pt --policy-label official-lewm \
   --cache-dir "$STABLEWM_HOME" \
   --dataset-path /path/to/tworoom.h5 \
+  --num-samples 300 --n-steps 30 --topk 30 \
   --solver-batch-size 1 --strict-checkpoint \
-  --random-results results/v0.5/tworoom-moderate-random-seed42-n100.json \
-  --output results/tworoom-v05-moderate.json
+  --random-results results/v0.5/tworoom-strict-random-seed42-n100.json \
+  --output results/tworoom-v05-strict.json
 ```

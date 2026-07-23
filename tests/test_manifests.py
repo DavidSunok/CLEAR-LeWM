@@ -52,3 +52,15 @@ def test_moderate_tworoom_rejects_contaminated_source_windows(tworoom_dataset):
     assert manifest["statistics"]["unique_episodes"] == 2
     assert all(pair["cross_room"] is True for pair in manifest["pairs"])
     assert all(pair["source_window_clean"] is True for pair in manifest["pairs"])
+
+
+def test_strict_reacher_filters_by_endpoint_distance(reacher_dataset):
+    manifest = generate_manifest(
+        reacher_dataset,
+        task="reacher",
+        protocol="strict",
+        num_eval=2,
+        seed=42,
+    )
+    assert all(not pair["initial_success"] for pair in manifest["pairs"])
+    assert all(pair["endpoint_distance_m"] > 0.01 for pair in manifest["pairs"])

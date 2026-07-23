@@ -350,6 +350,7 @@ def _install_reacher_success(world, protocol: ProtocolSpec) -> None:
         original_step = env.step
         original_set_target = env.set_target_qpos
         env._clear_lewm_hold_count = 0
+        env._clear_lewm_target_finger_pos = None
 
         def suppress_upstream_termination(self, step):
             return False
@@ -357,17 +358,41 @@ def _install_reacher_success(world, protocol: ProtocolSpec) -> None:
         def set_target_qpos(self, target_qpos):
             result = original_set_target(target_qpos)
             self._clear_lewm_hold_count = 0
+            if protocol.reacher_success_mode == "endpoint":
+                physics = self.env.physics
+                saved_qpos = np.asarray(physics.data.qpos).copy()
+                saved_qvel = np.asarray(physics.data.qvel).copy()
+                physics.data.qpos[:] = np.asarray(target_qpos)
+                physics.data.qvel[:] = 0.0
+                physics.forward()
+                self._clear_lewm_target_finger_pos = np.asarray(
+                    physics.named.data.geom_xpos["finger", :2]
+                ).copy()
+                physics.data.qpos[:] = saved_qpos
+                physics.data.qvel[:] = saved_qvel
+                physics.forward()
             return result
 
         def step(self, action):
             observation, reward, _, truncated, info = original_step(action)
-            qpos = np.asarray(self.env.physics.data.qpos)
-            target = np.asarray(self.env.task.target_qpos)
-            errors = reacher_joint_error(
-                qpos, target, protocol.resolved_reacher_angle_mode()
-            )
-            joint_error = float(np.max(errors))
-            success = joint_error < protocol.reacher_joint_threshold_rad
+            if protocol.reacher_success_mode == "endpoint":
+                if self._clear_lewm_target_finger_pos is None:
+                    raise RuntimeError("Reacher endpoint target was not initialized")
+                current = np.asarray(
+                    self.env.physics.named.data.geom_xpos["finger", :2]
+                )
+                endpoint_error = float(
+                    np.linalg.norm(current - self._clear_lewm_target_finger_pos)
+                )
+                success = endpoint_error <= protocol.reacher_endpoint_threshold_m
+            else:
+                qpos = np.asarray(self.env.physics.data.qpos)
+                target = np.asarray(self.env.task.target_qpos)
+                errors = reacher_joint_error(
+                    qpos, target, protocol.resolved_reacher_angle_mode()
+                )
+                joint_error = float(np.max(errors))
+                success = joint_error < protocol.reacher_joint_threshold_rad
             self._clear_lewm_hold_count = (
                 self._clear_lewm_hold_count + 1 if success else 0
             )
@@ -673,10 +698,13 @@ def evaluate_manifest(
             "reacher_joint_threshold_rad": protocol.reacher_joint_threshold_rad,
             "reacher_wrap_angles": protocol.reacher_wrap_angles,
             "reacher_angle_mode": protocol.resolved_reacher_angle_mode(),
+            "reacher_success_mode": protocol.reacher_success_mode,
+            "reacher_endpoint_threshold_m": protocol.reacher_endpoint_threshold_m,
             "tworoom_distance_threshold": protocol.tworoom_distance_threshold,
             "tworoom_crossroom_only": protocol.tworoom_crossroom_only,
             "tworoom_source_window_clean": protocol.tworoom_source_window_clean,
             "tworoom_route_required": protocol.tworoom_route_required,
+            "tworoom_goal_side_required": protocol.tworoom_goal_side_required,
             "tworoom_collision_mode": protocol.tworoom_collision_mode,
             "sustained_steps": protocol.hold_steps(task),
         },

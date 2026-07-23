@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import sys
+from dataclasses import replace
 from types import SimpleNamespace
 
 import numpy as np
@@ -62,9 +63,34 @@ class FakeTwoRoom:
         return np.zeros(2), 0.0, True, False, {}
 
 
+class FakeGeomPositions:
+    def __init__(self, physics):
+        self.physics = physics
+
+    def __getitem__(self, key):
+        name, axes = key
+        assert name == "finger"
+        q0, q1 = self.physics.data.qpos
+        position = np.array(
+            [np.cos(q0) + np.cos(q0 + q1), np.sin(q0) + np.sin(q0 + q1), 0.0]
+        )
+        return position[axes]
+
+
+class FakePhysics:
+    def __init__(self):
+        self.data = SimpleNamespace(qpos=np.zeros(2), qvel=np.zeros(2))
+        self.named = SimpleNamespace(
+            data=SimpleNamespace(geom_xpos=FakeGeomPositions(self))
+        )
+
+    def forward(self):
+        return None
+
+
 class FakeReacher:
     def __init__(self):
-        physics = SimpleNamespace(data=SimpleNamespace(qpos=np.zeros(2)))
+        physics = FakePhysics()
         task = SimpleNamespace(target_qpos=np.zeros(2))
         self.env = SimpleNamespace(physics=physics, task=task)
 
@@ -109,7 +135,8 @@ def test_reacher_uses_shortest_periodic_joint_error():
     env = FakeReacher()
     env.env.physics.data.qpos = np.array([-np.pi + 0.01, 0.0])
     env.env.task.target_qpos = np.array([np.pi - 0.01, 0.0])
-    _install_reacher_success(_world(env), get_protocol("strict"))
+    protocol = replace(get_protocol("moderate"), reacher_angle_mode="all-periodic")
+    _install_reacher_success(_world(env), protocol)
     assert env.step(np.zeros(2))[2]
 
 
@@ -120,6 +147,17 @@ def test_reacher_moderate_wraps_shoulder_but_not_bounded_wrist():
     _install_reacher_success(_world(env), get_protocol("moderate"))
     assert not env.step(np.zeros(2))[2]
     env.env.physics.data.qpos[1] = env.env.task.target_qpos[1]
+    assert env.step(np.zeros(2))[2]
+
+
+def test_reacher_strict_scores_only_the_fingertip_endpoint():
+    env = FakeReacher()
+    _install_reacher_success(_world(env), get_protocol("strict"))
+    env.set_target_qpos(np.array([0.0, 0.0]))
+    env.env.physics.data.qpos[:] = np.array([0.1, 0.0])
+    assert not env.step(np.zeros(2))[2]
+    env.env.physics.data.qpos[:] = np.array([0.0, 0.0])
+    assert not env.step(np.zeros(2))[2]
     assert env.step(np.zeros(2))[2]
 
 

@@ -11,10 +11,10 @@
     <meta property="og:title" content="CLEAR-LeWM">
     <meta property="og:description" content="Task completion, not proxy success.">
     <meta property="og:type" content="website">
-    <meta property="og:image" content="assets/showcase/clear_lewm_v03_overview_poster.png">
+    <meta property="og:image" content="assets/showcase/clear_lewm_v05_overview_poster.png">
     <title>CLEAR-LeWM | Task-semantic evaluation for LeWM</title>
-    <link rel="stylesheet" href="website.css?v=20260723-12">
-    <script src="website.js?v=20260723-12" defer></script>
+    <link rel="stylesheet" href="website.css?v=20260723-13">
+    <script src="website.js?v=20260723-13" defer></script>
   </head>
   <body>
     <a class="skip-link" href="#main">Skip to content</a>
@@ -76,8 +76,8 @@
           </div>
           <dl class="hero-facts" aria-label="Project facts">
             <div><dt>4</dt><dd>task contracts</dd></div>
-            <div><dt>1</dt><dd>normative v0.5 mode</dd></div>
-            <div><dt>8</dt><dd>paired v0.5 runs</dd></div>
+            <div><dt>2</dt><dd>auditable v0.5 modes</dd></div>
+            <div><dt>32</dt><dd>paired reference runs</dd></div>
             <div class="hero-fast-fact"><dt>17.9×</dt><dd><a href="#performance">4-task avg.</a></dd></div>
           </dl>
         </div>
@@ -91,8 +91,8 @@
               <h2 id="overview-title">One benchmark.<span class="title-line">Four task-semantic contracts.</span></h2>
             </div>
             <p>
-              See the historical mechanism audit, then use the<br>
-              current v0.5 contract for new comparisons.
+              See how one corrected benchmark supports<br>
+              both compatibility and precise task semantics.
             </p>
           </div>
           <video
@@ -104,7 +104,7 @@
             preload="metadata"
             poster="assets/site/overview_poster.webp"
           >
-            <source src="assets/showcase/clear_lewm_v03_overview_1080p.mp4" type="video/mp4">
+            <source src="assets/showcase/clear_lewm_v05_overview_1080p.mp4" type="video/mp4">
             Your browser does not support embedded video.
           </video>
         </div>
@@ -123,10 +123,9 @@
               ability to distinguish useful model improvements.
             </p>
             <p>
-              v0.5 keeps official task predicates, fixes joint and collision topology, removes
-              initially solved pairs, and filters contaminated TwoRoom source windows.
-              Every score remains traceable to a frozen goal, seed, solver budget, checkpoint,
-              and protocol version.
+              v0.5 Moderate keeps official task predicates while fixing joint and collision
+              topology, pre-solved pairs, and contaminated TwoRoom windows. Strict inherits
+              those repairs and asks whether the task-relevant object or endpoint is precise.
             </p>
           </div>
         </div>
@@ -209,8 +208,8 @@
         <div class="page-shell">
           <div class="protocol-heading">
             <div>
-              <p class="section-label light">v0.5 Moderate + v0.3 Strict archive</p>
-              <h2 id="protocol-title">Use v0.5 for current comparisons.</h2>
+              <p class="section-label light">v0.5 Moderate + Strict</p>
+              <h2 id="protocol-title">Choose the claim your experiment makes.</h2>
             </div>
             <div class="mode-switch" role="tablist" aria-label="Evaluation protocol">
               <button id="tab-moderate" role="tab" aria-selected="true" aria-controls="panel-moderate" tabindex="0">Moderate</button>
@@ -223,7 +222,7 @@
               <p class="panel-number">01</p>
               <div>
                 <h3>Moderate</h3>
-                <p>Official task semantics, initially unsolved episode-balanced pairs, and demonstrated implementation fixes.</p>
+                <p>Minimal repair for LeWM-compatible comparison: remove trivial cases, fix Reacher topology, and restore TwoRoom physics.</p>
               </div>
             </div>
             <div class="criteria-table" role="table" aria-label="Moderate criteria">
@@ -242,17 +241,17 @@
               <p class="panel-number">02</p>
               <div>
                 <h3>Strict</h3>
-                <p>Archived v0.3 stress test retained for exact reproduction; it is not a v0.5 ranking column.</p>
+                <p>Task-semantic precision: isolate the physical object or endpoint and apply tighter geometry and persistence.</p>
               </div>
             </div>
             <div class="criteria-table" role="table" aria-label="Strict criteria">
               <div class="criteria-row criteria-head" role="row">
                 <span role="columnheader">Task</span><span role="columnheader">Success contract</span>
               </div>
-              <div class="criteria-row" role="row"><strong role="cell">PushT</strong><span role="cell">Block pose &lt; 15 px / &lt; 15 deg, held for 5 frames; displacement &gt;= 50 px</span></div>
-              <div class="criteria-row" role="row"><strong role="cell">Cube</strong><span role="cell">Position &lt;= 3 cm; symmetry-aware angle &lt;= 15 deg, held for 5 frames</span></div>
-              <div class="criteria-row" role="row"><strong role="cell">Reacher</strong><span role="cell">Wrapped joint error &lt; 0.05 rad; first valid arrival</span></div>
-              <div class="criteria-row" role="row"><strong role="cell">TwoRoom</strong><span role="cell">Legal swept-disk route across rooms; endpoint &lt; 8 px, held for 5 frames</span></div>
+              <div class="criteria-row" role="row"><strong role="cell">PushT</strong><span role="cell">T only &lt; 10 px / &lt; 10 deg, held for 3 steps; pusher unscored</span></div>
+              <div class="criteria-row" role="row"><strong role="cell">Cube</strong><span role="cell">Cube &lt;= 3 cm + 24-fold angle &lt;= 15 deg, held for 3 steps; robot unscored</span></div>
+              <div class="criteria-row" role="row"><strong role="cell">Reacher</strong><span role="cell">Physical fingertip endpoint &lt;= 1 cm, held for 2 steps</span></div>
+              <div class="criteria-row" role="row"><strong role="cell">TwoRoom</strong><span role="cell">Valid legal crossing + goal side + endpoint &lt; 8 px</span></div>
             </div>
           </div>
         </div>
@@ -277,8 +276,8 @@
               <div class="task-body">
                 <p class="task-index">01 / PushT</p>
                 <div class="task-fast"><strong>5.79×</strong><span>FAST loader vs Lance</span></div>
-                <h3>Align success with the complete goal state.</h3>
-                <p>The official pusher + T position and T angle define first-hit success; no extra hold or displacement gate is added.</p>
+                <h3>Separate image matching from object completion.</h3>
+                <p>Moderate keeps the full goal state. Strict scores only the T at 10 px / 10 deg for three steps.</p>
                 <a href="https://github.com/DavidSunok/CLEAR-LeWM/blob/main/docs/tasks/PUSHT.md">Read the task contract</a>
               </div>
             </article>
@@ -288,19 +287,19 @@
               <div class="task-body">
                 <p class="task-index">02 / Cube</p>
                 <div class="task-fast"><strong>37.72×</strong><span>FAST loader vs HDF5</span></div>
-                <h3>Follow the OGBench object-position goal.</h3>
-                <p>Cube position within 4 cm defines success. Orientation and terminal robot pose remain diagnostics.</p>
+                <h3>Move the object, then measure its precise pose.</h3>
+                <p>Moderate follows OGBench position. Strict adds 24-fold cube orientation; robot pose is never scored.</p>
                 <a href="https://github.com/DavidSunok/CLEAR-LeWM/blob/main/docs/tasks/CUBE.md">Read the task contract</a>
               </div>
             </article>
 
             <article class="task-card reacher-card">
-              <img src="assets/task_gifs/reacher.gif" loading="lazy" alt="Reacher trace showing wrapped joint error and first arrival">
+              <img src="assets/task_gifs/reacher.gif" loading="lazy" alt="Reacher trace comparing corrected joint topology and fingertip completion">
               <div class="task-body">
                 <p class="task-index">03 / Reacher</p>
                 <div class="task-fast"><strong>30.77×</strong><span>FAST loader vs HDF5</span></div>
-                <h3>Respect each joint's actual topology.</h3>
-                <p>The unbounded shoulder wraps; the limited wrist does not. Primary SR remains first arrival at 0.05 rad.</p>
+                <h3>Repair joint topology, then score the endpoint.</h3>
+                <p>Moderate fixes shoulder/wrist errors. Strict requires the physical fingertip within 1 cm for two steps.</p>
                 <a href="https://github.com/DavidSunok/CLEAR-LeWM/blob/main/docs/tasks/REACHER.md">Read the task contract</a>
               </div>
             </article>
@@ -310,8 +309,8 @@
               <div class="task-body">
                 <p class="task-index">04 / TwoRoom</p>
                 <div class="task-fast"><strong>15.15×</strong><span>FAST loader vs HDF5</span></div>
-                <h3>Repair collision and filter polluted windows.</h3>
-                <p>Cross-room pairs use clean 25-step source windows and swept-disk runtime; success remains endpoint distance below 16 px.</p>
+                <h3>Repair collision, then demand a legal crossing.</h3>
+                <p>Both modes use clean windows and swept disks. Strict adds route, crossing, goal-side, and 8 px gates.</p>
                 <a href="https://github.com/DavidSunok/CLEAR-LeWM/blob/main/docs/tasks/TWOROOM.md">Read the task contract</a>
               </div>
             </article>
@@ -324,11 +323,11 @@
           <div class="split-heading">
             <div>
               <p class="section-label">Reference evaluation</p>
-              <h2 id="results-title">One fixed v0.5 manifest per task.</h2>
+              <h2 id="results-title">Official LeWM under both v0.5 modes.</h2>
             </div>
             <p>
-              Official high-epoch LeWM checkpoints, seed 42, 100 deterministic pairs, 300 x 30 CEM,
-              solver batch size 1. Model and random share every selected episode.
+              Moderate uses canonical seed 42. Strict reports the mean over seeds 0, 1, and 42.
+              Every cell uses 100 pairs, 300 x 30 CEM, and solver batch size 1.
             </p>
           </div>
 
@@ -337,20 +336,20 @@
               <thead>
                 <tr>
                   <th scope="col">Task</th>
-                  <th scope="col">Official LeWM</th>
-                  <th scope="col">Paired random</th>
-                  <th scope="col">Excess</th>
+                  <th scope="col">Moderate LeWM / random</th>
+                  <th scope="col">Strict LeWM / random</th>
+                  <th scope="col">Strict excess</th>
                 </tr>
               </thead>
               <tbody>
-                <tr><th scope="row">PushT</th><td>88%</td><td>3%</td><td class="excess">+85 pp</td></tr>
-                <tr><th scope="row">Cube</th><td>51%</td><td>15%</td><td class="excess">+36 pp</td></tr>
-                <tr><th scope="row">Reacher</th><td>40%</td><td>5%</td><td class="excess">+35 pp</td></tr>
-                <tr><th scope="row">TwoRoom</th><td>81%</td><td>6%</td><td class="excess">+75 pp</td></tr>
+                <tr><th scope="row">PushT</th><td>88% / 3%</td><td>70.33% / 5.00%</td><td class="excess">+65.33 pp</td></tr>
+                <tr><th scope="row">Cube</th><td>51% / 15%</td><td>26.33% / 6.00%</td><td class="excess">+20.33 pp</td></tr>
+                <tr><th scope="row">Reacher</th><td>40% / 5%</td><td>43.00% / 5.00%</td><td class="excess">+38.00 pp</td></tr>
+                <tr><th scope="row">TwoRoom</th><td>81% / 6%</td><td>58.33% / 1.67%</td><td class="excess">+56.67 pp</td></tr>
               </tbody>
             </table>
           </div>
-          <p class="table-note">v0.5 Moderate excess is model SR minus the matched random-policy SR.</p>
+          <p class="table-note">Strict values are three-seed means; full per-seed JSON records are checked into results/v0.5.</p>
         </div>
       </section>
 

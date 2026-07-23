@@ -1,7 +1,7 @@
 # Official LeWM checkpoint record
 
 Audit date: 2026-07-22. Machine-readable source, config, and runtime hashes are
-frozen in [`checkpoints/official-v0.3.json`](../checkpoints/official-v0.3.json).
+frozen in [`checkpoints/official-v0.5.json`](../checkpoints/official-v0.5.json).
 
 The four model mirrors linked by the upstream LeWM repository are pinned below.
 `scripts/prepare_official_checkpoints.py` downloads these revisions, verifies

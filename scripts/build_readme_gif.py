@@ -14,42 +14,31 @@ from PIL import Image, ImageDraw, ImageFont
 TASK_FILES = {
     "PushT": "pusht_expert_train.h5",
     "Cube": "datasets/ogbench/cube_single_expert.h5",
-    "Reacher": "datasets/dmc/reacher_random.h5",
+    "Reacher": "datasets/reacher.h5",
     "TwoRoom": "datasets/tworoom.h5",
 }
 
 TIERS = (
     (
-        "OFFICIAL",
-        "Exact upstream compatibility: retained starts and first-hit success",
-        "#667085",
-        {
-            "PushT": ("pos < 20; angle < 20 deg", "first hit"),
-            "Cube": ("position <= 4 cm", "first hit; orientation ignored"),
-            "Reacher": ("joint error < 0.05 rad", "first hit"),
-            "TwoRoom": ("distance < 16", "first hit"),
-        },
-    ),
-    (
         "MODERATE",
-        "Balanced non-trivial goals with task-semantic completion",
-        "#d97706",
+        "Minimal LeWM-compatible repair on non-trivial start-goal pairs",
+        "#257db2",
         {
-            "PushT": ("block < 20 px; angle < 20 deg", "hold 3; move >= 25"),
-            "Cube": ("pos <= 4 cm; symmetry <= 30 deg", "hold 3 steps"),
-            "Reacher": ("wrapped joint error < 0.075 rad", "first hit"),
-            "TwoRoom": ("cross-room; swept; distance < 12", "valid route; hold 3"),
+            "PushT": ("full goal state < 20 px", "angle < 20 deg; first hit"),
+            "Cube": ("cube position <= 4 cm", "official OGBench rule"),
+            "Reacher": ("corrected joint error < 0.05 rad", "first hit"),
+            "TwoRoom": ("cross-room; swept collision", "distance < 16 px; first hit"),
         },
     ),
     (
         "STRICT",
-        "Tighter geometry, sustained success, and larger start-goal change",
+        "Precise task-semantic completion built on Moderate hygiene and physics",
         "#15803d",
         {
-            "PushT": ("block < 15 px; angle < 15 deg", "hold 5; move >= 50"),
-            "Cube": ("pos <= 3 cm; symmetry <= 15 deg", "hold 5 steps"),
-            "Reacher": ("wrapped joint error < 0.05 rad", "first hit"),
-            "TwoRoom": ("cross-room; swept; distance < 8", "valid route; hold 5"),
+            "PushT": ("T block < 10 px; angle < 10 deg", "pusher ignored; hold 3"),
+            "Cube": ("cube <= 3 cm; symmetry <= 15 deg", "robot ignored; hold 3"),
+            "Reacher": ("fingertip endpoint <= 1 cm", "hold 2 steps"),
+            "TwoRoom": ("legal cross-room route; < 8 px", "goal side reached"),
         },
     ),
 )

@@ -10,7 +10,7 @@ from .protocols import TASKS, protocol_from_dict
 
 SUBMISSION_SCHEMA = "clear-lewm-submission-v1"
 RESULT_SCHEMA = "clear-lewm-result-v1"
-BENCHMARK_VERSIONS = ("v0.3", "v0.5")
+BENCHMARK_VERSIONS = ("v0.5",)
 TRAINING_DATA_TRACKS = ("standard-data", "reduced-data", "external-data")
 VERIFICATION_REQUESTS = ("self-reported", "reproducible")
 PRIMARY_PROTOCOLS = ("moderate", "strict")
@@ -273,7 +273,7 @@ def validate_submission(
     version = _required_string(benchmark, "version", "submission.benchmark")
     if version not in BENCHMARK_VERSIONS:
         raise SubmissionValidationError(f"Unsupported benchmark version: {version}")
-    accepted_protocols = ("moderate",) if version == "v0.5" else PRIMARY_PROTOCOLS
+    accepted_protocols = PRIMARY_PROTOCOLS
     track = _required_string(benchmark, "training_data_track", "submission.benchmark")
     if track not in TRAINING_DATA_TRACKS:
         raise SubmissionValidationError(f"Unsupported training-data track: {track}")

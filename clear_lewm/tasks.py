@@ -95,8 +95,10 @@ def cube_symmetry_angle_deg(q0: np.ndarray, q1: np.ndarray) -> np.ndarray:
     current = _quaternion_matrix_wxyz(q0)
     target = _quaternion_matrix_wxyz(q1)
     relative = np.swapaxes(current, -1, -2) @ target
-    equivalent = relative[..., None, :, :] @ CUBE_SYMMETRY_MATRICES
-    traces = np.trace(equivalent, axis1=-2, axis2=-1)
+    # trace(relative @ symmetry) without materializing an N x 24 x 3 x 3 tensor.
+    traces = np.einsum(
+        "...ij,kji->...k", relative, CUBE_SYMMETRY_MATRICES, optimize=True
+    )
     angles = np.arccos(np.clip((traces - 1.0) / 2.0, -1.0, 1.0))
     return np.degrees(np.min(angles, axis=-1))
 
@@ -158,6 +160,8 @@ def pair_diagnostics(
 
     if task == "reacher":
         start, goal = _read_pair(dataset, "qpos", starts, goals)
+        start_finger, goal_finger = _read_pair(dataset, "finger_pos", starts, goals)
+        endpoint_distance = np.linalg.norm(goal_finger - start_finger, axis=1)
         raw_max_joint = np.max(np.abs(goal - start), axis=1)
         wrapped_max_joint = np.max(wrapped_angle_error(goal, start), axis=1)
         topology_max_joint = np.max(
@@ -170,6 +174,7 @@ def pair_diagnostics(
                 "max_joint_distance_rad": raw_max_joint,
                 "max_wrapped_joint_distance_rad": wrapped_max_joint,
                 "max_topology_joint_distance_rad": topology_max_joint,
+                "endpoint_distance_m": endpoint_distance,
             },
         )
 

@@ -18,9 +18,7 @@
     "seed": 20260723,
     "warmup_batches": 3
   },
-  "fast_dir": "/data/junhan/clear_fast_four_task_20260723/snapshots/pusht",
   "fast_speedup": 5.669887834296906,
-  "host": "zp-nc68",
   "median_samples_per_second": {
     "fast": 3811.9685850265887,
     "source": 672.3181650910544

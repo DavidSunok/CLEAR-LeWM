@@ -49,6 +49,8 @@ def _criterion_initial_success(diagnostics, task: str, spec: ProtocolSpec):
             extras["angle_distance_deg"] < spec.pusht_angle_threshold_deg
         )
     if task == "reacher":
+        if spec.reacher_success_mode == "endpoint":
+            return extras["endpoint_distance_m"] <= spec.reacher_endpoint_threshold_m
         distance_key = {
             "raw": "max_joint_distance_rad",
             "all-periodic": "max_wrapped_joint_distance_rad",
@@ -63,6 +65,8 @@ def _criterion_difficulty(diagnostics, task: str, spec: ProtocolSpec):
     if task == "pusht" and not spec.pusht_block_only:
         return extras["position_distance"]
     if task == "reacher":
+        if spec.reacher_success_mode == "endpoint":
+            return extras["endpoint_distance_m"]
         distance_key = {
             "raw": "max_joint_distance_rad",
             "all-periodic": "max_wrapped_joint_distance_rad",
