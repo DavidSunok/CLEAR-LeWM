@@ -78,7 +78,7 @@
             <div><dt>4</dt><dd>task contracts</dd></div>
             <div><dt>2</dt><dd>difficulty modes</dd></div>
             <div><dt>16</dt><dd>audited v0.3 runs</dd></div>
-            <div class="hero-fast-fact"><dt>5.7×+</dt><dd><a href="#performance">all four loaders</a></dd></div>
+            <div class="hero-fast-fact"><dt>17.9×</dt><dd><a href="#performance">4-task avg.</a></dd></div>
           </dl>
         </div>
       </section>
@@ -137,16 +137,16 @@
         <div class="page-shell fast-grid">
           <div>
             <p class="section-label">Audited training I/O</p>
-            <h2 id="performance-title"><span>At least 5.7×</span> across all four task loaders.</h2>
+            <h2 id="performance-title"><span>17.87×</span> geometric-mean loader speedup.</h2>
           </div>
           <p>
             The generic FAST path decodes once into verified row-major memory maps while preserving
-            episode boundaries and complete action chunks. Five paired steady-state rounds ran
-            serially after conversion; all exact-equivalence audits passed. Figures are loader-only.
+            episode boundaries and complete action chunks. Five to ten paired steady-state rounds
+            ran serially after conversion; all exact-equivalence audits passed. Figures are loader-only.
           </p>
           <a href="https://github.com/DavidSunok/CLEAR-LeWM/blob/main/PERFORMANCE.md">Read the performance audit</a>
           <div class="fast-task-rates" aria-label="FAST loader throughput by task">
-            <div><span>PushT · Lance</span><strong>5.77×</strong><small>711 → 4027 samples/s</small></div>
+            <div><span>PushT · Lance</span><strong>5.79×</strong><small>672 → 3812 samples/s</small></div>
             <div><span>Cube · HDF5</span><strong>37.72×</strong><small>120 → 4427 samples/s</small></div>
             <div><span>Reacher · HDF5</span><strong>30.77×</strong><small>143 → 4362 samples/s</small></div>
             <div><span>TwoRoom · HDF5</span><strong>15.15×</strong><small>279 → 4291 samples/s</small></div>
@@ -277,7 +277,7 @@
               <img src="assets/task_gifs/pusht.gif" loading="lazy" alt="PushT trace showing the block pose metric over time">
               <div class="task-body">
                 <p class="task-index">01 / PushT</p>
-                <div class="task-fast"><strong>5.77×</strong><span>FAST loader vs Lance</span></div>
+                <div class="task-fast"><strong>5.79×</strong><span>FAST loader vs Lance</span></div>
                 <h3>Score the T-block, not the pusher.</h3>
                 <p>Object pose, angular error, displacement, and temporal hold determine success. The pusher endpoint is task-irrelevant.</p>
                 <a href="https://github.com/DavidSunok/CLEAR-LeWM/blob/main/docs/tasks/PUSHT.md">Read the task contract</a>

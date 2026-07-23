@@ -19,8 +19,8 @@
 </p>
 
 <p align="center">
-  <a href="PERFORMANCE.md"><strong>FAST training I/O: at least 5.7× loader throughput across all four tasks</strong></a><br>
-  <sub>5.77× PushT · 37.72× Cube · 30.77× Reacher · 15.15× TwoRoom · exact source-equivalence audits</sub>
+  <a href="PERFORMANCE.md"><strong>FAST training I/O: 17.87× geometric-mean loader speedup across four tasks</strong></a><br>
+  <sub>5.79× PushT · 37.72× Cube · 30.77× Reacher · 15.15× TwoRoom · exact source-equivalence audits</sub>
 </p>
 
 <p align="center">
@@ -147,7 +147,7 @@ in [`EVALUATION_SPEC.md`](EVALUATION_SPEC.md).
 
 **Success belongs to the object.**
 
-> **FAST input: 5.77x loader throughput vs Lance.** Exact-audited pixels,
+> **FAST input: 5.79x loader throughput vs Lance.** Exact-audited pixels,
 > action chunks, proprio, state, and episode boundaries.
 
 The released predicate includes both pusher and block position. A correctly
@@ -336,16 +336,17 @@ equivalence against the source reader.
 
 | Training input | Source samples/s | FAST samples/s | Paired speedup |
 |---|---:|---:|---:|
-| PushT / Lance | 711.4 | 4026.8 | **5.77x** |
+| PushT / Lance | 672.3 | 3812.0 | **5.79x** |
 | Cube / HDF5 | 119.5 | 4426.5 | **37.72x** |
 | Reacher / HDF5 | 143.0 | 4362.1 | **30.77x** |
 | TwoRoom / HDF5 | 279.2 | 4291.4 | **15.15x** |
 
-The conservative headline is **at least 5.7x steady-state loader throughput
-across all four tasks**. These numbers exclude one-time conversion and model
-compute. A separate historical PushT run observed **1.8x end-to-end training
-throughput**; development CEM batch 16 observed **1.49x evaluation throughput**
-but changes planner trajectories and is never used for published tables.
+The four-task aggregate is **17.87x geometric-mean steady-state loader
+speedup**; the arithmetic mean is 22.36x. These numbers exclude one-time
+conversion and model compute. A separate historical PushT run observed **1.8x
+end-to-end training throughput**; development CEM batch 16 observed **1.49x
+evaluation throughput** but changes planner trajectories and is never used for
+published tables.
 
 Batch 16 is faster but not numerically equivalent. Published reference tables
 and model selection stay at batch 1. Full measurements and negative results are

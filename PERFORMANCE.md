@@ -68,23 +68,26 @@ writes were already complete; tasks ran serially, and Source/FAST order
 alternated within each task. Each backend ran in a fresh subprocess with
 `num_steps=4`, `frameskip=5`, batch size 32, zero workers, three in-process
 warm-up batches, 30 measured batches, and no image transform or model compute.
-One complete fixed-index pair was discarded to prime the OS page cache, then
-five fixed-seed pairs were measured. Speedup is the median of the five paired
-FAST/Source ratios.
+Cube, Reacher, and TwoRoom discard one complete fixed-index pair to prime the
+OS page cache, then measure five fixed-seed pairs. A confirmatory PushT rerun
+uses two discarded priming pairs and ten measured pairs. Speedup is each task's
+median paired FAST/Source ratio.
 
 | Task | Source reader | Source samples/s | FAST samples/s | Paired speedup | Source / FAST CV |
 |---|---|---:|---:|---:|---:|
-| PushT | Lance | 711.4 | 4026.8 | **5.77x** | 0.070 / 0.069 |
+| PushT | Lance | 672.3 | 3812.0 | **5.79x** | 0.074 / 0.078 |
 | Cube | HDF5 | 119.5 | 4426.5 | **37.72x** | 0.029 / 0.069 |
 | Reacher | HDF5 | 143.0 | 4362.1 | **30.77x** | 0.007 / 0.068 |
 | TwoRoom | HDF5 | 279.2 | 4291.4 | **15.15x** | 0.025 / 0.020 |
 
-The conservative cross-task statement is therefore **at least 5.7x
-steady-state loader throughput**. The larger HDF5 ratios measure removal of
-random row access and repeated image decoding. They are loader-only results,
-not claims of 15-38x end-to-end training speedup. Snapshot conversion time is
-also excluded; conversion is a one-time preprocessing cost whose throughput is
-sensitive to concurrent writes and storage bandwidth.
+Across the four paired task speedups, the **geometric mean is 17.87x** and the
+arithmetic mean is 22.36x. CLEAR-LeWM uses the geometric mean as its headline
+aggregate because ratios combine multiplicatively across heterogeneous
+benchmarks. The larger HDF5 ratios measure removal of random row access and
+repeated image decoding. They are loader-only results, not claims of 15-38x
+end-to-end training speedup. Snapshot conversion time is also excluded;
+conversion is a one-time preprocessing cost whose throughput is sensitive to
+concurrent writes and storage bandwidth.
 
 ### Historical PushT observations
 

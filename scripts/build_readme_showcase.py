@@ -4,9 +4,9 @@
 from __future__ import annotations
 
 import json
-import math
 from functools import cache
 from pathlib import Path
+from statistics import geometric_mean
 
 from PIL import Image, ImageDraw, ImageFont, ImageOps
 
@@ -39,9 +39,8 @@ def _fast_speedup(task: str) -> float:
     return float(_fast_report(task)["paired_speedup_median"])
 
 
-def _fast_floor() -> float:
-    minimum = min(_fast_speedup(task) for task in TASKS)
-    return math.floor(minimum * 10) / 10
+def _fast_geomean() -> float:
+    return geometric_mean(_fast_speedup(task) for task in TASKS)
 
 
 def _font(size: int, bold: bool = False):
@@ -116,13 +115,13 @@ def _draw_hero() -> None:
     )
     draw.text(
         (86, 475),
-        f"{_fast_floor():.1f}x",
+        f"{_fast_geomean():.1f}x",
         fill="#80E1D3",
         font=_font(27, True),
     )
     draw.text(
         (190, 474),
-        "AT LEAST ACROSS 4 TASK LOADERS",
+        "4-TASK GEOMETRIC-MEAN SPEEDUP",
         fill="#FFFFFF",
         font=_font(13, True),
     )
@@ -150,17 +149,17 @@ def _draw_hero() -> None:
         (712, 48),
         "FROM LOOSE SIGNALS TO TASK CONTRACTS",
         fill="#FFFFFF",
-        font=_font(25, True),
+        font=_font(29, True),
     )
     headers = (
         (712, "TASK"),
-        (850, "RELEASED"),
-        (1080, "CLEAR CONTRACT"),
+        (865, "RELEASED"),
+        (1090, "CLEAR CONTRACT"),
         (1325, "STRICT SR"),
-        (1484, "FAST"),
+        (1478, "FAST"),
     )
     for x, label in headers:
-        draw.text((x, 94), label, fill="#98A2B3", font=_font(13, True))
+        draw.text((x, 94), label, fill="#AEB7C5", font=_font(15, True))
 
     old_rules = {
         "pusht": "Pusher + block",
@@ -182,40 +181,40 @@ def _draw_hero() -> None:
             (728, y + 24),
             TASK_LABELS[task],
             fill="#FFFFFF",
-            font=_font(20, True),
+            font=_font(22, True),
         )
         draw.text(
-            (850, y + 30),
+            (865, y + 29),
             old_rules[task],
             fill="#AAB3C1",
-            font=_font(15, True),
+            font=_font(17, True),
         )
-        draw.text((1038, y + 25), "→", fill="#FFFFFF", font=_font(24, True))
+        draw.text((1048, y + 23), "→", fill="#FFFFFF", font=_font(27, True))
         draw.text(
-            (1080, y + 29),
+            (1090, y + 28),
             clear_rules[task],
             fill=TASK_COLORS[task],
-            font=_font(16, True),
+            font=_font(18, True),
         )
         model = _success_rate(task, "strict", "official-lewm")
         random = _success_rate(task, "strict", "random")
         draw.text(
-            (1325, y + 18),
+            (1325, y + 15),
             f"{model:.0f} / {random:.0f}",
             fill="#FFFFFF",
-            font=_font(21, True),
+            font=_font(24, True),
         )
         draw.text(
-            (1327, y + 50),
+            (1327, y + 51),
             "model / random",
-            fill="#98A2B3",
-            font=_font(10, True),
+            fill="#AEB7C5",
+            font=_font(12, True),
         )
         draw.text(
-            (1484, y + 23),
+            (1478, y + 21),
             f"{_fast_speedup(task):.2f}x",
             fill="#80E1D3",
-            font=_font(18, True),
+            font=_font(20, True),
         )
 
     output = ASSETS / "readme_hero_v03_fast.png"
