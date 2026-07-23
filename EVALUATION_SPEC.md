@@ -60,6 +60,13 @@ and task-specific hold durations.
 Cube orientation minimizes geodesic distance over the 24 proper rotational
 symmetries of a cube. Reacher uses the shortest periodic angle. TwoRoom erodes
 each visible door by the complete agent radius and requires `route_valid=true`.
+PushT success scores the T block but not the terminal pusher position. Cube
+success scores the cube pose but not the terminal robot or gripper pose.
+
+These predicates define external task completion after physical rollout. They
+do not prescribe or alter a method's internal planning objective; in
+particular, the reference LeWM/CEM policy retains its full-goal-image latent
+cost.
 
 ## 3. Pair construction
 

@@ -41,6 +41,7 @@
   <a href="#01-pusht"><strong>Task Guides</strong></a> ·
   <a href="#quick-start"><strong>Quick Start</strong></a> ·
   <a href="EVALUATION_SPEC.md"><strong>Specification</strong></a> ·
+  <a href="docs/SUBMITTING_RESULTS.md"><strong>Submit Results</strong></a> ·
   <a href="checkpoints/official-v0.3.json"><strong>Checkpoints</strong></a>
 </p>
 
@@ -71,10 +72,10 @@
 
 <table>
   <tr>
-    <td width="25%"><strong>PushT · object semantics</strong><br>Evaluate the T block, not the final pusher location.</td>
-    <td width="25%"><strong>Cube · physical symmetry</strong><br>Respect all 24 equivalent cube rotations.</td>
-    <td width="25%"><strong>Reacher · honest dynamics</strong><br>Report wrapped first-hit SR and holding separately.</td>
-    <td width="25%"><strong>TwoRoom · valid topology</strong><br>Sweep the full agent disk and reject routes through walls.</td>
+    <td width="25%"><a href="docs/tasks/PUSHT.md"><strong>PushT · object semantics</strong></a><br>Evaluate the T block, not the final pusher location.<br><sub><a href="docs/tasks/PUSHT.md">Manifest + rollout gates →</a></sub></td>
+    <td width="25%"><a href="docs/tasks/CUBE.md"><strong>Cube · physical symmetry</strong></a><br>Respect all 24 equivalent cube rotations.<br><sub><a href="docs/tasks/CUBE.md">Manifest + rollout gates →</a></sub></td>
+    <td width="25%"><a href="docs/tasks/REACHER.md"><strong>Reacher · honest dynamics</strong></a><br>Report wrapped first-hit SR and holding separately.<br><sub><a href="docs/tasks/REACHER.md">Manifest + rollout gates →</a></sub></td>
+    <td width="25%"><a href="docs/tasks/TWOROOM.md"><strong>TwoRoom · valid topology</strong></a><br>Sweep the full agent disk and reject routes through walls.<br><sub><a href="docs/tasks/TWOROOM.md">Manifest + rollout gates →</a></sub></td>
   </tr>
 </table>
 
@@ -110,6 +111,17 @@ are versioned under [`manifests/v0.3/`](manifests/v0.3/) and
 [`results/v0.3/`](results/v0.3/).
 Calibration decisions are recorded in
 [`docs/PROTOCOL_CALIBRATION.md`](docs/PROTOCOL_CALIBRATION.md).
+
+## Community results
+
+CLEAR-LeWM accepts public method results through auditable pull requests. A
+submission keeps the fixed v0.3 manifests, records its training-data track and
+inference budget, includes every episode outcome, and passes automated hash,
+protocol, provenance, and metric checks. Results are labeled `self-reported`,
+`reproducible`, or `maintainer-verified`; CI validity is never presented as an
+independent reproduction.
+
+[Submit a result or propose a new data track](docs/SUBMITTING_RESULTS.md).
 
 ## Two auditable modes
 

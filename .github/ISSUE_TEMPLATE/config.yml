@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Result submission guide
+    url: https://github.com/DavidSunok/CLEAR-LeWM/blob/main/docs/SUBMITTING_RESULTS.md
+    about: Read the bundle layout, validation rules, and verification levels.
+  - name: CLEAR-LeWM website
+    url: https://davidsunok.github.io/CLEAR-LeWM/
+    about: Review the task contracts and released benchmark results.

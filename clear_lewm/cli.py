@@ -9,6 +9,7 @@ from .manifests import generate_manifest, save_manifest
 from .metrics import load_success_trace, summarize_success
 from .protocols import PROTOCOLS, TASKS
 from .runner import evaluate_manifest
+from .submissions import validate_submission
 
 
 def _write_or_print(data: dict, output: str | None) -> None:
@@ -57,6 +58,15 @@ def build_parser() -> argparse.ArgumentParser:
     summarize.add_argument("--bootstrap-samples", type=int, default=10_000)
     summarize.add_argument("--seed", type=int, default=0)
     summarize.add_argument("--output")
+
+    submission = commands.add_parser(
+        "validate-submission", help="Validate a community result bundle"
+    )
+    submission.add_argument("submission", help="path to submission.json")
+    submission.add_argument(
+        "--repo-root", help="CLEAR-LeWM checkout containing canonical manifests"
+    )
+    submission.add_argument("--output")
 
     evaluate = commands.add_parser(
         "evaluate", help="Evaluate a policy on a fixed manifest"
@@ -167,6 +177,10 @@ def main(argv: list[str] | None = None) -> int:
             bootstrap_samples=args.bootstrap_samples,
             seed=args.seed,
         )
+        _write_or_print(report, args.output)
+        return 0
+    if args.command == "validate-submission":
+        report = validate_submission(args.submission, repo_root=args.repo_root)
         _write_or_print(report, args.output)
         return 0
     if args.command == "evaluate":

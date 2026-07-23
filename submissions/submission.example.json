@@ -1,0 +1,35 @@
+{
+  "benchmark": {
+    "training_data": {
+      "description": "Canonical LeWM expert training datasets",
+      "license": "upstream dataset terms",
+      "revision": "immutable dataset revision",
+      "source": "https://example.org/dataset-card"
+    },
+    "training_data_track": "standard-data",
+    "version": "v0.3"
+  },
+  "contact": {
+    "github": "example-user"
+  },
+  "method": {
+    "license": "MIT",
+    "name": "Example Method",
+    "repository": "https://github.com/example-user/example-method",
+    "revision": "0123456789abcdef0123456789abcdef01234567"
+  },
+  "results": [
+    {
+      "path": "results/pusht-strict.json",
+      "protocol": "strict",
+      "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "task": "pusht"
+    }
+  ],
+  "schema_version": "clear-lewm-submission-v1",
+  "verification": {
+    "checkpoint": "https://example.org/checkpoints/example-method.pt",
+    "command": "clear-lewm evaluate --manifest manifests/v0.3/pusht/strict-seed42-n100.json ...",
+    "requested": "reproducible"
+  }
+}

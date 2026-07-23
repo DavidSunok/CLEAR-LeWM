@@ -1,0 +1,32 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test-and-validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+          cache: pip
+      - name: Install development dependencies
+        run: python -m pip install -e '.[dev]'
+      - name: Lint
+        run: ruff check .
+      - name: Test
+        run: pytest
+      - name: Validate community result bundles
+        shell: bash
+        run: |
+          set -euo pipefail
+          while IFS= read -r -d '' submission; do
+            clear-lewm validate-submission "$submission"
+          done < <(find submissions -name submission.json -print0)

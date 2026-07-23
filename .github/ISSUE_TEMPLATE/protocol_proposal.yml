@@ -1,0 +1,59 @@
+name: Benchmark or data-track proposal
+description: Propose a new task, dataset track, manifest, or evaluation rule.
+title: "[Protocol proposal]: "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Protocol changes are versioned. Existing manifests and reported numbers are never silently rewritten.
+  - type: dropdown
+    id: contribution
+    attributes:
+      label: Proposal type
+      options:
+        - New training-data track
+        - New task or environment
+        - Success-predicate correction
+        - Manifest or sampling change
+        - New diagnostic metric
+    validations:
+      required: true
+  - type: textarea
+    id: task_contract
+    attributes:
+      label: Task contract and failure mode
+      description: State what physical or semantic event should count as success and what the current protocol gets wrong.
+    validations:
+      required: true
+  - type: textarea
+    id: data
+    attributes:
+      label: Data provenance and license
+      description: Give public source, immutable revision, collection procedure, scale, split, and redistribution terms.
+    validations:
+      required: true
+  - type: textarea
+    id: calibration
+    attributes:
+      label: Calibration evidence
+      description: Include random/no-op floors, initially solved rate, difficulty distribution, baselines, and expected discriminative value.
+    validations:
+      required: true
+  - type: textarea
+    id: migration
+    attributes:
+      label: Versioning and migration plan
+      description: Explain comparability with existing results and which new version or experimental track should contain the change.
+    validations:
+      required: true
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Proposal checklist
+      options:
+        - label: The proposal can be implemented and tested with public artifacts.
+          required: true
+        - label: I will add synthetic regression tests for the proposed semantics.
+          required: true
+        - label: I will not overwrite an existing protocol or result in place.
+          required: true

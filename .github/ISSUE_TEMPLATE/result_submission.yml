@@ -1,0 +1,70 @@
+name: Result submission or method integration
+description: Register a method result or request an evaluator adapter.
+title: "[Submission]: "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for evaluating with CLEAR-LeWM. Standard result bundles may go directly to a pull request; use this form when an adapter or maintainer guidance is needed.
+  - type: input
+    id: method
+    attributes:
+      label: Method name
+      placeholder: Example-WM
+    validations:
+      required: true
+  - type: input
+    id: repository
+    attributes:
+      label: Public repository and immutable revision
+      placeholder: https://github.com/org/repo @ commit SHA
+    validations:
+      required: true
+  - type: dropdown
+    id: scope
+    attributes:
+      label: Request type
+      options:
+        - Standard v0.3 result submission
+        - New policy adapter
+        - Reproduction assistance
+        - Maintainer verification request
+    validations:
+      required: true
+  - type: dropdown
+    id: training_track
+    attributes:
+      label: Training-data track
+      options:
+        - standard-data
+        - reduced-data
+        - external-data
+    validations:
+      required: true
+  - type: textarea
+    id: coverage
+    attributes:
+      label: Tasks, modes, and inference budget
+      description: List tasks, Moderate/Strict modes, inference mode, solver budget, seeds, and available result files.
+    validations:
+      required: true
+  - type: textarea
+    id: artifacts
+    attributes:
+      label: Public artifacts
+      description: Link code, checkpoint, method card, dataset card, and exact reproduction command where available.
+    validations:
+      required: true
+  - type: checkboxes
+    id: contract
+    attributes:
+      label: Submission contract
+      options:
+        - label: I used canonical v0.3 manifests and did not modify success predicates.
+          required: true
+        - label: I will disclose all training-data and inference-budget differences.
+          required: true
+        - label: I understand that CI validity is not maintainer verification or endorsement.
+          required: true
+        - label: All linked artifacts can be made public under their stated licenses.
+          required: true

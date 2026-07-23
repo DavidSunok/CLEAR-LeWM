@@ -1,27 +1,83 @@
 # Reacher evaluation guide
 
-## What the task should measure
+> **Task contract:** drive every periodic target joint into the desired
+> configuration. Primary SR measures first valid arrival; maintaining the pose
+> is a separate stabilization claim.
 
-The released `qpos_match` task terminates when every target joint is reached.
-It is a first-hit task; stable holding is a stronger control claim.
+[Back to the four task contracts](../../README.md#what-v03-fixes) ·
+[Normative v0.3 specification](../../EVALUATION_SPEC.md)
 
-## Released predicate and failure mode
+## What the policy sees and what the evaluator does
 
-Joint coordinates are periodic, but raw subtraction can treat two nearby
-angles on opposite sides of `-pi/pi` as far apart. Earlier robust protocols
-also mixed a looser geometric threshold with a multi-step hold, obscuring
-whether a score meant arrival or stabilization.
+1. A manifest selects a start and a goal exactly 25 environment steps later
+   from one DMC Reacher episode.
+2. The DMC simulator is reset to the recorded start and the future RGB frame is
+   supplied as the goal image.
+3. The evaluated policy receives pixels and emits its own actions; expert
+   actions are not replayed.
+4. DMC advances the arm under those actions.
+5. The evaluator reads joint coordinates after each physical step and computes
+   the shortest periodic error. Joint state is not exposed to the policy.
 
-## CLEAR v0.3 correction
+## Official and CLEAR manifest construction
 
-CLEAR computes the shortest wrapped angle per joint. Primary SR preserves
-first-hit semantics; `SR@hold2` and terminal joint speed are separate
-diagnostics.
+| Manifest decision | Historical Official | CLEAR Moderate | CLEAR Strict |
+|---|---|---|---|
+| Pair source | same episode, `goal = start + 25` | same | same |
+| Sampling unit | rows | episodes | episodes |
+| Initially solved pair | retained | removed with wrapped `<0.075 rad` predicate | removed with wrapped `<0.05 rad` predicate |
+| Joint geometry | raw subtraction | shortest periodic difference | shortest periodic difference |
+| Minimum wrapped motion | none | none beyond the unsolved gate | `>=0.25 rad` in at least one joint |
 
-| Mode | Maximum wrapped joint error | Temporal rule |
-|---|---:|---|
-| Moderate | `<0.075 rad` | first hit |
-| Strict | `<0.05 rad` | first hit |
+> **MANIFEST GATE 1 — SAME-EPISODE FUTURE.** Every target is tied to a real
+> future configuration in the selected episode.
+
+> **MANIFEST GATE 2 — NOT PRE-SOLVED.** The start must fail the same wrapped
+> joint predicate used during rollout.
+
+> **MANIFEST GATE 3 — STRICT JOINT MOTION.** Strict requires a maximum wrapped
+> start-goal joint displacement of at least `0.25 rad`.
+
+The released seed-42 manifests contain 100 unique episodes per mode and zero
+initial successes. Strict's minimum observed maximum wrapped displacement is
+`0.2525 rad`.
+
+## Official and CLEAR runtime success
+
+For one periodic coordinate, CLEAR uses
+
+```text
+abs(atan2(sin(q - q_goal), cos(q - q_goal))).
+```
+
+| Runtime decision | Historical Official | CLEAR Moderate | CLEAR Strict |
+|---|---|---|---|
+| Joint error | raw coordinate subtraction | maximum wrapped error | maximum wrapped error |
+| Threshold | `<0.05 rad` | `<0.075 rad` | `<0.05 rad` |
+| Primary temporal rule | first hit | first hit | first hit |
+| Stabilization | not separated | report `SR@hold2` separately | report `SR@hold2` separately |
+
+> **ROLLOUT GATE 4 — PHYSICAL ACTION EXECUTION.** The policy controls the DMC
+> arm in closed loop. The evaluator does not score a predicted state or replay
+> an expert trajectory.
+
+> **SUCCESS GATE 5 — WRAPPED FIRST ARRIVAL.** Every target joint must be within
+> the mode threshold at the same physical step. Crossing `-pi/pi` cannot create
+> a false failure.
+
+> **REPORTING GATE 6 — ARRIVAL IS NOT HOLDING.** First-hit SR is the primary
+> released task meaning. `SR@hold2` and terminal joint speed must remain
+> separately labeled diagnostics.
+
+> **AUDIT GATE 7 — FIXED IDENTITY.** Model and random must share manifest hash,
+> dataset fingerprint, protocol, solver budget, and seeds.
+
+## Why wrapping and temporal separation both matter
+
+Raw subtraction can treat nearby configurations on opposite sides of
+`-pi/pi` as far apart. Conversely, silently adding a hold changes an arrival
+task into a stabilization task. CLEAR repairs the geometry while preserving
+the released first-hit claim, then reports holding separately.
 
 ## Audited result
 
@@ -30,12 +86,12 @@ diagnostics.
 | Moderate | **90%** | 17% | +73 pp |
 | Strict | **36%** | 4% | +32 pp |
 
-On the Strict pairs, adding a two-step hold changes the result to `1% / 0%`.
-That number is a stabilization diagnostic, not a replacement for first-hit SR.
+On Strict pairs, adding a two-step hold changes the result to `1% / 0%`. That
+number is a stabilization diagnostic, not a replacement for first-hit SR.
 
 ![Reacher wrapped-angle trace](../../assets/task_gifs/reacher.gif)
 
-## Run it
+## Reproduce
 
 ```bash
 clear-lewm evaluate \
@@ -46,4 +102,3 @@ clear-lewm evaluate \
   --solver-batch-size 1 --strict-checkpoint \
   --output results/reacher-strict.json
 ```
-
