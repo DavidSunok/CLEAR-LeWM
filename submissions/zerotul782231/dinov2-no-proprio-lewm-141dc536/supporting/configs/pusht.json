@@ -1,0 +1,52 @@
+{
+  "_target_": "adapter.JEPA",
+  "action_encoder": {
+    "_target_": "adapter.Embedder",
+    "emb_dim": 384,
+    "input_dim": 10
+  },
+  "action_head": {
+    "type": "mse"
+  },
+  "encoder": {
+    "_target_": "stable_pretraining.backbone.utils.from_huggingface",
+    "model_name": "facebook/dinov2-small",
+    "pretrained": true
+  },
+  "horizon_conditioned": true,
+  "pred_proj": {
+    "_target_": "adapter.MLP",
+    "hidden_dim": 2048,
+    "input_dim": 384,
+    "norm_fn": {
+      "_partial_": true,
+      "_target_": "torch.nn.BatchNorm1d"
+    },
+    "output_dim": 384
+  },
+  "predictor": {
+    "_target_": "adapter.ARPredictor",
+    "depth": 6,
+    "dim_head": 64,
+    "dropout": 0.1,
+    "emb_dropout": 0.0,
+    "heads": 16,
+    "hidden_dim": 384,
+    "input_dim": 384,
+    "mlp_dim": 2048,
+    "num_frames": 3,
+    "output_dim": 384
+  },
+  "projector": {
+    "_target_": "adapter.MLP",
+    "hidden_dim": 2048,
+    "input_dim": 384,
+    "norm_fn": {
+      "_partial_": true,
+      "_target_": "torch.nn.BatchNorm1d"
+    },
+    "output_dim": 384
+  },
+  "use_action_history": true,
+  "use_proprio": false
+}
