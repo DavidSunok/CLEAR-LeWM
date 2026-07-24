@@ -1,0 +1,87 @@
+{
+  "records": [
+    {
+      "changes": [
+        "add checkpoint.source",
+        "replace protocol with canonical manifest object",
+        "replace internal evaluation labels with method name"
+      ],
+      "episode_trace_unchanged": true,
+      "metrics_unchanged": true,
+      "protocol": "moderate",
+      "raw_sha256": "4b15dfb21ec077c32af8e1702093540a81942eefd778eec276aaeb844bf849ab",
+      "submitted_file": "results/tworoom-moderate.json",
+      "submitted_sha256": "e329dea4f302ec82d3668e795435e6feafd5cd7d0a53ed0b593d8e596b7ac9f1",
+      "task": "tworoom"
+    },
+    {
+      "changes": [
+        "add checkpoint.source",
+        "replace internal evaluation labels with method name"
+      ],
+      "episode_trace_unchanged": true,
+      "metrics_unchanged": true,
+      "protocol": "strict",
+      "raw_sha256": "270a0a95d9455bdd41aa6966be3f31487118c48f2c8715434b8df7881cb8cab8",
+      "submitted_file": "results/tworoom-strict.json",
+      "submitted_sha256": "8830f59a8def9d1a238b36f6ba9b36e46783da816adc1b3a3dfa303c1b33fa3b",
+      "task": "tworoom"
+    },
+    {
+      "changes": [
+        "add checkpoint.source",
+        "replace protocol with canonical manifest object",
+        "replace internal evaluation labels with method name"
+      ],
+      "episode_trace_unchanged": true,
+      "metrics_unchanged": true,
+      "protocol": "moderate",
+      "raw_sha256": "8e4bfc872029c7aa1185a51dd45611e438c14938f53e89ca9afc8f7877423bac",
+      "submitted_file": "results/pusht-moderate.json",
+      "submitted_sha256": "99b3160b468605241d4fdf13fda5d70753137f18431ca12db5389f80ed8890db",
+      "task": "pusht"
+    },
+    {
+      "changes": [
+        "add checkpoint.source",
+        "replace internal evaluation labels with method name"
+      ],
+      "episode_trace_unchanged": true,
+      "metrics_unchanged": true,
+      "protocol": "strict",
+      "raw_sha256": "5cf9a7834ee9fe3ebb46f9e46d47b065c4a926cf68d04c8ff338625954b294ba",
+      "submitted_file": "results/pusht-strict.json",
+      "submitted_sha256": "c253a9a635423a2b238d19c0c714b1a0f6d4831525bcc04c8fe3b24253b957b0",
+      "task": "pusht"
+    },
+    {
+      "changes": [
+        "add checkpoint.source",
+        "replace protocol with canonical manifest object",
+        "replace internal evaluation labels with method name"
+      ],
+      "episode_trace_unchanged": true,
+      "metrics_unchanged": true,
+      "protocol": "moderate",
+      "raw_sha256": "430714f7ae08598562eaacddc0bdff1b00f59cc6a8ff62a6fe85cffff030ef0c",
+      "submitted_file": "results/cube-moderate.json",
+      "submitted_sha256": "667916f13dcde398dc96adb1c0e7e509da31be799f412db27035c3a520bdbbd8",
+      "task": "cube"
+    },
+    {
+      "changes": [
+        "add checkpoint.source",
+        "replace internal evaluation labels with method name"
+      ],
+      "episode_trace_unchanged": true,
+      "metrics_unchanged": true,
+      "protocol": "strict",
+      "raw_sha256": "0e8388e2c754cd1484bc8f12608c691e62e0d2dcfdfb27d2f6f8848ffa8d76dc",
+      "submitted_file": "results/cube-strict.json",
+      "submitted_sha256": "f13d802f309e4a1ab5e99468338ac517fafc82f129035e93849f5bb1310511b3",
+      "task": "cube"
+    }
+  ],
+  "schema_version": "clear-lewm-result-packaging-transform-v1",
+  "scientific_payload_changed": false
+}

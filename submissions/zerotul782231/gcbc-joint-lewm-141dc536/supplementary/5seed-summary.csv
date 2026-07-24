@@ -1,0 +1,7 @@
+family,task,protocol,seeds,episodes_per_seed,episodes_total,mean_success_rate_percent,sample_variance_percent_squared,sample_std_percent,mean_random_success_rate_percent,mean_excess_over_random_pp,current_canonical_compatible_results
+gcbc,cube,moderate,5,100,500,16.4,26.8,5.176871642217914,,,0
+gcbc,cube,strict,5,100,500,2.8,2.7,1.6431676725154984,4.4,-1.6,0
+gcbc,pusht,moderate,5,100,500,5.6,6.3,2.5099800796022267,,,0
+gcbc,pusht,strict,5,100,500,8.0,6.5,2.5495097567963922,3.6,4.4,0
+gcbc,tworoom,moderate,5,100,500,12.6,2.3,1.51657508881031,,,0
+gcbc,tworoom,strict,5,100,500,8.4,4.3,2.073644135332772,2.6,5.8,0
