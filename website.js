@@ -39,6 +39,10 @@ const copyButton = document.querySelector("[data-copy-code]");
 const installCode = document.querySelector("[data-install-code]");
 const overviewVideo = document.querySelector("[data-overview-video]");
 const communityResults = document.querySelector("[data-community-results]");
+const modelComparison = document.querySelector("[data-model-comparison]");
+const modelComparisonLegend = document.querySelector(
+  "[data-model-comparison-legend]",
+);
 
 overviewVideo?.addEventListener("ended", () => {
   overviewVideo.currentTime = 0;
@@ -85,6 +89,108 @@ function resultCell(result) {
   excess.classList.toggle("is-negative", value < 0);
   cell.append(excess);
   return cell;
+}
+
+function comparisonModels(registry) {
+  return [
+    {
+      label: registry.matched_official_reference.method,
+      className: "model-lewm",
+      results: registry.matched_official_reference.results,
+    },
+    ...registry.submissions.map((submission, index) => ({
+      label: submission.method.replace(" LeWM", ""),
+      className: `model-community-${index % 4}`,
+      results: submission.results,
+    })),
+  ];
+}
+
+function comparisonPanel(protocol, models) {
+  const panel = document.createElement("section");
+  panel.className = "comparison-panel";
+  const title = document.createElement("h4");
+  title.textContent = protocol;
+
+  const chart = document.createElement("div");
+  chart.className = "comparison-chart";
+  chart.setAttribute(
+    "aria-label",
+    `${protocol} success-rate comparison across matched models`,
+  );
+  const yAxis = document.createElement("div");
+  yAxis.className = "comparison-y-axis";
+  [100, 75, 50, 25, 0].forEach((value) => {
+    const label = document.createElement("span");
+    label.textContent = value;
+    yAxis.append(label);
+  });
+
+  const resultMaps = models.map(
+    (model) =>
+      new Map(
+        model.results.map((result) => [
+          `${result.task}/${result.protocol}`,
+          result,
+        ]),
+      ),
+  );
+  const sharedTasks = Object.keys(taskLabels).filter((task) =>
+    resultMaps.every((results) => results.has(`${task}/${protocol}`)),
+  );
+  const groups = document.createElement("div");
+  groups.className = "comparison-groups";
+  groups.style.gridTemplateColumns = `repeat(${sharedTasks.length}, minmax(0, 1fr))`;
+
+  sharedTasks.forEach((task) => {
+    const group = document.createElement("div");
+    group.className = "comparison-task-group";
+    const bars = document.createElement("div");
+    bars.className = "comparison-task-bars";
+    models.forEach((model, index) => {
+      const result = resultMaps[index].get(`${task}/${protocol}`);
+      const value = result.success_rate_percent;
+      const stack = document.createElement("div");
+      stack.className = "comparison-bar-stack";
+      stack.style.setProperty("--bar-height", `${value}%`);
+      stack.title = `${model.label}: ${formatRate(value)}`;
+      const valueLabel = document.createElement("span");
+      valueLabel.className = "comparison-bar-value";
+      valueLabel.textContent = value;
+      const bar = document.createElement("span");
+      bar.className = `comparison-bar ${model.className}`;
+      stack.append(valueLabel, bar);
+      bars.append(stack);
+    });
+    const taskLabel = document.createElement("strong");
+    taskLabel.className = "comparison-task-label";
+    taskLabel.textContent = taskLabels[task];
+    group.append(bars, taskLabel);
+    groups.append(group);
+  });
+  chart.append(yAxis, groups);
+  panel.append(title, chart);
+  return panel;
+}
+
+function renderModelComparison(registry) {
+  if (!modelComparison || !modelComparisonLegend) return;
+  const models = comparisonModels(registry);
+  const legend = models.map((model) => {
+    const item = document.createElement("span");
+    item.className = "comparison-legend-item";
+    const swatch = document.createElement("i");
+    swatch.className = `comparison-swatch ${model.className}`;
+    const label = document.createElement("span");
+    label.textContent = model.label;
+    item.append(swatch, label);
+    return item;
+  });
+  modelComparisonLegend.replaceChildren(...legend);
+  modelComparison.replaceChildren(
+    comparisonPanel("moderate", models),
+    comparisonPanel("strict", models),
+  );
 }
 
 function communityCard(submission) {
@@ -176,6 +282,7 @@ async function loadCommunityResults() {
     const response = await fetch("submissions/leaderboard.json");
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
     const registry = await response.json();
+    renderModelComparison(registry);
     communityResults.replaceChildren(
       ...registry.submissions.map(communityCard),
     );

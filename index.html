@@ -13,8 +13,8 @@
     <meta property="og:type" content="website">
     <meta property="og:image" content="assets/showcase/clear_lewm_v05_overview_poster.png">
     <title>CLEAR-LeWM | Task-semantic evaluation for LeWM</title>
-    <link rel="stylesheet" href="website.css?v=20260724-1">
-    <script src="website.js?v=20260724-1" defer></script>
+    <link rel="stylesheet" href="website.css?v=20260724-2">
+    <script src="website.js?v=20260724-2" defer></script>
   </head>
   <body>
     <a class="skip-link" href="#main">Skip to content</a>
@@ -364,6 +364,22 @@
             <p>
               Canonical entries use seed 42 and 100 episodes per task and mode.
               Each bundle is checked by CI but remains self-reported unless independently reproduced.
+            </p>
+          </div>
+
+          <div class="model-comparison" aria-labelledby="model-comparison-title">
+            <div class="model-comparison-head">
+              <div>
+                <p class="section-label">Matched model comparison</p>
+                <h3 id="model-comparison-title">Success rate under identical evaluation.</h3>
+              </div>
+              <div class="model-comparison-legend" data-model-comparison-legend aria-label="Compared models"></div>
+            </div>
+            <div class="model-comparison-panels" data-model-comparison>
+              <p class="community-loading">Loading matched model comparison...</p>
+            </div>
+            <p class="comparison-note">
+              Canonical seed 42, 100 episodes, pure CEM 300 x 30. Only tasks submitted by all three models are shown; Reacher remains unreported for both community models.
             </p>
           </div>
 

@@ -53,6 +53,41 @@ def _clean_number(value: float) -> int | float:
     return rounded
 
 
+def _official_reference(root: Path) -> dict:
+    results = []
+    for task in TASK_ORDER:
+        for protocol in ("moderate", "strict"):
+            path = (
+                root
+                / "results"
+                / "v0.5"
+                / f"{task}-{protocol}-official-lewm-seed42-n100.json"
+            )
+            payload = _read_json(path)
+            metrics = payload["metrics"]
+            results.append(
+                {
+                    "task": task,
+                    "protocol": protocol,
+                    "success_rate_percent": _clean_number(
+                        metrics["success_rate_percent"]
+                    ),
+                    "random_success_rate_percent": _clean_number(
+                        metrics["random_success_rate_percent"]
+                    ),
+                    "excess_over_random_pp": _clean_number(
+                        metrics["excess_over_random_pp"]
+                    ),
+                }
+            )
+    return {
+        "method": "Official LeWM",
+        "policy_seed": 42,
+        "episodes_per_result": 100,
+        "results": results,
+    }
+
+
 def build_registry(root: Path = ROOT) -> dict:
     submissions = []
     submission_root = root / "submissions"
@@ -103,6 +138,7 @@ def build_registry(root: Path = ROOT) -> dict:
         "benchmark_version": "v0.5",
         "canonical_policy_seed": 42,
         "episodes_per_result": 100,
+        "matched_official_reference": _official_reference(root),
         "submission_count": len(submissions),
         "submissions": submissions,
     }

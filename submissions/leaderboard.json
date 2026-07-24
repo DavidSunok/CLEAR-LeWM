@@ -2,6 +2,69 @@
   "benchmark_version": "v0.5",
   "canonical_policy_seed": 42,
   "episodes_per_result": 100,
+  "matched_official_reference": {
+    "episodes_per_result": 100,
+    "method": "Official LeWM",
+    "policy_seed": 42,
+    "results": [
+      {
+        "excess_over_random_pp": 85,
+        "protocol": "moderate",
+        "random_success_rate_percent": 3,
+        "success_rate_percent": 88,
+        "task": "pusht"
+      },
+      {
+        "excess_over_random_pp": 64,
+        "protocol": "strict",
+        "random_success_rate_percent": 7,
+        "success_rate_percent": 71,
+        "task": "pusht"
+      },
+      {
+        "excess_over_random_pp": 36,
+        "protocol": "moderate",
+        "random_success_rate_percent": 15,
+        "success_rate_percent": 51,
+        "task": "cube"
+      },
+      {
+        "excess_over_random_pp": 17,
+        "protocol": "strict",
+        "random_success_rate_percent": 8,
+        "success_rate_percent": 25,
+        "task": "cube"
+      },
+      {
+        "excess_over_random_pp": 35,
+        "protocol": "moderate",
+        "random_success_rate_percent": 5,
+        "success_rate_percent": 40,
+        "task": "reacher"
+      },
+      {
+        "excess_over_random_pp": 44,
+        "protocol": "strict",
+        "random_success_rate_percent": 7,
+        "success_rate_percent": 51,
+        "task": "reacher"
+      },
+      {
+        "excess_over_random_pp": 75,
+        "protocol": "moderate",
+        "random_success_rate_percent": 6,
+        "success_rate_percent": 81,
+        "task": "tworoom"
+      },
+      {
+        "excess_over_random_pp": 57,
+        "protocol": "strict",
+        "random_success_rate_percent": 0,
+        "success_rate_percent": 57,
+        "task": "tworoom"
+      }
+    ]
+  },
   "schema_version": "clear-lewm-community-leaderboard-v1",
   "submission_count": 2,
   "submissions": [
