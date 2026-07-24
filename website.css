@@ -866,6 +866,123 @@ tbody tr:last-child td {
   font-size: 13px;
 }
 
+.table-note a {
+  font-weight: 760;
+  text-underline-offset: 3px;
+}
+
+.community {
+  background: var(--soft);
+  border-top: 1px solid var(--line);
+}
+
+.community-grid {
+  margin-top: 26px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.community-card {
+  min-width: 0;
+  padding: 20px;
+  border: 1px solid #cbd5d1;
+  border-radius: 6px;
+  background: white;
+}
+
+.community-card-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18px;
+}
+
+.community-card h3 {
+  margin: 0;
+  font-size: 22px;
+  line-height: 1.25;
+}
+
+.community-card-meta {
+  margin: 5px 0 0;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 720;
+  text-transform: uppercase;
+}
+
+.community-card-links {
+  display: flex;
+  flex: 0 0 auto;
+  gap: 12px;
+  font-size: 12px;
+  font-weight: 760;
+}
+
+.community-card-links a {
+  text-underline-offset: 3px;
+}
+
+.community-status {
+  margin: 14px 0 12px;
+  padding-block: 8px;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  color: #3d514d;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.community-table {
+  min-width: 0;
+  table-layout: fixed;
+  font-size: 13px;
+}
+
+.community-table th,
+.community-table td {
+  padding: 9px 8px;
+}
+
+.community-table thead th {
+  background: transparent;
+  font-size: 11px;
+  line-height: 1.35;
+}
+
+.community-table th:first-child {
+  width: 24%;
+}
+
+.community-score {
+  font-weight: 760;
+}
+
+.community-score small {
+  display: block;
+  color: #087c6f;
+  font-size: 11px;
+  font-weight: 760;
+}
+
+.community-score small.is-negative {
+  color: #b04438;
+}
+
+.community-missing {
+  margin: 12px 0 0;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.community-loading,
+.community-error {
+  grid-column: 1 / -1;
+  margin: 0;
+  color: var(--muted);
+}
+
 .reproduce {
   background: #dff3ef;
 }
@@ -1054,6 +1171,10 @@ code {
 
   .mode-switch {
     justify-self: start;
+  }
+
+  .community-grid {
+    grid-template-columns: 1fr;
   }
 
   .task-grid {
@@ -1245,6 +1366,19 @@ code {
 
   .results {
     padding-top: 24px;
+  }
+
+  .community-card {
+    padding: 17px;
+  }
+
+  .community-card-head {
+    display: grid;
+    gap: 10px;
+  }
+
+  .community-card-links {
+    justify-content: flex-start;
   }
 
   .reproduce-grid {

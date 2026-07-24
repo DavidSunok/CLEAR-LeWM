@@ -221,6 +221,31 @@ Public methods may submit auditable v0.5 Moderate and/or Strict result bundles.
 CI verifies structure, canonical manifest hashes, trace arithmetic, provenance,
 and topology. It does not imply independent reproduction or endorsement.
 
+<!-- community-leaderboard:start -->
+
+Canonical community entries use policy seed 42 and 100 episodes per
+task/mode. Values are **model / paired random (excess)**. CI validates
+the bundle structure, canonical manifests, trace arithmetic, provenance,
+and topology; the verification label states whether execution was
+independently reproduced.
+
+| Method | Task | Moderate | Strict | Verification |
+|---|---|---:|---:|---|
+| [DINOv2 No-Proprio LeWM](submissions/zerotul782231/dinov2-no-proprio-lewm-141dc536/METHOD_CARD.md) | PushT | 8% / 3% (+5 pp) | 7% / 7% (0 pp) | self-reported; [@zerotul782231](https://github.com/zerotul782231) |
+|  | Cube | 43% / 15% (+28 pp) | 17% / 8% (+9 pp) |  |
+|  | Reacher | - | - |  |
+|  | TwoRoom | 55% / 6% (+49 pp) | 26% / 0% (+26 pp) |  |
+| [GCBC Joint LeWM](submissions/zerotul782231/gcbc-joint-lewm-141dc536/METHOD_CARD.md) | PushT | 9% / 3% (+6 pp) | 9% / 7% (+2 pp) | self-reported; [@zerotul782231](https://github.com/zerotul782231) |
+|  | Cube | 16% / 15% (+1 pp) | 3% / 8% (-5 pp) |  |
+|  | Reacher | - | - |  |
+|  | TwoRoom | 15% / 6% (+9 pp) | 9% / 0% (+9 pp) |  |
+
+A dash means that task/mode was not submitted. Supplementary evidence
+that does not match the canonical manifest/seed contract remains in each
+method card and is not mixed into this table.
+
+<!-- community-leaderboard:end -->
+
 [Read the submission guide](docs/SUBMITTING_RESULTS.md).
 
 ## Repository map
@@ -230,6 +255,7 @@ and topology. It does not imply independent reproduction or endorsement.
 | [`clear_lewm/`](clear_lewm) | evaluator, manifests, task metrics, topology, submissions |
 | [`manifests/v0.5/`](manifests/v0.5) | canonical Moderate/Strict manifests |
 | [`results/v0.5/`](results/v0.5) | official LeWM and paired-random reference results |
+| [`submissions/leaderboard.json`](submissions/leaderboard.json) | generated community-result registry |
 | [`docs/tasks/`](docs/tasks) | task objectives, gates, and reproduction commands |
 | [`scripts/build_v05_media.py`](scripts/build_v05_media.py) | synchronized GIF and 1080p overview generator |
 | [`tests/`](tests) | protocol, manifest, runtime, result, and submission regressions |

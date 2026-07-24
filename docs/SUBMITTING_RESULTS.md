@@ -84,9 +84,14 @@ Then validate the bundle before opening a PR:
 
 ```bash
 clear-lewm validate-submission submissions/USER/METHOD/submission.json
+python scripts/build_community_leaderboard.py
 ruff check .
 pytest
 ```
+
+The leaderboard command refreshes the generated website registry and compact
+README table. Commit `submissions/leaderboard.json` and `README.md` with the
+bundle so an accepted method appears on the public homepage immediately.
 
 The validator recomputes result SR from all episode outcomes and rejects
 noncanonical manifests, altered protocols, evaluation-dataset drift, incorrect
@@ -96,8 +101,9 @@ result files whose SHA-256 does not match the submission record.
 ## Pull-request review
 
 1. Fork `DavidSunok/CLEAR-LeWM` and create a method-specific branch.
-2. Add only the bundle under `submissions/`; add an adapter or tests only when
-   required by the method.
+2. Add the bundle under `submissions/`, then run the leaderboard builder and
+   include its generated registry/README updates. Add an adapter or tests only
+   when required by the method.
 3. Open a PR using the repository template and disclose every training-data and
    inference difference.
 4. Let CI validate the result. A passing CI run establishes structural

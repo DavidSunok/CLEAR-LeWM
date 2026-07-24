@@ -1,0 +1,129 @@
+{
+  "benchmark_version": "v0.5",
+  "canonical_policy_seed": 42,
+  "episodes_per_result": 100,
+  "schema_version": "clear-lewm-community-leaderboard-v1",
+  "submission_count": 2,
+  "submissions": [
+    {
+      "benchmark_version": "v0.5",
+      "bundle": "submissions/zerotul782231/dinov2-no-proprio-lewm-141dc536",
+      "complete_four_task_matrix": false,
+      "contact_github": "zerotul782231",
+      "method": "DINOv2 No-Proprio LeWM",
+      "method_card": "submissions/zerotul782231/dinov2-no-proprio-lewm-141dc536/METHOD_CARD.md",
+      "method_repository": "https://huggingface.co/MinghaoFu/lewm-official-ckpts",
+      "method_revision": "141dc536b247898164a7422e3bbb7514429529b6",
+      "missing_results": [
+        "reacher/moderate",
+        "reacher/strict"
+      ],
+      "results": [
+        {
+          "excess_over_random_pp": 5,
+          "protocol": "moderate",
+          "random_success_rate_percent": 3,
+          "success_rate_percent": 8,
+          "task": "pusht"
+        },
+        {
+          "excess_over_random_pp": 0,
+          "protocol": "strict",
+          "random_success_rate_percent": 7,
+          "success_rate_percent": 7,
+          "task": "pusht"
+        },
+        {
+          "excess_over_random_pp": 28,
+          "protocol": "moderate",
+          "random_success_rate_percent": 15,
+          "success_rate_percent": 43,
+          "task": "cube"
+        },
+        {
+          "excess_over_random_pp": 9,
+          "protocol": "strict",
+          "random_success_rate_percent": 8,
+          "success_rate_percent": 17,
+          "task": "cube"
+        },
+        {
+          "excess_over_random_pp": 49,
+          "protocol": "moderate",
+          "random_success_rate_percent": 6,
+          "success_rate_percent": 55,
+          "task": "tworoom"
+        },
+        {
+          "excess_over_random_pp": 26,
+          "protocol": "strict",
+          "random_success_rate_percent": 0,
+          "success_rate_percent": 26,
+          "task": "tworoom"
+        }
+      ],
+      "training_data_track": "standard-data",
+      "verification": "self-reported"
+    },
+    {
+      "benchmark_version": "v0.5",
+      "bundle": "submissions/zerotul782231/gcbc-joint-lewm-141dc536",
+      "complete_four_task_matrix": false,
+      "contact_github": "zerotul782231",
+      "method": "GCBC Joint LeWM",
+      "method_card": "submissions/zerotul782231/gcbc-joint-lewm-141dc536/METHOD_CARD.md",
+      "method_repository": "https://huggingface.co/MinghaoFu/lewm-official-ckpts",
+      "method_revision": "141dc536b247898164a7422e3bbb7514429529b6",
+      "missing_results": [
+        "reacher/moderate",
+        "reacher/strict"
+      ],
+      "results": [
+        {
+          "excess_over_random_pp": 6,
+          "protocol": "moderate",
+          "random_success_rate_percent": 3,
+          "success_rate_percent": 9,
+          "task": "pusht"
+        },
+        {
+          "excess_over_random_pp": 2,
+          "protocol": "strict",
+          "random_success_rate_percent": 7,
+          "success_rate_percent": 9,
+          "task": "pusht"
+        },
+        {
+          "excess_over_random_pp": 1,
+          "protocol": "moderate",
+          "random_success_rate_percent": 15,
+          "success_rate_percent": 16,
+          "task": "cube"
+        },
+        {
+          "excess_over_random_pp": -5,
+          "protocol": "strict",
+          "random_success_rate_percent": 8,
+          "success_rate_percent": 3,
+          "task": "cube"
+        },
+        {
+          "excess_over_random_pp": 9,
+          "protocol": "moderate",
+          "random_success_rate_percent": 6,
+          "success_rate_percent": 15,
+          "task": "tworoom"
+        },
+        {
+          "excess_over_random_pp": 9,
+          "protocol": "strict",
+          "random_success_rate_percent": 0,
+          "success_rate_percent": 9,
+          "task": "tworoom"
+        }
+      ],
+      "training_data_track": "standard-data",
+      "verification": "self-reported"
+    }
+  ]
+}
