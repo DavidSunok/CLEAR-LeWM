@@ -21,8 +21,9 @@ weights, videos, credentials, or machine-specific paths here.
 python scripts/build_community_leaderboard.py
 ```
 
-Do not edit leaderboard values by hand. CI checks that the registry and the
-community table in the repository README match the submitted result traces.
+Do not edit leaderboard values by hand. CI checks that the registry, comparison
+figure, and community table in the repository README match the submitted result
+traces.
 
 Passing validation means the submitted evidence is internally consistent. It
 does not by itself mean that maintainers reproduced or endorsed the method.

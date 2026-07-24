@@ -13,8 +13,8 @@
     <meta property="og:type" content="website">
     <meta property="og:image" content="assets/showcase/clear_lewm_v05_overview_poster.png">
     <title>CLEAR-LeWM | Task-semantic evaluation for LeWM</title>
-    <link rel="stylesheet" href="website.css?v=20260724-2">
-    <script src="website.js?v=20260724-2" defer></script>
+    <link rel="stylesheet" href="website.css?v=20260724-3">
+    <script src="website.js?v=20260724-3" defer></script>
   </head>
   <body>
     <a class="skip-link" href="#main">Skip to content</a>
@@ -322,35 +322,73 @@
         <div class="page-shell">
           <div class="split-heading">
             <div>
-              <p class="section-label">Reference evaluation</p>
-              <h2 id="results-title">Official LeWM under both v0.5 modes.</h2>
+              <p class="section-label">Matched evaluation</p>
+              <h2 id="results-title">Three LeWM variants. One v0.5 contract.</h2>
             </div>
             <p>
-              Both modes report means over the same complete seeds 0, 1, and 42.
-              Every cell uses 100 pairs, 300 x 30 CEM, and solver batch size 1.
+              The model comparison fixes seed 42, 100 episodes, pure CEM 300 x 30,
+              and solver batch size 1 across every displayed bar.
             </p>
           </div>
 
-          <div class="table-scroll">
-            <table>
+          <div class="model-comparison model-comparison-primary" aria-labelledby="model-comparison-title">
+            <div class="model-comparison-head">
+              <div>
+                <p class="section-label">Canonical model SR</p>
+                <h3 id="model-comparison-title">Success rate under identical evaluation.</h3>
+              </div>
+              <div class="model-comparison-legend" data-model-comparison-legend aria-label="Compared models"></div>
+            </div>
+            <div class="model-comparison-panels" data-model-comparison>
+              <p class="community-loading">Loading matched model comparison...</p>
+            </div>
+            <p class="comparison-note">
+              Only tasks submitted by all three models are shown. Reacher remains unreported for both community models.
+            </p>
+          </div>
+
+          <div class="official-reference-heading">
+            <div>
+              <p class="section-label">Official reference</p>
+              <h3>Three-seed LeWM baseline.</h3>
+            </div>
+            <p>Means over seeds 0, 1, and 42. Each mode retains its own paired-random control.</p>
+          </div>
+
+          <div class="table-scroll official-table-scroll">
+            <table class="official-results-table">
               <thead>
                 <tr>
                   <th scope="col">Task</th>
-                  <th scope="col">Moderate LeWM / random</th>
-                  <th scope="col">Moderate excess</th>
-                  <th scope="col">Strict LeWM / random</th>
-                  <th scope="col">Strict excess</th>
+                  <th scope="col"><span>Moderate</span><small>LeWM / random</small></th>
+                  <th scope="col"><span>Strict</span><small>LeWM / random</small></th>
                 </tr>
               </thead>
               <tbody>
-                <tr><th scope="row">PushT</th><td>86.33% / 4.00%</td><td class="excess">+82.33 pp</td><td>70.33% / 5.00%</td><td class="excess">+65.33 pp</td></tr>
-                <tr><th scope="row">Cube</th><td>50.33% / 15.67%</td><td class="excess">+34.67 pp</td><td>26.33% / 6.00%</td><td class="excess">+20.33 pp</td></tr>
-                <tr><th scope="row">Reacher</th><td>46.00% / 4.33%</td><td class="excess">+41.67 pp</td><td>43.00% / 5.00%</td><td class="excess">+38.00 pp</td></tr>
-                <tr><th scope="row">TwoRoom</th><td>84.00% / 6.67%</td><td class="excess">+77.33 pp</td><td>58.33% / 1.67%</td><td class="excess">+56.67 pp</td></tr>
+                <tr>
+                  <th scope="row">PushT</th>
+                  <td data-label="Moderate"><strong>86.33%</strong><span>random 4.00%</span><small>+82.33 pp</small></td>
+                  <td data-label="Strict"><strong>70.33%</strong><span>random 5.00%</span><small>+65.33 pp</small></td>
+                </tr>
+                <tr>
+                  <th scope="row">Cube</th>
+                  <td data-label="Moderate"><strong>50.33%</strong><span>random 15.67%</span><small>+34.67 pp</small></td>
+                  <td data-label="Strict"><strong>26.33%</strong><span>random 6.00%</span><small>+20.33 pp</small></td>
+                </tr>
+                <tr>
+                  <th scope="row">Reacher</th>
+                  <td data-label="Moderate"><strong>46.00%</strong><span>random 4.33%</span><small>+41.67 pp</small></td>
+                  <td data-label="Strict"><strong>43.00%</strong><span>random 5.00%</span><small>+38.00 pp</small></td>
+                </tr>
+                <tr>
+                  <th scope="row">TwoRoom</th>
+                  <td data-label="Moderate"><strong>84.00%</strong><span>random 6.67%</span><small>+77.33 pp</small></td>
+                  <td data-label="Strict"><strong>58.33%</strong><span>random 1.67%</span><small>+56.67 pp</small></td>
+                </tr>
               </tbody>
             </table>
           </div>
-          <p class="table-note">Both modes are three-seed means; full per-seed JSON records are checked into results/v0.5. Community submissions are reported separately below.</p>
+          <p class="table-note">Main values are official LeWM SR; secondary values are paired random and excess over random. Full per-seed JSON records are checked into results/v0.5.</p>
         </div>
       </section>
 
@@ -364,22 +402,6 @@
             <p>
               Canonical entries use seed 42 and 100 episodes per task and mode.
               Each bundle is checked by CI but remains self-reported unless independently reproduced.
-            </p>
-          </div>
-
-          <div class="model-comparison" aria-labelledby="model-comparison-title">
-            <div class="model-comparison-head">
-              <div>
-                <p class="section-label">Matched model comparison</p>
-                <h3 id="model-comparison-title">Success rate under identical evaluation.</h3>
-              </div>
-              <div class="model-comparison-legend" data-model-comparison-legend aria-label="Compared models"></div>
-            </div>
-            <div class="model-comparison-panels" data-model-comparison>
-              <p class="community-loading">Loading matched model comparison...</p>
-            </div>
-            <p class="comparison-note">
-              Canonical seed 42, 100 episodes, pure CEM 300 x 30. Only tasks submitted by all three models are shown; Reacher remains unreported for both community models.
             </p>
           </div>
 

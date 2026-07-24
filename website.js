@@ -80,14 +80,18 @@ function resultCell(result) {
     cell.textContent = "Not submitted";
     return cell;
   }
-  cell.append(
-    `${formatRate(result.success_rate_percent)} / ${formatRate(result.random_success_rate_percent)}`,
-  );
-  const excess = document.createElement("small");
+  const main = document.createElement("strong");
+  main.className = "community-score-main";
+  main.textContent = formatRate(result.success_rate_percent);
+  const random = document.createElement("span");
+  random.className = "community-score-random";
+  random.textContent = `random ${formatRate(result.random_success_rate_percent)}`;
+  const excess = document.createElement("span");
+  excess.className = "community-score-gain";
   const value = result.excess_over_random_pp;
-  excess.textContent = `${value > 0 ? "+" : ""}${value} pp`;
+  excess.textContent = `${value > 0 ? "+" : ""}${value} pp over random`;
   excess.classList.toggle("is-negative", value < 0);
-  cell.append(excess);
+  cell.append(main, random, excess);
   return cell;
 }
 
@@ -230,7 +234,7 @@ function communityCard(submission) {
   table.className = "community-table";
   const thead = document.createElement("thead");
   const headingRow = document.createElement("tr");
-  ["Task", "Moderate model / random", "Strict model / random"].forEach(
+  ["Task", "Moderate", "Strict"].forEach(
     (label) => {
       const cell = document.createElement("th");
       cell.scope = "col";

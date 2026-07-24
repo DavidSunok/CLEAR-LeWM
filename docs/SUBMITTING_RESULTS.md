@@ -89,9 +89,11 @@ ruff check .
 pytest
 ```
 
-The leaderboard command refreshes the generated website registry and compact
-README table. Commit `submissions/leaderboard.json` and `README.md` with the
-bundle so an accepted method appears on the public homepage immediately.
+The leaderboard command refreshes the generated website registry, compact
+README table, and matched comparison figure. Commit
+`submissions/leaderboard.json`, `assets/community_model_comparison.png`, and
+`README.md` with the bundle so an accepted method appears on the public
+homepage immediately.
 
 The validator recomputes result SR from all episode outcomes and rejects
 noncanonical manifests, altered protocols, evaluation-dataset drift, incorrect

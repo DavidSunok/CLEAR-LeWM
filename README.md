@@ -55,6 +55,14 @@
 > random-number ordering and is a development throughput mode, not a matched
 > reference setting.
 
+<p align="center">
+  <a href="https://davidsunok.github.io/CLEAR-LeWM/#results">
+    <img src="assets/community_model_comparison.png" width="100%" alt="Matched Moderate and Strict success rates for Official LeWM, DINOv2 No-Proprio LeWM, and GCBC Joint LeWM">
+  </a>
+</p>
+
+<p align="center"><sub>Canonical seed 42, 100 episodes, pure CEM 300 x 30. Shared submitted tasks only.</sub></p>
+
 ## Why CLEAR-LeWM
 
 The historical stack mixes genuinely difficult control with evaluator effects:
