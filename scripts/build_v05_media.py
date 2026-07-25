@@ -96,6 +96,42 @@ PAPER_MODEL_COLORS = {
     "DINOv2 No-Proprio": "#416FBD",
     "GCBC Joint": "#8DB5DF",
 }
+V05_BENCHMARK = {
+    "moderate": {
+        "PushT": {
+            "Official LeWM": 88.0,
+            "DINOv2 No-Proprio": 8.0,
+            "GCBC Joint": 9.0,
+        },
+        "Cube": {
+            "Official LeWM": 51.0,
+            "DINOv2 No-Proprio": 43.0,
+            "GCBC Joint": 16.0,
+        },
+        "TwoRoom": {
+            "Official LeWM": 81.0,
+            "DINOv2 No-Proprio": 55.0,
+            "GCBC Joint": 15.0,
+        },
+    },
+    "strict": {
+        "PushT": {
+            "Official LeWM": 71.0,
+            "DINOv2 No-Proprio": 7.0,
+            "GCBC Joint": 9.0,
+        },
+        "Cube": {
+            "Official LeWM": 25.0,
+            "DINOv2 No-Proprio": 17.0,
+            "GCBC Joint": 3.0,
+        },
+        "TwoRoom": {
+            "Official LeWM": 57.0,
+            "DINOv2 No-Proprio": 26.0,
+            "GCBC Joint": 9.0,
+        },
+    },
+}
 
 TASK_WIDTH, TASK_HEIGHT = 1200, 675
 VIDEO_WIDTH, VIDEO_HEIGHT = 1920, 1080
@@ -694,28 +730,60 @@ def _ease_out(value: float) -> float:
     return 1.0 - (1.0 - value) ** 3
 
 
-def released_evaluation_frame(progress: float) -> Image.Image:
+def _protocol_selector(draw: ImageDraw.ImageDraw, active: str) -> None:
+    items = (
+        ("released", "RELEASED", "#475467", "#E4E7EC"),
+        ("moderate", "MODERATE", BLUE, BLUE_BG),
+        ("strict", "STRICT", GREEN, GREEN_BG),
+    )
+    widths = (150, 162, 128)
+    x = 1380
+    for (key, label, color, tint), width in zip(items, widths, strict=True):
+        selected = key == active
+        rounded(
+            draw,
+            (x, 48, x + width, 100),
+            tint if selected else "#182230",
+            color if selected else "#344054",
+            2 if selected else 1,
+            26,
+        )
+        centered(
+            draw,
+            (x + width / 2, 74),
+            label,
+            font(15, True),
+            color if selected else "#98A2B3",
+        )
+        x += width + 10
+
+
+def _benchmark_frame(
+    values_by_task: dict[str, dict[str, float]],
+    rise: float,
+    eyebrow: str,
+    title: str,
+    active_protocol: str,
+    source: str,
+    footer: str,
+    accent: str,
+) -> Image.Image:
     image = Image.new("RGB", (VIDEO_WIDTH, VIDEO_HEIGHT), "#F2F5F3")
     draw = ImageDraw.Draw(image)
     draw.rectangle((0, 0, VIDEO_WIDTH, 146), fill="#0B1220")
     draw.text(
         (62, 22),
-        "RELEASED LeWM BENCHMARK",
+        eyebrow,
         font=font(19, True),
-        fill="#8EDFD5",
+        fill=accent,
     )
     draw.text(
         (62, 57),
-        "Three models. Three tasks. Original success predicates.",
+        title,
         font=font(40, True),
         fill="#FFFFFF",
     )
-    draw.text(
-        (1460, 67),
-        "PAPER FIG. 6  /  RELEASED EVAL",
-        font=font(18, True),
-        fill="#B8C1D1",
-    )
+    _protocol_selector(draw, active_protocol)
 
     panel = (62, 184, 1858, 900)
     rounded(draw, panel, "#FFFFFF", "#CBD5D1", 2, 8)
@@ -742,9 +810,9 @@ def released_evaluation_frame(progress: float) -> Image.Image:
     group_centers = (430, 960, 1490)
     bar_width = 112
     bar_gap = 18
-    eased = _ease_out(progress)
+    eased = _ease_out(rise)
     for group_x, (task, values) in zip(
-        group_centers, PAPER_BENCHMARK.items(), strict=True
+        group_centers, values_by_task.items(), strict=True
     ):
         total_width = 3 * bar_width + 2 * bar_gap
         start_x = group_x - total_width / 2
@@ -773,18 +841,31 @@ def released_evaluation_frame(progress: float) -> Image.Image:
 
     draw.text(
         (62, 950),
-        "Source: LeWorldModel, Fig. 6. Paper names: LeWM, DINO-WM without "
-        "proprioception, and GCBC.",
+        source,
         font=font(20),
         fill=MUTED,
     )
     draw.text(
         (62, 995),
-        "Next: re-evaluate the same three models under one canonical protocol.",
+        footer,
         font=font(23, True),
         fill="#1D3B36",
     )
     return image
+
+
+def released_evaluation_frame(progress: float) -> Image.Image:
+    return _benchmark_frame(
+        PAPER_BENCHMARK,
+        progress,
+        "RELEASED LeWM BENCHMARK",
+        "Three models. Three tasks. Original success predicates.",
+        "released",
+        "Source: LeWorldModel, Fig. 6. Paper names: LeWM, DINO-WM without "
+        "proprioception, and GCBC.",
+        "Next: keep the models and axes fixed, then recalibrate the predicate.",
+        "#8EDFD5",
+    )
 
 
 def audit_findings_frame(progress: float) -> Image.Image:
@@ -967,38 +1048,64 @@ def protocol_modes_frame(progress: float) -> Image.Image:
 
 
 def matched_v05_frame(progress: float) -> Image.Image:
-    image = Image.new("RGB", (VIDEO_WIDTH, VIDEO_HEIGHT), "#E7ECEA")
-    draw = ImageDraw.Draw(image)
-    draw.rectangle((0, 0, VIDEO_WIDTH, 124), fill="#0B1220")
-    draw.text((66, 21), "CLEAR-LeWM v0.5", font=font(42, True), fill="#FFFFFF")
-    draw.text(
-        (520, 35),
-        "THE SAME CANONICAL PROTOCOL FOR EVERY CHECKPOINT",
-        font=font(22, True),
-        fill="#80E1D3",
+    source = "CLEAR-LeWM v0.5  |  seed 42  |  100 episodes  |  pure CEM 300 x 30"
+    if progress < 0.12:
+        return _benchmark_frame(
+            PAPER_BENCHMARK,
+            1.0 - progress / 0.12,
+            "RECALIBRATING THE SUCCESS PREDICATE",
+            "Same models. Same tasks. Keep the axes fixed.",
+            "released",
+            source,
+            "Released scores return to baseline before Moderate is measured.",
+            "#F3A9A0",
+        )
+    if progress < 0.40:
+        rise = (progress - 0.12) / 0.28
+        return _benchmark_frame(
+            V05_BENCHMARK["moderate"],
+            rise,
+            "CLEAR-LeWM v0.5  /  MODERATE",
+            "Minimal repair. One canonical evaluation.",
+            "moderate",
+            source,
+            "Moderate preserves the released task intent after implementation repair.",
+            "#8DC6ED",
+        )
+    if progress < 0.52:
+        return _benchmark_frame(
+            V05_BENCHMARK["moderate"],
+            1.0,
+            "CLEAR-LeWM v0.5  /  MODERATE",
+            "Minimal repair. One canonical evaluation.",
+            "moderate",
+            source,
+            "Moderate preserves the released task intent after implementation repair.",
+            "#8DC6ED",
+        )
+    if progress < 0.62:
+        rise = 1.0 - (progress - 0.52) / 0.10
+        return _benchmark_frame(
+            V05_BENCHMARK["moderate"],
+            rise,
+            "NEXT: STRICT TASK COMPLETION",
+            "Keep the models, tasks, axes, and solver fixed.",
+            "moderate",
+            source,
+            "Only the success contract changes.",
+            "#A8CDE5",
+        )
+    rise = min((progress - 0.62) / 0.26, 1.0)
+    return _benchmark_frame(
+        V05_BENCHMARK["strict"],
+        rise,
+        "CLEAR-LeWM v0.5  /  STRICT",
+        "Semantic completion. The same canonical evaluation.",
+        "strict",
+        source,
+        "Strict exposes precise task completion under the identical comparison.",
+        "#81E2D4",
     )
-    rounded(draw, (1532, 31, 1854, 91), "#193A35", "#2D746A", 1, 30)
-    centered(
-        draw,
-        (1693, 61),
-        "MATCHED  /  AUDITED",
-        font(17, True),
-        "#A8EEE4",
-    )
-
-    chart = Image.open(ASSETS / "community_model_comparison.png").convert("RGB")
-    chart = chart.resize((1728, 799), Image.Resampling.LANCZOS)
-    fade = _ease_out(min(progress * 1.8, 1.0))
-    faded_chart = Image.blend(Image.new("RGB", chart.size, "#E7ECEA"), chart, fade)
-    image.paste(faded_chart, (96, 142))
-    draw.text(
-        (96, 980),
-        "Different protocols answer different questions. v0.5 makes the "
-        "comparison explicit and reproducible.",
-        font=font(22, True),
-        fill="#1D3B36",
-    )
-    return image
 
 
 def _comparison_panel(
@@ -1439,7 +1546,7 @@ def build_overview(
         "-c:v",
         "libx264",
         "-preset",
-        "fast",
+        "veryfast",
         "-crf",
         "18",
         "-threads",
@@ -1458,7 +1565,7 @@ def build_overview(
     def emit(frame: Image.Image) -> None:
         nonlocal frame_number
         process.stdin.write(np.asarray(frame, dtype=np.uint8).tobytes())
-        if frame_number % 6 == 0:
+        if frame_number % 12 == 0:
             preview_frames.append(frame.resize((1280, 720), Image.Resampling.LANCZOS))
         frame_number += 1
 
@@ -1466,13 +1573,8 @@ def build_overview(
         emit(intro_frame())
     for index in range(int(3.5 * fps)):
         emit(released_evaluation_frame(index / (int(3.5 * fps) - 1)))
-    released_final = released_evaluation_frame(1.0)
-    for index in range(int(3.5 * fps)):
-        progress = index / (int(3.5 * fps) - 1)
-        frame = matched_v05_frame(progress)
-        if index < 15:
-            frame = Image.blend(released_final, frame, _ease_out(index / 14))
-        emit(frame)
+    for index in range(6 * fps):
+        emit(matched_v05_frame(index / (6 * fps - 1)))
     for index in range(int(3.5 * fps)):
         emit(audit_findings_frame(index / (int(3.5 * fps) - 1)))
     for index in range(4 * fps):
@@ -1495,7 +1597,7 @@ def build_overview(
     if process.wait() != 0:
         raise RuntimeError("ffmpeg failed while building overview")
     intro_frame().save(poster, optimize=True)
-    save_gif(preview_frames, preview, duration=200, colors=144)
+    save_gif(preview_frames, preview, duration=400, colors=144)
 
 
 def _select_tworoom_trace(payload: dict) -> dict:
