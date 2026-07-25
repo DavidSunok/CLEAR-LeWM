@@ -679,6 +679,31 @@ def save_gif(
     )
 
 
+def save_video_preview(video: Path, output: Path) -> None:
+    output.parent.mkdir(parents=True, exist_ok=True)
+    filter_graph = (
+        "[0:v]fps=10,scale=1280:720:flags=lanczos,split[s0][s1];"
+        "[s0]palettegen=max_colors=192:stats_mode=full[p];"
+        "[s1][p]paletteuse=dither=sierra2_4a"
+    )
+    subprocess.run(
+        [
+            "ffmpeg",
+            "-y",
+            "-loglevel",
+            "error",
+            "-i",
+            str(video),
+            "-filter_complex",
+            filter_graph,
+            "-loop",
+            "0",
+            str(output),
+        ],
+        check=True,
+    )
+
+
 def intro_frame() -> Image.Image:
     image = Image.new("RGB", (VIDEO_WIDTH, VIDEO_HEIGHT), "#0B1220")
     draw = ImageDraw.Draw(image)
@@ -1559,15 +1584,9 @@ def build_overview(
     ]
     process = subprocess.Popen(command, stdin=subprocess.PIPE)
     assert process.stdin is not None
-    preview_frames: list[Image.Image] = []
-    frame_number = 0
 
     def emit(frame: Image.Image) -> None:
-        nonlocal frame_number
         process.stdin.write(np.asarray(frame, dtype=np.uint8).tobytes())
-        if frame_number % 12 == 0:
-            preview_frames.append(frame.resize((1280, 720), Image.Resampling.LANCZOS))
-        frame_number += 1
 
     for _ in range(2 * fps):
         emit(intro_frame())
@@ -1597,7 +1616,7 @@ def build_overview(
     if process.wait() != 0:
         raise RuntimeError("ffmpeg failed while building overview")
     intro_frame().save(poster, optimize=True)
-    save_gif(preview_frames, preview, duration=400, colors=144)
+    save_video_preview(output, preview)
 
 
 def _select_tworoom_trace(payload: dict) -> dict:
