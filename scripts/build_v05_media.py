@@ -72,13 +72,30 @@ DATASETS = {
     "reacher": "datasets/reacher.h5",
 }
 
-# Headline fixed-FLOPs results reported in Fig. 3 of the LeWM paper. These are
-# intentionally presented as the released protocol, before the v0.5 audit.
-PAPER_FIXED_FLOPS = {
-    "PushT": {"LeWM": 90.0, "DINO-WM": 13.0},
-    "OGBench-Cube": {"LeWM": 74.0, "DINO-WM": 48.0},
+# Planning results reported in Fig. 6 of the LeWM paper. The three labels match
+# the public v0.5 chart so the film can compare protocols without changing models.
+PAPER_BENCHMARK = {
+    "PushT": {
+        "Official LeWM": 96.0,
+        "DINOv2 No-Proprio": 74.0,
+        "GCBC Joint": 75.0,
+    },
+    "Cube": {
+        "Official LeWM": 74.0,
+        "DINOv2 No-Proprio": 86.0,
+        "GCBC Joint": 84.0,
+    },
+    "TwoRoom": {
+        "Official LeWM": 87.0,
+        "DINOv2 No-Proprio": 100.0,
+        "GCBC Joint": 100.0,
+    },
 }
-PAPER_MODEL_COLORS = {"LeWM": "#E85F52", "DINO-WM": "#416FBD"}
+PAPER_MODEL_COLORS = {
+    "Official LeWM": "#E85F52",
+    "DINOv2 No-Proprio": "#416FBD",
+    "GCBC Joint": "#8DB5DF",
+}
 
 TASK_WIDTH, TASK_HEIGHT = 1200, 675
 VIDEO_WIDTH, VIDEO_HEIGHT = 1920, 1080
@@ -677,236 +694,273 @@ def _ease_out(value: float) -> float:
     return 1.0 - (1.0 - value) ** 3
 
 
-def _paper_result_panel(
-    draw: ImageDraw.ImageDraw,
-    box: tuple[int, int, int, int],
-    task: str,
-    values: dict[str, float],
-    progress: float,
-) -> None:
-    x0, y0, x1, y1 = box
-    rounded(draw, box, "#FFFFFF", "#CED7E1", 2, 8)
-    draw.text((x0 + 34, y0 + 28), task, font=font(31, True), fill=INK)
-    draw.text(
-        (x1 - 245, y0 + 37),
-        "SUCCESS RATE (%)",
-        font=font(16, True),
-        fill=MUTED,
-    )
-    plot_left = x0 + 88
-    plot_right = x1 - 42
-    plot_top = y0 + 126
-    plot_bottom = y1 - 112
-    plot_height = plot_bottom - plot_top
-    for tick in (0, 25, 50, 75, 100):
-        y = plot_bottom - tick / 100 * plot_height
-        draw.line((plot_left, y, plot_right, y), fill="#DCE3E9", width=2)
-        draw.text(
-            (plot_left - 50, y - 11),
-            str(tick),
-            font=font(15),
-            fill="#7A8797",
-        )
-
-    centers = (plot_left + 220, plot_left + 500)
-    bar_width = 154
-    eased = _ease_out(progress)
-    for center_x, (model, value) in zip(centers, values.items(), strict=True):
-        bar_height = plot_height * value / 100 * eased
-        bar_top = plot_bottom - bar_height
-        draw.rounded_rectangle(
-            (center_x - bar_width / 2, bar_top, center_x + bar_width / 2, plot_bottom),
-            radius=6,
-            fill=PAPER_MODEL_COLORS[model],
-        )
-        if eased > 0.08:
-            centered(
-                draw,
-                (center_x, max(bar_top - 28, plot_top + 18)),
-                f"{value:.0f}",
-                font(25, True),
-                PAPER_MODEL_COLORS[model],
-            )
-        centered(draw, (center_x, plot_bottom + 48), model, font(20, True), INK)
-
-
 def released_evaluation_frame(progress: float) -> Image.Image:
-    image = Image.new("RGB", (VIDEO_WIDTH, VIDEO_HEIGHT), "#EEF2F6")
+    image = Image.new("RGB", (VIDEO_WIDTH, VIDEO_HEIGHT), "#F2F5F3")
     draw = ImageDraw.Draw(image)
-    draw.rectangle((0, 0, VIDEO_WIDTH, 154), fill="#0B1220")
+    draw.rectangle((0, 0, VIDEO_WIDTH, 146), fill="#0B1220")
     draw.text(
-        (66, 24),
-        "RELEASED HEADLINE EVALUATION",
+        (62, 22),
+        "RELEASED LeWM BENCHMARK",
         font=font(19, True),
         fill="#8EDFD5",
     )
     draw.text(
-        (66, 58),
-        "LeWM vs DINO-WM under the original protocol",
-        font=font(42, True),
+        (62, 57),
+        "Three models. Three tasks. Original success predicates.",
+        font=font(40, True),
         fill="#FFFFFF",
     )
-    rounded(draw, (1512, 43, 1848, 105), "#1D2939", "#475467", 1, 30)
-    centered(
-        draw,
-        (1680, 74),
-        "PAPER FIG. 3  /  FIXED FLOPs",
-        font(16, True),
-        "#C7D0DD",
-    )
-    _paper_result_panel(
-        draw,
-        (66, 206, 924, 858),
-        "PushT",
-        PAPER_FIXED_FLOPS["PushT"],
-        progress,
-    )
-    _paper_result_panel(
-        draw,
-        (996, 206, 1854, 858),
-        "OGBench-Cube",
-        PAPER_FIXED_FLOPS["OGBench-Cube"],
-        progress,
-    )
     draw.text(
-        (66, 915),
-        "Published result: strong separation under the released success predicates.",
-        font=font(26, True),
+        (1460, 67),
+        "PAPER FIG. 6  /  RELEASED EVAL",
+        font=font(18, True),
+        fill="#B8C1D1",
+    )
+
+    panel = (62, 184, 1858, 900)
+    rounded(draw, panel, "#FFFFFF", "#CBD5D1", 2, 8)
+    draw.text(
+        (96, 216),
+        "SUCCESS RATE (%)",
+        font=font(22, True),
         fill=INK,
     )
+    legend = tuple(PAPER_MODEL_COLORS.items())
+    for index, (model, color) in enumerate(legend):
+        x = 940 + index * 290
+        draw.rectangle((x, 220, x + 22, 242), fill=color)
+        draw.text((x + 34, 216), model, font=font(17, True), fill="#344054")
+
+    plot_left, plot_right = 150, 1770
+    plot_top, plot_bottom = 302, 786
+    plot_height = plot_bottom - plot_top
+    for tick in (0, 25, 50, 75, 100):
+        y = plot_bottom - tick / 100 * plot_height
+        draw.line((plot_left, y, plot_right, y), fill="#D6DEDA", width=2)
+        draw.text((104, y - 11), str(tick), font=font(16), fill="#718078")
+
+    group_centers = (430, 960, 1490)
+    bar_width = 112
+    bar_gap = 18
+    eased = _ease_out(progress)
+    for group_x, (task, values) in zip(
+        group_centers, PAPER_BENCHMARK.items(), strict=True
+    ):
+        total_width = 3 * bar_width + 2 * bar_gap
+        start_x = group_x - total_width / 2
+        for model_index, (model, value) in enumerate(values.items()):
+            x0 = start_x + model_index * (bar_width + bar_gap)
+            bar_height = plot_height * value / 100 * eased
+            y0 = plot_bottom - bar_height
+            draw.rounded_rectangle(
+                (x0, y0, x0 + bar_width, plot_bottom),
+                radius=6,
+                fill=PAPER_MODEL_COLORS[model],
+            )
+            if eased > 0.08:
+                near_ceiling = y0 < plot_top + 48
+                centered(
+                    draw,
+                    (
+                        x0 + bar_width / 2,
+                        y0 + 25 if near_ceiling else y0 - 24,
+                    ),
+                    f"{value:.0f}",
+                    font(22, True),
+                    "#FFFFFF" if near_ceiling else PAPER_MODEL_COLORS[model],
+                )
+        centered(draw, (group_x, 834), task, font(27, True), INK)
+
     draw.text(
-        (66, 968),
-        "Source: LeWorldModel, Fig. 3. Protocol-specific values; not directly "
-        "comparable to CLEAR-LeWM v0.5.",
+        (62, 950),
+        "Source: LeWorldModel, Fig. 6. Paper names: LeWM, DINO-WM without "
+        "proprioception, and GCBC.",
         font=font(20),
         fill=MUTED,
+    )
+    draw.text(
+        (62, 995),
+        "Next: re-evaluate the same three models under one canonical protocol.",
+        font=font(23, True),
+        fill="#1D3B36",
     )
     return image
 
 
-def _audit_card(
+def audit_findings_frame(progress: float) -> Image.Image:
+    image = Image.new("RGB", (VIDEO_WIDTH, VIDEO_HEIGHT), "#EEF2F6")
+    draw = ImageDraw.Draw(image)
+    draw.rectangle((0, 0, VIDEO_WIDTH, 164), fill="#0B1220")
+    draw.text(
+        (66, 24),
+        "WHY THE RANKING CHANGES",
+        font=font(20, True),
+        fill="#F3A9A0",
+    )
+    draw.text(
+        (66, 62),
+        "The evaluator can award success before the task is complete.",
+        font=font(42, True),
+        fill="#FFFFFF",
+    )
+
+    findings = (
+        (
+            "01",
+            "TRIVIAL START / GOAL PAIRS",
+            "A policy can begin inside the success set, inflating SR before planning.",
+        ),
+        (
+            "02",
+            "REACHER ANGLE TOPOLOGY",
+            "Linear subtraction mis-scores a periodic shoulder configuration.",
+        ),
+        (
+            "03",
+            "TWOROOM COLLISION / DATA",
+            "Endpoint checks miss wall crossings; released data contain "
+            "invalid transitions.",
+        ),
+        (
+            "04",
+            "PERMISSIVE TASK PROXIES",
+            "A success flag need not prove object, endpoint, or legal-route "
+            "completion.",
+        ),
+    )
+    boxes = (
+        (66, 220, 918, 524),
+        (1002, 220, 1854, 524),
+        (66, 580, 918, 884),
+        (1002, 580, 1854, 884),
+    )
+    active_index = min(int(progress * len(findings)), len(findings) - 1)
+    for index, (box, (number, title, detail)) in enumerate(zip(boxes, findings)):
+        x0, y0, x1, y1 = box
+        active = index == active_index
+        rounded(
+            draw,
+            box,
+            "#FFFFFF",
+            RED if active else "#CDD6E0",
+            4 if active else 2,
+            8,
+        )
+        draw.rectangle((x0, y0, x0 + 15, y1), fill=RED)
+        draw.text((x0 + 42, y0 + 37), number, font=font(55, True), fill="#E88980")
+        draw.text((x0 + 154, y0 + 46), title, font=font(29, True), fill=INK)
+        draw_wrapped(
+            draw,
+            (x0 + 154, y0 + 128),
+            detail,
+            x1 - x0 - 200,
+            font(27),
+            "#344054",
+            line_gap=10,
+            max_lines=3,
+        )
+    draw.text(
+        (66, 950),
+        "The benchmark therefore needs two explicit answers, not one ambiguous SR.",
+        font=font(29, True),
+        fill=INK,
+    )
+    return image
+
+
+def _large_mode_panel(
     draw: ImageDraw.ImageDraw,
     box: tuple[int, int, int, int],
+    name: str,
     eyebrow: str,
-    title: str,
+    statement: str,
     color: str,
     tint: str,
     bullets: tuple[str, ...],
     active: bool,
 ) -> None:
     x0, y0, x1, y1 = box
-    outline = color if active else "#CBD5DF"
-    width = 4 if active else 2
-    rounded(draw, box, "#FFFFFF", outline, width, 8)
-    draw.rectangle((x0, y0, x1, y0 + 11), fill=color)
-    rounded(draw, (x0 + 28, y0 + 35, x0 + 210, y0 + 74), tint, radius=19)
-    centered(draw, (x0 + 119, y0 + 54), eyebrow, font(14, True), color)
-    draw.text((x0 + 28, y0 + 104), title, font=font(30, True), fill=INK)
+    rounded(
+        draw,
+        box,
+        "#FFFFFF",
+        color if active else "#CBD5DF",
+        5 if active else 2,
+        8,
+    )
+    draw.rectangle((x0, y0, x1, y0 + 14), fill=color)
+    rounded(draw, (x0 + 38, y0 + 40, x0 + 292, y0 + 88), tint, radius=24)
+    centered(draw, (x0 + 165, y0 + 64), eyebrow, font(17, True), color)
+    draw.text((x0 + 38, y0 + 126), name, font=font(52, True), fill=color)
+    draw_wrapped(
+        draw,
+        (x0 + 38, y0 + 208),
+        statement,
+        x1 - x0 - 76,
+        font(31, True),
+        INK,
+        line_gap=8,
+        max_lines=2,
+    )
     for index, bullet in enumerate(bullets):
-        y = y0 + 188 + index * 90
-        draw.ellipse((x0 + 30, y + 5, x0 + 43, y + 18), fill=color)
-        draw_wrapped(
-            draw,
-            (x0 + 62, y),
-            bullet,
-            x1 - x0 - 95,
-            font(21, index == 0),
-            "#344054",
-            line_gap=5,
-            max_lines=2,
-        )
-    draw.rectangle((x0 + 28, y1 - 74, x1 - 28, y1 - 72), fill="#E5EAF0")
+        y = y0 + 348 + index * 91
+        draw.ellipse((x0 + 42, y + 7, x0 + 59, y + 24), fill=color)
+        draw.text((x0 + 82, y), bullet, font=font(27), fill="#344054")
 
 
-def protocol_calibration_frame(progress: float) -> Image.Image:
+def protocol_modes_frame(progress: float) -> Image.Image:
     image = Image.new("RGB", (VIDEO_WIDTH, VIDEO_HEIGHT), "#EEF2F6")
     draw = ImageDraw.Draw(image)
-    draw.rectangle((0, 0, VIDEO_WIDTH, 154), fill="#0B1220")
+    draw.rectangle((0, 0, VIDEO_WIDTH, 164), fill="#0B1220")
     draw.text(
         (66, 24),
-        "AUDIT THE PREDICATE, NOT THE PLANNER",
-        font=font(19, True),
-        fill="#F4B5AE",
+        "CLEAR-LeWM v0.5",
+        font=font(20, True),
+        fill="#80E1D3",
     )
     draw.text(
-        (66, 58),
-        "From permissive proxies to explicit task completion",
+        (66, 62),
+        "Two calibrated modes. Two precise scientific questions.",
         font=font(42, True),
         fill="#FFFFFF",
     )
-    draw.text(
-        (1360, 67),
-        "v0.5  /  TWO CALIBRATED MODES",
-        font=font(20, True),
-        fill="#B8C1D1",
+    _large_mode_panel(
+        draw,
+        (66, 220, 918, 918),
+        "MODERATE",
+        "MINIMAL REPAIR",
+        "Preserve LeWM's original task intent.",
+        BLUE,
+        BLUE_BG,
+        (
+            "Fix Reacher periodic topology",
+            "Fix TwoRoom swept-disk collision",
+            "Remove trivial initial pairs",
+            "Retain released task semantics",
+        ),
+        active=progress < 0.52,
     )
-
-    active_index = min(int(progress * 3), 2)
-    cards = (
+    _large_mode_panel(
+        draw,
+        (1002, 220, 1854, 918),
+        "STRICT",
+        "SEMANTIC COMPLETION",
+        "Measure precise, task-relevant completion.",
+        GREEN,
+        GREEN_BG,
         (
-            (66, 210, 602, 888),
-            "RELEASED",
-            "What the audit found",
-            RED,
-            RED_BG,
-            (
-                "Permissive success proxies",
-                "Pre-solved start / goal pairs",
-                "Reacher angle-topology error",
-                "TwoRoom collision and data defects",
-            ),
+            "Score T / cube / fingertip / route",
+            "Use tighter physical tolerances",
+            "Require short persistence",
+            "Verify topology and legal motion",
         ),
-        (
-            (692, 210, 1228, 888),
-            "MODERATE",
-            "Preserve LeWM intent",
-            BLUE,
-            BLUE_BG,
-            (
-                "Minimal protocol repair",
-                "Correct evaluator / source defects",
-                "Filter trivial initial pairs",
-                "Retain the released task contract",
-            ),
-        ),
-        (
-            (1318, 210, 1854, 888),
-            "STRICT",
-            "Raise the semantic bar",
-            GREEN,
-            GREEN_BG,
-            (
-                "Task-relevant goal semantics",
-                "T, cube, fingertip, legal route",
-                "Tighter physical tolerances",
-                "Short persistence and route gates",
-            ),
-        ),
+        active=progress >= 0.52,
     )
-    for index, (box, eyebrow, title, color, tint, bullets) in enumerate(cards):
-        _audit_card(
-            draw,
-            box,
-            eyebrow,
-            title,
-            color,
-            tint,
-            bullets,
-            active=index == active_index,
-        )
-    centered(draw, (647, 550), "→", font(46, True), BLUE)
-    centered(draw, (1273, 550), "→", font(46, True), GREEN)
-
-    timeline_left, timeline_right = 66, 1854
-    draw.line((timeline_left, 952, timeline_right, 952), fill="#CCD5DF", width=7)
-    cursor = timeline_left + (timeline_right - timeline_left) * _ease_out(progress)
-    draw.line((timeline_left, 952, cursor, 952), fill=GREEN, width=7)
-    draw.ellipse((cursor - 10, 942, cursor + 10, 962), fill=GREEN)
+    centered(draw, (960, 560), "→", font(48, True), GREEN)
     draw.text(
-        (66, 990),
-        "Moderate repairs implementation while preserving intent. Strict makes "
-        "semantic completion measurable.",
-        font=font(22, True),
+        (66, 972),
+        "Moderate restores comparability. Strict raises the completion contract.",
+        font=font(29, True),
         fill=INK,
     )
     return image
@@ -1385,9 +1439,11 @@ def build_overview(
         "-c:v",
         "libx264",
         "-preset",
-        "medium",
+        "fast",
         "-crf",
         "18",
+        "-threads",
+        "16",
         "-pix_fmt",
         "yuv420p",
         "-movflags",
@@ -1408,12 +1464,19 @@ def build_overview(
 
     for _ in range(2 * fps):
         emit(intro_frame())
-    for index in range(3 * fps):
-        emit(released_evaluation_frame(index / (3 * fps - 1)))
-    for index in range(4 * fps):
-        emit(protocol_calibration_frame(index / (4 * fps - 1)))
     for index in range(int(3.5 * fps)):
-        emit(matched_v05_frame(index / (int(3.5 * fps) - 1)))
+        emit(released_evaluation_frame(index / (int(3.5 * fps) - 1)))
+    released_final = released_evaluation_frame(1.0)
+    for index in range(int(3.5 * fps)):
+        progress = index / (int(3.5 * fps) - 1)
+        frame = matched_v05_frame(progress)
+        if index < 15:
+            frame = Image.blend(released_final, frame, _ease_out(index / 14))
+        emit(frame)
+    for index in range(int(3.5 * fps)):
+        emit(audit_findings_frame(index / (int(3.5 * fps) - 1)))
+    for index in range(4 * fps):
+        emit(protocol_modes_frame(index / (4 * fps - 1)))
     for task in TASKS:
         for index in range(int(5.5 * fps)):
             scene_progress = index / (int(5.5 * fps) - 1)
