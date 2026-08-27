@@ -24,6 +24,14 @@ def test_environment_record_covers_task_physics_and_numerics():
         "policy",
         "world",
     }
+    assert set(record["clear_lewm_execution_sources"]) == {
+        "metrics.py",
+        "protocols.py",
+        "runner.py",
+        "tasks.py",
+        "tworoom_runtime.py",
+    }
+    assert "python_compiler" in record["numerics"]
 
 
 def test_official_runtime_audit_rejects_source_drift(monkeypatch):

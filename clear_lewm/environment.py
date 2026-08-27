@@ -5,6 +5,7 @@ import importlib.util
 import json
 import os
 import platform
+import subprocess
 from importlib.metadata import PackageNotFoundError, version
 from pathlib import Path
 
@@ -38,6 +39,14 @@ EVALUATION_RUNTIME_MODULES = {
     "cem": "stable_worldmodel.solver.cem",
     "checkpoint_loader": "stable_worldmodel.wm.utils",
 }
+
+CLEAR_RUNTIME_FILES = (
+    "metrics.py",
+    "protocols.py",
+    "runner.py",
+    "tasks.py",
+    "tworoom_runtime.py",
+)
 
 # SHA-256 values from the stable-worldmodel 0.1.0 wheel published on PyPI.
 OFFICIAL_RUNTIME_HASHES = {
@@ -86,6 +95,67 @@ def _module_source(module_name: str) -> dict:
 def _environment_source(task: str | None) -> dict | None:
     module_name = TASK_ENVIRONMENT_MODULES.get(task or "")
     return _module_source(module_name) if module_name is not None else None
+
+
+def _clear_lewm_source_audit() -> dict:
+    root = Path(__file__).resolve().parent
+    return {
+        name: hashlib.sha256((root / name).read_bytes()).hexdigest()
+        for name in CLEAR_RUNTIME_FILES
+    }
+
+
+def _nvidia_driver_version() -> str | None:
+    try:
+        completed = subprocess.run(
+            [
+                "nvidia-smi",
+                "--query-gpu=driver_version",
+                "--format=csv,noheader",
+            ],
+            check=True,
+            capture_output=True,
+            text=True,
+            timeout=5,
+        )
+    except (FileNotFoundError, subprocess.SubprocessError):
+        return None
+    versions = {line.strip() for line in completed.stdout.splitlines() if line.strip()}
+    return ",".join(sorted(versions)) or None
+
+
+def _torch_numerical_controls(torch_module) -> dict:
+    cuda_backend = getattr(torch_module.backends, "cuda", None)
+
+    def cuda_flag(name: str):
+        value = getattr(cuda_backend, name, None) if cuda_backend is not None else None
+        return value() if callable(value) else None
+
+    return {
+        "float32_matmul_precision": torch_module.get_float32_matmul_precision(),
+        "deterministic_algorithms": (
+            torch_module.are_deterministic_algorithms_enabled()
+        ),
+        "deterministic_algorithms_warn_only": (
+            torch_module.is_deterministic_algorithms_warn_only_enabled()
+        ),
+        "cudnn_benchmark": torch_module.backends.cudnn.benchmark,
+        "cudnn_deterministic": torch_module.backends.cudnn.deterministic,
+        "cudnn_allow_tf32": torch_module.backends.cudnn.allow_tf32,
+        "cuda_matmul_allow_tf32": torch_module.backends.cuda.matmul.allow_tf32,
+        "flash_sdp_enabled": cuda_flag("flash_sdp_enabled"),
+        "mem_efficient_sdp_enabled": cuda_flag("mem_efficient_sdp_enabled"),
+        "math_sdp_enabled": cuda_flag("math_sdp_enabled"),
+        "cudnn_sdp_enabled": cuda_flag("cudnn_sdp_enabled"),
+        "environment": {
+            name: os.environ.get(name)
+            for name in (
+                "CUBLAS_WORKSPACE_CONFIG",
+                "CUDA_MODULE_LOADING",
+                "NVIDIA_TF32_OVERRIDE",
+            )
+        },
+    }
 
 
 def stable_worldmodel_source_audit() -> dict:
@@ -152,6 +222,8 @@ def collect_environment(torch_module=None, task: str | None = None) -> dict:
     numerics = {
         "numpy": packages["numpy"],
         "python": platform.python_version(),
+        "python_compiler": platform.python_compiler(),
+        "python_implementation": platform.python_implementation(),
         "task": task,
         "scipy": packages["scipy"],
         "torch": packages["torch"],
@@ -173,8 +245,12 @@ def collect_environment(torch_module=None, task: str | None = None) -> dict:
                 "name": properties.name,
                 "compute_capability": [properties.major, properties.minor],
                 "total_memory_bytes": properties.total_memory,
+                "driver_version": _nvidia_driver_version(),
             }
             numerics["accelerator"] = accelerator
+        numerics["torch_controls"] = _torch_numerical_controls(torch_module)
+
+    clear_sources = _clear_lewm_source_audit()
 
     record = {
         "python": platform.python_version(),
@@ -184,6 +260,7 @@ def collect_environment(torch_module=None, task: str | None = None) -> dict:
         "physics": physics,
         "numerics": numerics,
         "execution": execution,
+        "clear_lewm_execution_sources": clear_sources,
         "accelerator": accelerator,
         "rendering": {
             "mujoco_gl": os.environ.get("MUJOCO_GL"),
@@ -192,5 +269,10 @@ def collect_environment(torch_module=None, task: str | None = None) -> dict:
     }
     record["physics_fingerprint"] = _fingerprint(physics)
     record["numerics_fingerprint"] = _fingerprint(numerics)
-    record["execution_fingerprint"] = _fingerprint(execution["sources"])
+    record["execution_fingerprint"] = _fingerprint(
+        {
+            "stable_worldmodel": execution["sources"],
+            "clear_lewm": clear_sources,
+        }
+    )
     return record

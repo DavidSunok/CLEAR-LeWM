@@ -25,10 +25,15 @@ a stable URL, revision, license, and SHA-256 where applicable.
 |---|---|
 | `self-reported` | JSON structure, canonical manifest, trace arithmetic, hashes, and provenance pass CI |
 | `reproducible` | the submission also provides public code, a checkpoint, and an exact evaluation command |
-| `maintainer-verified` | a CLEAR-LeWM maintainer independently reran the submitted revision and matched the declared result within the protocol's deterministic contract |
+| `maintainer-verified` | a CLEAR-LeWM maintainer independently reran the submitted revision inside the declared numerical fingerprint and matched every episode outcome |
 
 Authors may request the first two levels. Only maintainers assign
 `maintainer-verified` after reproduction.
+
+A rerun on a different numerical fingerprint can be published as portability or
+sensitivity evidence, but it does not earn `maintainer-verified` for the
+declared result. CLEAR intentionally does not replace this rule with an
+architecture-independent SR tolerance.
 
 ## Fixed comparison contract
 

@@ -219,6 +219,13 @@ environment, policy seed, control budget, solver budget, solver batch size,
 and protocol mode. MuJoCo, Pymunk, dm-control, Gymnasium, PyTorch, CUDA, cuDNN,
 task source, checkpoint source, and evaluator source are fingerprinted.
 
+Exact episode reproduction is claimed only inside one physics, execution, and
+numerical fingerprint. A fixed-protocol rerun on another GPU architecture is a
+cross-numerics sensitivity result, not a failed exact reproduction. CLEAR does
+not use a universal cross-accelerator SR tolerance; use the paired comparison
+tool and report all three policy seeds. See
+[`docs/RUNTIME_REPRODUCIBILITY.md`](docs/RUNTIME_REPRODUCIBILITY.md).
+
 The pinned official source revisions and hashes are in
 [`checkpoints/official-v0.5.json`](checkpoints/official-v0.5.json). Binary
 weights and datasets remain outside ordinary Git.
