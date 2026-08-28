@@ -1,0 +1,88 @@
+{
+  "schema_version": "clear-lewm-performance-v1",
+  "date": "2026-07-22",
+  "purpose": "trajectory-equivalence stress test",
+  "model": "LeWM-compatible custom checkpoint, epoch 5",
+  "hardware": "NVIDIA H20-3e",
+  "environment": {
+    "python": "3.10.20",
+    "torch": "2.6.0+cu124",
+    "cuda": "12.4",
+    "cudnn": 90100,
+    "mujoco": "3.8.1",
+    "dm_control": "1.0.41"
+  },
+  "protocol": "strict",
+  "evaluation_seed": 0,
+  "episodes_per_task": 100,
+  "solver": {
+    "num_samples": 300,
+    "n_steps": 30,
+    "topk": 30
+  },
+  "measurements": [
+    {
+      "task": "pusht",
+      "checkpoint_sha256": "9c308b4220d2db695bbe89a3daf07ae863a8c4dfbc4289f4061d444f7e347733",
+      "manifest_sha256": "8fcdb944047c3e59bc76eaa49e40a38ca4f0fbbc45638e01ca960e9154de8eb2",
+      "batch_1": {"success_rate_percent": 49.0, "evaluation_seconds": 161.36661125719547},
+      "batch_16": {"success_rate_percent": 41.0, "evaluation_seconds": 106.4829501695931},
+      "success_to_failure": 18,
+      "failure_to_success": 10,
+      "outcome_flips": 28,
+      "speedup": 1.5154
+    },
+    {
+      "task": "cube",
+      "checkpoint_sha256": "b53396c111f7cf30cba14defe47c5a8aaf73960cae2e4da1e44a4525817de177",
+      "manifest_sha256": "b83b2eb66d162d989d87da396584d28277fdf00713da07d3b366efcdef5aa5b4",
+      "batch_1": {"success_rate_percent": 50.0, "evaluation_seconds": 260.93624697998166},
+      "batch_16": {"success_rate_percent": 48.0, "evaluation_seconds": 177.98918801546097},
+      "success_to_failure": 6,
+      "failure_to_success": 4,
+      "outcome_flips": 10,
+      "speedup": 1.4660
+    },
+    {
+      "task": "reacher",
+      "checkpoint_sha256": "07650c9d5e1a24e12e884dbe8fed34b3555ad656b2471b1d2ae7b675285cd720",
+      "manifest_sha256": "d7d08cc8ac85c3940271ecfc273ab604ef70181b1cb8cf1f73f24305e6a4b1a1",
+      "batch_1": {"success_rate_percent": 25.0, "evaluation_seconds": 207.49590042233467},
+      "batch_16": {"success_rate_percent": 25.0, "evaluation_seconds": 141.4043835029006},
+      "success_to_failure": 20,
+      "failure_to_success": 20,
+      "outcome_flips": 40,
+      "speedup": 1.4674
+    },
+    {
+      "task": "tworoom",
+      "checkpoint_sha256": "c3aeeeb2d8ca357c229fa2699ee0d2a862bbde0c34d923788725e33fe4d93610",
+      "manifest_sha256": "4948e4c42064d1296bac407cab80c73e08f0014ef5cde7f093de613a7aa26eb0",
+      "batch_1": {"success_rate_percent": 19.0, "evaluation_seconds": 183.06804432719946},
+      "batch_16": {"success_rate_percent": 14.0, "evaluation_seconds": 113.1164516583085},
+      "success_to_failure": 13,
+      "failure_to_success": 8,
+      "outcome_flips": 21,
+      "speedup": 1.6184
+    }
+  ],
+  "aggregate": {
+    "tasks": 4,
+    "episodes": 400,
+    "batch_1_macro_success_rate_percent": 35.75,
+    "batch_16_macro_success_rate_percent": 32.0,
+    "success_rate_delta_pp": -3.75,
+    "success_to_failure": 57,
+    "failure_to_success": 42,
+    "outcome_flips": 99,
+    "batch_1_evaluation_seconds": 812.8668029867113,
+    "batch_16_evaluation_seconds": 538.9929733462632,
+    "speedup": 1.5081213358685186
+  },
+  "reference_contract": {
+    "required_solver_batch_size": 1,
+    "batch_16_reference_equivalent": false,
+    "batch_16_use": "development throughput only"
+  },
+  "note": "One fixed evaluation seed establishes non-equivalence but does not estimate the expected SR shift across seeds. Changing solver batch size reassigns shared-generator CEM draws across environments and iterations."
+}

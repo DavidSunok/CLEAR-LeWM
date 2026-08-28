@@ -1,0 +1,72 @@
+{
+  "columns": [
+    "action",
+    "pixels",
+    "proprio",
+    "state"
+  ],
+  "config": {
+    "batch_size": 32,
+    "cache_state": "fixed-index OS page cache primed before measurement",
+    "frameskip": 5,
+    "measured_batches": 30,
+    "num_steps": 4,
+    "num_workers": 0,
+    "prefetch_factor": 3,
+    "priming_rounds": 2,
+    "rounds": 10,
+    "seed": 20260723,
+    "warmup_batches": 3
+  },
+  "fast_speedup": 5.669887834296906,
+  "median_samples_per_second": {
+    "fast": 3811.9685850265887,
+    "source": 672.3181650910544
+  },
+  "paired_speedup_median": 5.794106344614266,
+  "paired_speedups": [
+    6.155445947380685,
+    6.138654764498775,
+    5.269285609396488,
+    6.51311787816643,
+    4.963013219810047,
+    5.670810127098562,
+    7.195158815768656,
+    5.91740256212997,
+    5.215015333136541,
+    4.5910072624515195
+  ],
+  "rate_cv": {
+    "fast": 0.0776704763431214,
+    "source": 0.07431513749752967
+  },
+  "samples_per_second": {
+    "fast": [
+      4181.405395414582,
+      4080.344862543464,
+      3792.7932936163133,
+      3831.143876436864,
+      3608.1045626583264,
+      3733.1124530789225,
+      4144.4427415967675,
+      3950.0303372150634,
+      3786.2573116865906,
+      3108.6104718719953
+    ],
+    "source": [
+      679.3017810827967,
+      664.696911470086,
+      719.7926957788718,
+      588.2196435104912,
+      726.998781356545,
+      658.3031999678234,
+      576.0043451040932,
+      667.5277363237645,
+      726.0299481055156,
+      677.1085938583444
+    ]
+  },
+  "scope": "steady-state loader-only after untimed fixed-index priming; no model forward/backward or image transform",
+  "source": "pusht_expert_train.lance",
+  "task": "pusht"
+}

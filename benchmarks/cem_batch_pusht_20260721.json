@@ -1,0 +1,91 @@
+{
+  "schema_version": "clear-lewm-performance-v1",
+  "date": "2026-07-21",
+  "hardware": "NVIDIA H20-3e",
+  "task": "pusht",
+  "protocol": "strict",
+  "episodes": 100,
+  "manifest_sha256": "d099f4cd4d3d2b1d529d5a11df8b8cdf86f8710eaf8b91735b35b76b0fbc88af",
+  "checkpoint_source_sha256": "48938400ae3464c9680731287f583a9cb516f55a8ec64ea13a91be47fb15b607",
+  "solver": {
+    "num_samples": 300,
+    "n_steps": 30,
+    "topk": 30,
+    "planning_calls": 2
+  },
+  "measurements": [
+    {
+      "solver_batch_size": 1,
+      "cem_call_seconds": [61.691, 51.1306],
+      "cem_total_seconds": 112.8216,
+      "speedup": 1.0,
+      "success_rate_percent": 42.0,
+      "reference_equivalent": true
+    },
+    {
+      "solver_batch_size": 2,
+      "cem_call_seconds": [46.6928, 38.028],
+      "cem_total_seconds": 84.7208,
+      "speedup": 1.3317,
+      "success_rate_percent": 50.0,
+      "reference_equivalent": false
+    },
+    {
+      "solver_batch_size": 4,
+      "cem_call_seconds": [43.5998, 35.9049],
+      "cem_total_seconds": 79.5047,
+      "speedup": 1.4191,
+      "success_rate_percent": 55.0,
+      "reference_equivalent": false
+    },
+    {
+      "solver_batch_size": 8,
+      "cem_call_seconds": [41.482, 35.8266],
+      "cem_total_seconds": 77.3086,
+      "speedup": 1.4594,
+      "success_rate_percent": 50.0,
+      "reference_equivalent": false
+    },
+    {
+      "solver_batch_size": 16,
+      "cem_call_seconds": [40.7461, 34.8375],
+      "cem_total_seconds": 75.5836,
+      "speedup": 1.4927,
+      "success_rate_percent": 46.0,
+      "reference_equivalent": false
+    },
+    {
+      "solver_batch_size": 32,
+      "cem_call_seconds": [40.7749, 33.8217],
+      "cem_total_seconds": 74.5966,
+      "speedup": 1.5124,
+      "success_rate_percent": 46.0,
+      "reference_equivalent": false
+    },
+    {
+      "solver_batch_size": 100,
+      "cem_call_seconds": [39.6594, 33.4929],
+      "cem_total_seconds": 73.1523,
+      "speedup": 1.5423,
+      "success_rate_percent": 49.0,
+      "reference_equivalent": false
+    }
+  ],
+  "matmul_high_measurements": [
+    {
+      "solver_batch_size": 1,
+      "cem_call_seconds": [46.0374, 70.8843],
+      "cem_total_seconds": 116.9217,
+      "success_rate_percent": 44.0,
+      "reference_equivalent": false
+    },
+    {
+      "solver_batch_size": 16,
+      "cem_call_seconds": [33.7747, 47.2777],
+      "cem_total_seconds": 81.0524,
+      "success_rate_percent": 50.0,
+      "reference_equivalent": false
+    }
+  ],
+  "note": "Rows above batch 1 use CLEAR-LeWM's canonical LeWM broadcast fix. Changing CEM batch size reorders random draws assigned to environments, so throughput rows are not reference-equivalent."
+}

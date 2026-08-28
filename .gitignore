@@ -1,0 +1,37 @@
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+.venv/
+venv/
+dist/
+build/
+
+# Hydra, experiment output, videos, datasets, and model weights
+.hydra/
+outputs/
+multirun/
+videos/
+*.h5
+*.hdf5
+*.lance/
+*.ckpt
+*.pt
+*.pth
+*.npz
+wandb/
+
+# Local result files are ignored; checked-in reference results must be forced.
+results/*.json
+results/*.csv
+results/*.mp4
+!results/reference/
+!results/reference/*.json
+
+# Editors and operating systems
+.idea/
+.vscode/
+.DS_Store

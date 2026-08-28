@@ -1,0 +1,116 @@
+"""Strict-load adapter for the action-head LeWM checkpoints.
+
+The public checkpoints add token-type embeddings and an auxiliary inverse-action
+head to the public LeWM architecture.  CLEAR-LeWM evaluates the forward world
+model with CEM, so the auxiliary head is instantiated for exact state-dict
+compatibility but is not used by the planner.
+"""
+
+from __future__ import annotations
+
+import copy
+import math
+
+import torch
+from torch import nn
+
+from jepa import JEPA as PublicJEPA
+from module import ARPredictor as PublicARPredictor
+from module import Embedder
+from module import MLP
+
+
+class ARPredictor(PublicARPredictor):
+    """Public ARPredictor plus the checkpoint's learned token-type embeddings."""
+
+    def __init__(self, *, input_dim: int, **kwargs):
+        super().__init__(input_dim=input_dim, **kwargs)
+        self.type_embedding = nn.Parameter(torch.randn(1, 2, input_dim))
+
+    def forward(self, x: torch.Tensor, c: torch.Tensor) -> torch.Tensor:
+        time = x.size(1)
+        state_type = self.type_embedding[:, 0:1]
+        condition_type = self.type_embedding[:, 1:2]
+        x = x + self.pos_embedding[:, :time] + state_type
+        c = c + condition_type
+        x = self.dropout(x)
+        return self.transformer(x, c)
+
+
+class HorizonModulator(nn.Module):
+    """FiLM-style horizon module matching the serialized parameter layout."""
+
+    embedding_dim = 128
+
+    def __init__(self, feature_dim: int):
+        super().__init__()
+        self.horizon_mlp = nn.Sequential(
+            nn.Linear(self.embedding_dim, self.embedding_dim),
+            nn.SiLU(),
+            nn.Linear(self.embedding_dim, self.embedding_dim),
+        )
+        self.cond_proj = nn.Linear(self.embedding_dim, 2 * feature_dim)
+
+    @staticmethod
+    def _sinusoidal(horizon: torch.Tensor, dim: int) -> torch.Tensor:
+        horizon = horizon.float().reshape(-1, 1)
+        half = dim // 2
+        exponent = -math.log(10_000.0) * torch.arange(
+            half, device=horizon.device, dtype=horizon.dtype
+        ) / max(half - 1, 1)
+        phase = horizon * exponent.exp().reshape(1, -1)
+        return torch.cat((phase.sin(), phase.cos()), dim=-1)
+
+    def forward(
+        self, condition: torch.Tensor, horizon: torch.Tensor
+    ) -> torch.Tensor:
+        embedding = self._sinusoidal(horizon, self.embedding_dim)
+        scale, shift = self.cond_proj(self.horizon_mlp(embedding)).chunk(2, dim=-1)
+        while scale.ndim < condition.ndim:
+            scale = scale.unsqueeze(1)
+            shift = shift.unsqueeze(1)
+        return condition * (1.0 + scale) + shift
+
+
+class JEPA(PublicJEPA):
+    """Public LeWM JEPA with the serialized auxiliary modules restored."""
+
+    def __init__(
+        self,
+        encoder: nn.Module,
+        predictor: ARPredictor,
+        action_encoder: nn.Module,
+        projector: nn.Module | None = None,
+        pred_proj: nn.Module | None = None,
+        *,
+        use_action_history: bool = True,
+        use_proprio: bool = False,
+        horizon_conditioned: bool = False,
+        action_head: dict | None = None,
+    ):
+        super().__init__(
+            encoder=encoder,
+            predictor=predictor,
+            action_encoder=action_encoder,
+            projector=projector,
+            pred_proj=pred_proj,
+        )
+        self.use_action_history = bool(use_action_history)
+        self.use_proprio = bool(use_proprio)
+        self.horizon_conditioned = bool(horizon_conditioned)
+
+        if action_head is not None:
+            head_type = action_head.get("type")
+            if head_type != "mse":
+                raise ValueError(f"Unsupported serialized action head: {head_type!r}")
+            feature_dim = int(predictor.pos_embedding.shape[-1])
+            action_dim = int(action_encoder.patch_embed.in_channels)
+            self.action_predictor = copy.deepcopy(predictor)
+            self.action_decoder = MLP(
+                input_dim=feature_dim,
+                hidden_dim=2048,
+                output_dim=action_dim,
+                norm_fn=nn.LayerNorm,
+            )
+            if self.horizon_conditioned:
+                self.horizon_modulator = HorizonModulator(feature_dim)

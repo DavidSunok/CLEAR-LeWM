@@ -1,0 +1,63 @@
+{
+  "benchmark": {
+    "training_data": {
+      "description": "Public task-specific LeWM training datasets named in the checkpoint publisher's frozen full configs",
+      "license": "Dataset-specific upstream terms; see METHOD_CARD.md",
+      "revision": "141dc536b247898164a7422e3bbb7514429529b6",
+      "source": "https://huggingface.co/MinghaoFu/lewm-official-ckpts"
+    },
+    "training_data_track": "standard-data",
+    "version": "v0.5"
+  },
+  "contact": {
+    "github": "zerotul782231"
+  },
+  "method": {
+    "license": "Not specified by checkpoint publisher",
+    "name": "DINOv2 No-Proprio LeWM",
+    "repository": "https://huggingface.co/MinghaoFu/lewm-official-ckpts",
+    "revision": "141dc536b247898164a7422e3bbb7514429529b6"
+  },
+  "results": [
+    {
+      "path": "results/tworoom-moderate.json",
+      "protocol": "moderate",
+      "sha256": "e329dea4f302ec82d3668e795435e6feafd5cd7d0a53ed0b593d8e596b7ac9f1",
+      "task": "tworoom"
+    },
+    {
+      "path": "results/tworoom-strict.json",
+      "protocol": "strict",
+      "sha256": "8830f59a8def9d1a238b36f6ba9b36e46783da816adc1b3a3dfa303c1b33fa3b",
+      "task": "tworoom"
+    },
+    {
+      "path": "results/pusht-moderate.json",
+      "protocol": "moderate",
+      "sha256": "99b3160b468605241d4fdf13fda5d70753137f18431ca12db5389f80ed8890db",
+      "task": "pusht"
+    },
+    {
+      "path": "results/pusht-strict.json",
+      "protocol": "strict",
+      "sha256": "c253a9a635423a2b238d19c0c714b1a0f6d4831525bcc04c8fe3b24253b957b0",
+      "task": "pusht"
+    },
+    {
+      "path": "results/cube-moderate.json",
+      "protocol": "moderate",
+      "sha256": "667916f13dcde398dc96adb1c0e7e509da31be799f412db27035c3a520bdbbd8",
+      "task": "cube"
+    },
+    {
+      "path": "results/cube-strict.json",
+      "protocol": "strict",
+      "sha256": "f13d802f309e4a1ab5e99468338ac517fafc82f129035e93849f5bb1310511b3",
+      "task": "cube"
+    }
+  ],
+  "schema_version": "clear-lewm-submission-v1",
+  "verification": {
+    "requested": "self-reported"
+  }
+}

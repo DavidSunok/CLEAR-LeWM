@@ -1,0 +1,39 @@
+{
+  "audit_date": "2026-07-22",
+  "format": "strictly-loaded-state-dict",
+  "models": {
+    "cube": {
+      "config_sha256": "4d446944fe28922cc2c5763f43d4ef9132a457bd89e9a0ce5dbceac183994999",
+      "repository": "quentinll/lewm-cube",
+      "revision": "b0747c5002e86d2ce8f3cd8178004b97524c587d",
+      "runtime_weights_sha256": "33f1947958e89f131b669a00f4b980b4ba61e069bcd182bbe5f5a906057413a2",
+      "source_weights_sha256": "2839a907362f403f9136383016e91774373a295d958ae75121791f22a9fddf89",
+      "tensors_loaded": 303
+    },
+    "pusht": {
+      "config_sha256": "2564086e961e7b5c7c04dffc451091115b389a590645ff19653c64fd0bc16e09",
+      "repository": "quentinll/lewm-pusht",
+      "revision": "22b330c28c27ead4bfd1888615af1340e3fe9052",
+      "runtime_weights_sha256": "af1f14bce2021bfb77d7ec507c98d523678b10462a77374969b14422453b8f06",
+      "source_weights_sha256": "48938400ae3464c9680731287f583a9cb516f55a8ec64ea13a91be47fb15b607",
+      "tensors_loaded": 303
+    },
+    "reacher": {
+      "config_sha256": "2564086e961e7b5c7c04dffc451091115b389a590645ff19653c64fd0bc16e09",
+      "repository": "quentinll/lewm-reacher",
+      "revision": "62adae4b71dc474ddf8f794c476ebfe737a743ca",
+      "runtime_weights_sha256": "56fcc013e85b2c0e803d7086aa6f59859bc2c8d36af001e13d5d69a7d9ce0586",
+      "source_weights_sha256": "eb70b1fd5409f8f81875d62f5ee5a20dd220a3128a477de66b5760f475f0f469",
+      "tensors_loaded": 303
+    },
+    "tworoom": {
+      "config_sha256": "2564086e961e7b5c7c04dffc451091115b389a590645ff19653c64fd0bc16e09",
+      "repository": "quentinll/lewm-tworooms",
+      "revision": "77adaae0bc31deab21c93740d1f8bb947cd0bdec",
+      "runtime_weights_sha256": "eacff2ac5668ad6a538b81e0990b7cc4a8f03e6a34cd7ca701357132b4d9746d",
+      "source_weights_sha256": "566f223624ea4bfb39dbfe6ae731198dd6ea73b7b8919fed6b1ecafca810f7dd",
+      "tensors_loaded": 303
+    }
+  },
+  "weight_distribution": "Run scripts/prepare_official_checkpoints.py; binary weights are intentionally not committed to Git."
+}

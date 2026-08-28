@@ -1,0 +1,34 @@
+{
+  "config": {
+    "batch_size": 32,
+    "frameskip": 5,
+    "measured_batches": 30,
+    "num_steps": 4,
+    "num_workers": 0,
+    "prefetch_factor": 3,
+    "rounds": 3,
+    "seed": 20260721,
+    "warmup_batches": 3
+  },
+  "fast_dir": "<local-nvme>/pusht-fast",
+  "fast_speedup": 9.252192740130154,
+  "host": "H20-3 node",
+  "median_samples_per_second": {
+    "fast": 4660.619173533135,
+    "source": 503.7313104512317
+  },
+  "samples_per_second": {
+    "fast": [
+      3990.417063325171,
+      4660.619173533135,
+      5429.35853657105
+    ],
+    "source": [
+      503.7313104512317,
+      584.3365508935856,
+      471.43835280708953
+    ]
+  },
+  "scope": "loader-only; no model forward/backward or image transform",
+  "source": "pusht_expert_train.lance"
+}

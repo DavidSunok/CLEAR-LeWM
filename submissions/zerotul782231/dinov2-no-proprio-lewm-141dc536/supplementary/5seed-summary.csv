@@ -1,0 +1,7 @@
+family,task,protocol,seeds,episodes_per_seed,episodes_total,mean_success_rate_percent,sample_variance_percent_squared,sample_std_percent,mean_random_success_rate_percent,mean_excess_over_random_pp,current_canonical_compatible_results
+dino,cube,moderate,5,100,500,40.8,24.2,4.919349550499537,,,0
+dino,cube,strict,5,100,500,13.0,2.5,1.5811388300841898,4.4,8.6,0
+dino,pusht,moderate,5,100,500,5.8,1.7,1.3038404810405297,,,0
+dino,pusht,strict,5,100,500,8.6,16.3,4.03732584763727,3.6,5.0,0
+dino,tworoom,moderate,5,100,500,45.8,17.7,4.207136793592526,,,0
+dino,tworoom,strict,5,100,500,23.2,2.7,1.6431676725154984,2.6,20.6,0
