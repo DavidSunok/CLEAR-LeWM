@@ -31,6 +31,8 @@ OFFICIAL_DATASETS = {
     "cube": "ogbench/cube_single_expert",
 }
 
+BENCHMARK_VERSION = "v0.8"
+
 
 def _json_safe(value):
     if isinstance(value, dict):
@@ -345,15 +347,41 @@ def _install_tworoom_success(world, protocol: ProtocolSpec) -> None:
         patch_environment(wrapped.unwrapped)
 
 
+def _disable_reacher_task_termination(env) -> None:
+    """Prevent dm-control auto-reset while CLEAR owns Reacher success."""
+    task = env.env.task
+    if getattr(task, "_clear_lewm_termination_disabled", False):
+        return
+
+    def no_termination(self, physics):
+        return None
+
+    task.get_termination = MethodType(no_termination, task)
+    task._clear_lewm_termination_disabled = True
+
+
 def _install_reacher_success(world, protocol: ProtocolSpec) -> None:
     def patch_environment(env) -> None:
         original_step = env.step
+        original_reset = env.reset
+        original_compile_model = env.compile_model
         original_set_target = env.set_target_qpos
         env._clear_lewm_hold_count = 0
         env._clear_lewm_target_finger_pos = None
 
         def suppress_upstream_termination(self, step):
             return False
+
+        def compile_model(self, *args, **kwargs):
+            result = original_compile_model(*args, **kwargs)
+            _disable_reacher_task_termination(self)
+            return result
+
+        def reset(self, *args, **kwargs):
+            result = original_reset(*args, **kwargs)
+            _disable_reacher_task_termination(self)
+            self._clear_lewm_hold_count = 0
+            return result
 
         def set_target_qpos(self, target_qpos):
             result = original_set_target(target_qpos)
@@ -400,6 +428,9 @@ def _install_reacher_success(world, protocol: ProtocolSpec) -> None:
             info["clear_lewm_hold_count"] = self._clear_lewm_hold_count
             return observation, reward, terminated, truncated, info
 
+        env.compile_model = MethodType(compile_model, env)
+        env.reset = MethodType(reset, env)
+        _disable_reacher_task_termination(env)
         env._is_terminated = MethodType(suppress_upstream_termination, env)
         env.set_target_qpos = MethodType(set_target_qpos, env)
         env.step = MethodType(step, env)
@@ -678,6 +709,7 @@ def evaluate_manifest(
     summary.pop("sustained_steps", None)
     result = {
         "schema_version": "clear-lewm-result-v1",
+        "benchmark_version": BENCHMARK_VERSION,
         "task": task,
         "protocol": protocol.to_dict(),
         "policy": policy_label or policy,
@@ -766,6 +798,9 @@ def evaluate_manifest(
             "evaluation_seconds": evaluation_seconds,
             "float32_matmul_precision": torch.get_float32_matmul_precision(),
             "modified_stable_worldmodel_allowed": (allow_modified_stable_worldmodel),
+            "reacher_task_termination_gate": (
+                task == "reacher" and protocol.success_mode == "task-sustained"
+            ),
             "total_before_serialization_seconds": time.perf_counter() - run_started,
         },
     }

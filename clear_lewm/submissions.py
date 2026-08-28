@@ -10,7 +10,7 @@ from .protocols import TASKS, protocol_from_dict
 
 SUBMISSION_SCHEMA = "clear-lewm-submission-v1"
 RESULT_SCHEMA = "clear-lewm-result-v1"
-BENCHMARK_VERSIONS = ("v0.5",)
+BENCHMARK_VERSIONS = ("v0.5", "v0.8")
 TRAINING_DATA_TRACKS = ("standard-data", "reduced-data", "external-data")
 VERIFICATION_REQUESTS = ("self-reported", "reproducible")
 PRIMARY_PROTOCOLS = ("moderate", "strict")
@@ -96,9 +96,22 @@ def _canonical_manifest(
 def _canonical_random_rate(
     repo_root: Path, version: str, task: str, protocol: str
 ) -> float:
-    path = (
-        repo_root / "results" / version / f"{task}-{protocol}-random-seed42-n100.json"
-    )
+    if version == "v0.8":
+        path = (
+            repo_root
+            / "results"
+            / version
+            / "runs"
+            / "random"
+            / f"{task}-{protocol}-seed42.json"
+        )
+    else:
+        path = (
+            repo_root
+            / "results"
+            / version
+            / f"{task}-{protocol}-random-seed42-n100.json"
+        )
     payload = _load_object(path, "canonical random result")
     try:
         return float(payload["metrics"]["success_rate_percent"])
@@ -142,6 +155,10 @@ def _validate_result(
     label = str(result_path)
     if result.get("schema_version") != RESULT_SCHEMA:
         raise SubmissionValidationError(f"Unsupported result schema in {label}")
+    if version == "v0.8" and result.get("benchmark_version") != version:
+        raise SubmissionValidationError(
+            f"Result does not declare benchmark_version={version!r}: {label}"
+        )
     if result.get("task") != expected_task:
         raise SubmissionValidationError(
             f"Result task does not match submission: {label}"

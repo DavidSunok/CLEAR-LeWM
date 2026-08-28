@@ -101,6 +101,18 @@ def _v05_bundle(tmp_path: Path) -> Path:
     return path
 
 
+def _v08_bundle(tmp_path: Path) -> Path:
+    path = _bundle(tmp_path)
+    submission = json.loads(path.read_text())
+    result_path = path.parent / submission["results"][0]["path"]
+    source = ROOT / "results/v0.8/runs/official-lewm/pusht-strict-seed42.json"
+    result_path.write_bytes(source.read_bytes())
+    submission["benchmark"]["version"] = "v0.8"
+    submission["results"][0]["sha256"] = _sha256(result_path)
+    path.write_text(json.dumps(submission))
+    return path
+
+
 def test_valid_submission_checks_canonical_manifest_and_trace(tmp_path):
     report = validate_submission(_bundle(tmp_path), repo_root=ROOT)
     assert report["status"] == "valid"
@@ -116,6 +128,24 @@ def test_v05_submission_accepts_moderate_and_uses_v05_random_floor(tmp_path):
     assert report["results"][0]["success_rate_percent"] == 88.0
     assert report["results"][0]["random_success_rate_percent"] == 3.0
     assert "pusht/strict" in report["missing_results"]
+
+
+def test_v08_submission_requires_versioned_result_and_uses_v08_random(tmp_path):
+    path = _v08_bundle(tmp_path)
+    report = validate_submission(path, repo_root=ROOT)
+    assert report["benchmark_version"] == "v0.8"
+    assert report["results"][0]["success_rate_percent"] == 71.0
+    assert report["results"][0]["random_success_rate_percent"] == pytest.approx(7.0)
+
+    submission = json.loads(path.read_text())
+    result_path = path.parent / submission["results"][0]["path"]
+    result = json.loads(result_path.read_text())
+    result.pop("benchmark_version")
+    result_path.write_text(json.dumps(result))
+    submission["results"][0]["sha256"] = _sha256(result_path)
+    path.write_text(json.dumps(submission))
+    with pytest.raises(SubmissionValidationError, match="benchmark_version='v0.8'"):
+        validate_submission(path, repo_root=ROOT)
 
 
 def test_submission_rejects_tampered_result_hash(tmp_path):

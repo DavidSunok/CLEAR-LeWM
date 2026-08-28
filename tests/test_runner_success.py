@@ -88,11 +88,24 @@ class FakePhysics:
         return None
 
 
+class FakeReacherTask:
+    def __init__(self):
+        self.target_qpos = np.zeros(2)
+
+    def get_termination(self, physics):
+        return 0.0
+
+
 class FakeReacher:
     def __init__(self):
-        physics = FakePhysics()
-        task = SimpleNamespace(target_qpos=np.zeros(2))
-        self.env = SimpleNamespace(physics=physics, task=task)
+        self.compile_model()
+
+    def compile_model(self, *args, **kwargs):
+        self.env = SimpleNamespace(physics=FakePhysics(), task=FakeReacherTask())
+
+    def reset(self, *args, **kwargs):
+        self.compile_model()
+        return np.zeros(2), {}
 
     def _is_terminated(self, step):
         return True
@@ -159,6 +172,17 @@ def test_reacher_strict_scores_only_the_fingertip_endpoint():
     env.env.physics.data.qpos[:] = np.array([0.0, 0.0])
     assert not env.step(np.zeros(2))[2]
     assert env.step(np.zeros(2))[2]
+
+
+def test_reacher_task_termination_stays_disabled_after_rebuilds():
+    env = FakeReacher()
+    _install_reacher_success(_world(env), get_protocol("moderate"))
+
+    for rebuild in (None, env.reset, env.compile_model):
+        if rebuild is not None:
+            rebuild()
+        assert env.env.task._clear_lewm_termination_disabled
+        assert env.env.task.get_termination(env.env.physics) is None
 
 
 def test_manifest_paths_are_portable():
