@@ -8,8 +8,9 @@ store training datasets, model weights, or generated videos.
 
 | Contribution | Entry point | Comparison status |
 |---|---|---|
-| A method on fixed v0.5 Moderate manifests | result bundle PR | eligible for the Moderate table |
-| A method on fixed v0.5 Strict manifests | result bundle PR | eligible for the Strict table |
+| A method on fixed v0.8 Moderate manifests | result bundle PR | eligible for the current Moderate table |
+| A method on fixed v0.8 Strict manifests | result bundle PR | eligible for the current Strict table |
+| A historical v0.5 result | result bundle PR | retained in the versioned archive |
 | A LeWM-compatible policy adapter | proposal issue, then code PR | eligible after tests and review |
 | Reduced or external training data | proposal issue, then a separate data-track PR | never mixed silently with standard-data results |
 | A success-rule or manifest change | protocol proposal issue | requires a new benchmark version |
@@ -32,15 +33,19 @@ Authors may request the first two levels. Only maintainers assign
 
 ## Fixed comparison contract
 
-v0.5 submissions must use:
+Current submissions must use:
 
-- the checked-in `v0.5` manifest for the declared Moderate or Strict mode;
+- the checked-in `v0.8` manifest for the declared Moderate or Strict mode;
 - all 100 selected episodes and the manifest policy seed;
 - the exact task predicate embedded in that manifest;
-- the canonical paired random output from `results/v0.5/`;
+- the matching paired-random output from `results/v0.8/runs/random/`;
 - solver batch size 1 when a sampling solver is used;
 - a full `clear-lewm-result-v1` record with episode outcomes and runtime
   fingerprints.
+
+Historical v0.5 bundles remain valid when they explicitly declare v0.5 and use
+the corresponding v0.5 manifest and paired-random result. They are never
+silently relabeled or mixed with the v0.8 table.
 
 Methods may use CEM, another planner, or direct inference. Their inference mode,
 solver budget, runtime, and training-data track remain visible in the record;
@@ -66,10 +71,10 @@ Generate each result with the canonical manifest, for example:
 
 ```bash
 clear-lewm evaluate \
-  --manifest manifests/v0.5/pusht/moderate-seed42-n100.json \
+  --manifest manifests/v0.8/pusht/moderate-seed42-n100.json \
   --policy /path/to/policy \
   --policy-label your-method \
-  --random-results results/v0.5/pusht-moderate-random-seed42-n100.json \
+  --random-results results/v0.8/runs/random/pusht-moderate-seed42.json \
   --solver-batch-size 1 \
   --output submissions/USER/METHOD/results/pusht-moderate.json
 ```

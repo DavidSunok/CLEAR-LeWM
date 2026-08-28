@@ -6,15 +6,15 @@
     <meta name="theme-color" content="#101a19">
     <meta
       name="description"
-      content="CLEAR-LeWM v0.5 provides official-task-aligned, physics-corrected evaluation for four LeWM control tasks plus an audited FAST training input path."
+      content="CLEAR-LeWM v0.8 provides official-task-aligned, physics-corrected evaluation for four LeWM control tasks plus an audited FAST training input path."
     >
     <meta property="og:title" content="CLEAR-LeWM">
     <meta property="og:description" content="Task completion, not proxy success.">
     <meta property="og:type" content="website">
-    <meta property="og:image" content="assets/showcase/clear_lewm_v05_overview_poster.png">
+    <meta property="og:image" content="assets/showcase/clear_lewm_v08_overview_poster.png">
     <title>CLEAR-LeWM | Task-semantic evaluation for LeWM</title>
-    <link rel="stylesheet" href="website.css?v=20260724-3">
-    <script src="website.js?v=20260724-3" defer></script>
+    <link rel="stylesheet" href="website.css?v=20260828-1">
+    <script src="website.js?v=20260828-1" defer></script>
   </head>
   <body>
     <a class="skip-link" href="#main">Skip to content</a>
@@ -76,8 +76,8 @@
           </div>
           <dl class="hero-facts" aria-label="Project facts">
             <div><dt>4</dt><dd>task contracts</dd></div>
-            <div><dt>2</dt><dd>auditable v0.5 modes</dd></div>
-            <div><dt>48</dt><dd>paired reference runs</dd></div>
+            <div><dt>2</dt><dd>auditable v0.8 modes</dd></div>
+            <div><dt>84</dt><dd>audited v0.8 runs</dd></div>
             <div class="hero-fast-fact"><dt>17.9×</dt><dd><a href="#performance">4-task avg.</a></dd></div>
           </dl>
         </div>
@@ -102,9 +102,9 @@
             muted
             playsinline
             preload="metadata"
-            poster="assets/site/overview_poster.webp"
+            poster="assets/site/overview_poster_v08.webp"
           >
-            <source src="assets/showcase/clear_lewm_v05_overview_1080p.mp4" type="video/mp4">
+            <source src="assets/showcase/clear_lewm_v08_overview_1080p.mp4?v=20260828-2" type="video/mp4">
             Your browser does not support embedded video.
           </video>
         </div>
@@ -118,14 +118,14 @@
           </div>
           <div class="positioning-copy">
             <p>
-              The historical LeWM evaluator retains initially solved pairs and a TwoRoom collision
-              rewrite that can admit physically invalid transitions. These effects weaken its
-              ability to distinguish useful model improvements.
+              The historical LeWM evaluator retains initially solved pairs, can terminate Reacher
+              inside dm-control before CLEAR scores the rollout, and includes a TwoRoom collision
+              rewrite that can admit physically invalid transitions.
             </p>
             <p>
-              v0.5 Moderate keeps official task predicates while fixing joint and collision
-              topology, pre-solved pairs, and contaminated TwoRoom windows. Strict inherits
-              those repairs and asks whether the task-relevant object or endpoint is precise.
+              v0.8 Moderate keeps official task predicates while fixing termination, joint and
+              collision topology, pre-solved pairs, and contaminated TwoRoom windows. Strict
+              inherits those repairs and asks whether the task-relevant object or endpoint is precise.
             </p>
           </div>
         </div>
@@ -160,43 +160,43 @@
               <h2 id="floor-title">Historical success can survive without a useful controller.</h2>
             </div>
             <p>
-              Random-policy success rate, 100 deterministic evaluation pairs per protocol.
+              Random-policy success rate, mean over three 100-pair fixed manifests per protocol.
               Lower is better.
             </p>
           </div>
 
-          <div class="bar-chart" role="img" aria-label="Historical versus v0.5 Moderate random-policy success rates for all four tasks">
+          <div class="bar-chart" role="img" aria-label="Historical versus v0.8 Moderate random-policy success rates for all four tasks">
             <div class="chart-legend" aria-hidden="true">
               <span><i class="legend-swatch historical"></i>Historical</span>
-              <span><i class="legend-swatch strict"></i>v0.5 Moderate</span>
+              <span><i class="legend-swatch strict"></i>v0.8 Moderate</span>
             </div>
 
             <div class="chart-row">
               <div class="chart-task">PushT</div>
               <div class="bar-pair">
                 <div class="bar-line"><span class="bar historical" style="--value: 14%"></span><b>7%</b></div>
-                <div class="bar-line"><span class="bar strict" style="--value: 6%"></span><b>3%</b></div>
+                <div class="bar-line"><span class="bar strict" style="--value: 8%"></span><b>4%</b></div>
               </div>
             </div>
             <div class="chart-row">
               <div class="chart-task">Cube</div>
               <div class="bar-pair">
                 <div class="bar-line"><span class="bar historical" style="--value: 94%"></span><b>47%</b></div>
-                <div class="bar-line"><span class="bar strict" style="--value: 30%"></span><b>15%</b></div>
+                <div class="bar-line"><span class="bar strict" style="--value: 32%"></span><b>16%</b></div>
               </div>
             </div>
             <div class="chart-row">
               <div class="chart-task">Reacher</div>
               <div class="bar-pair">
                 <div class="bar-line"><span class="bar historical" style="--value: 32%"></span><b>16%</b></div>
-                <div class="bar-line"><span class="bar strict" style="--value: 10%"></span><b>5%</b></div>
+                <div class="bar-line"><span class="bar strict" style="--value: 14%"></span><b>7%</b></div>
               </div>
             </div>
             <div class="chart-row">
               <div class="chart-task">TwoRoom</div>
               <div class="bar-pair">
                 <div class="bar-line"><span class="bar historical" style="--value: 60%"></span><b>30%</b></div>
-                <div class="bar-line"><span class="bar strict" style="--value: 12%"></span><b>6%</b></div>
+                <div class="bar-line"><span class="bar strict" style="--value: 14%"></span><b>7%</b></div>
               </div>
             </div>
             <div class="chart-axis" aria-hidden="true"><span>0</span><span>25</span><span>50% SR</span></div>
@@ -208,7 +208,7 @@
         <div class="page-shell">
           <div class="protocol-heading">
             <div>
-              <p class="section-label light">v0.5 Moderate + Strict</p>
+              <p class="section-label light">v0.8 Moderate + Strict</p>
               <h2 id="protocol-title">Choose the claim your experiment makes.</h2>
             </div>
             <div class="mode-switch" role="tablist" aria-label="Evaluation protocol">
@@ -272,7 +272,7 @@
 
           <div class="task-grid">
             <article class="task-card pusht-card">
-              <img src="assets/task_gifs/pusht.gif" loading="lazy" alt="PushT trace showing the block pose metric over time">
+              <img src="assets/task_gifs/pusht_v08.gif" loading="lazy" alt="PushT trace showing the block pose metric over time">
               <div class="task-body">
                 <p class="task-index">01 / PushT</p>
                 <div class="task-fast"><strong>5.79×</strong><span>FAST loader vs Lance</span></div>
@@ -283,7 +283,7 @@
             </article>
 
             <article class="task-card cube-card">
-              <img src="assets/task_gifs/cube.gif" loading="lazy" alt="Cube trace showing symmetry-aware position and orientation metrics">
+              <img src="assets/task_gifs/cube_v08.gif" loading="lazy" alt="Cube trace showing symmetry-aware position and orientation metrics">
               <div class="task-body">
                 <p class="task-index">02 / Cube</p>
                 <div class="task-fast"><strong>37.72×</strong><span>FAST loader vs HDF5</span></div>
@@ -294,18 +294,18 @@
             </article>
 
             <article class="task-card reacher-card">
-              <img src="assets/task_gifs/reacher.gif" loading="lazy" alt="Reacher trace comparing corrected joint topology and fingertip completion">
+              <img src="assets/task_gifs/reacher_v08.gif" loading="lazy" alt="Reacher trace comparing corrected joint topology and fingertip completion">
               <div class="task-body">
                 <p class="task-index">03 / Reacher</p>
                 <div class="task-fast"><strong>30.77×</strong><span>FAST loader vs HDF5</span></div>
                 <h3>Repair joint topology, then score the endpoint.</h3>
-                <p>Moderate fixes shoulder/wrist errors. Strict requires the physical fingertip within 1 cm for two steps.</p>
+                <p>Both modes own termination after reset or recompilation. Strict requires the physical fingertip within 1 cm for two steps.</p>
                 <a href="https://github.com/DavidSunok/CLEAR-LeWM/blob/main/docs/tasks/REACHER.md">Read the task contract</a>
               </div>
             </article>
 
             <article class="task-card tworoom-card">
-              <img src="assets/task_gifs/tworoom.gif" loading="lazy" alt="TwoRoom trace showing a collision-free cross-room route">
+              <img src="assets/task_gifs/tworoom_v08.gif" loading="lazy" alt="TwoRoom trace showing a collision-free cross-room route">
               <div class="task-body">
                 <p class="task-index">04 / TwoRoom</p>
                 <div class="task-fast"><strong>15.15×</strong><span>FAST loader vs HDF5</span></div>
@@ -323,11 +323,11 @@
           <div class="split-heading">
             <div>
               <p class="section-label">Matched evaluation</p>
-              <h2 id="results-title">Three LeWM variants. One v0.5 contract.</h2>
+              <h2 id="results-title">Three LeWM variants. One v0.8 contract.</h2>
             </div>
             <p>
-              The model comparison fixes seed 42, 100 episodes, pure CEM 300 x 30,
-              and solver batch size 1 across every displayed bar.
+              The model comparison uses seeds 0, 1, and 42, 100 episodes each,
+              pure CEM 300 x 30, and solver batch size 1.
             </p>
           </div>
 
@@ -367,28 +367,28 @@
               <tbody>
                 <tr>
                   <th scope="row">PushT</th>
-                  <td data-label="Moderate"><strong>86.33%</strong><span>random 4.00%</span><small>+82.33 pp</small></td>
-                  <td data-label="Strict"><strong>70.33%</strong><span>random 5.00%</span><small>+65.33 pp</small></td>
+                  <td data-label="Moderate"><strong>86.67%</strong><span>random 4.00%</span><small>+82.67 pp</small></td>
+                  <td data-label="Strict"><strong>70.67%</strong><span>random 5.00%</span><small>+65.67 pp</small></td>
                 </tr>
                 <tr>
                   <th scope="row">Cube</th>
                   <td data-label="Moderate"><strong>50.33%</strong><span>random 15.67%</span><small>+34.67 pp</small></td>
-                  <td data-label="Strict"><strong>26.33%</strong><span>random 6.00%</span><small>+20.33 pp</small></td>
+                  <td data-label="Strict"><strong>21.67%</strong><span>random 6.00%</span><small>+15.67 pp</small></td>
                 </tr>
                 <tr>
                   <th scope="row">Reacher</th>
-                  <td data-label="Moderate"><strong>46.00%</strong><span>random 4.33%</span><small>+41.67 pp</small></td>
-                  <td data-label="Strict"><strong>43.00%</strong><span>random 5.00%</span><small>+38.00 pp</small></td>
+                  <td data-label="Moderate"><strong>79.67%</strong><span>random 7.33%</span><small>+72.33 pp</small></td>
+                  <td data-label="Strict"><strong>87.00%</strong><span>random 8.00%</span><small>+79.00 pp</small></td>
                 </tr>
                 <tr>
                   <th scope="row">TwoRoom</th>
-                  <td data-label="Moderate"><strong>84.00%</strong><span>random 6.67%</span><small>+77.33 pp</small></td>
-                  <td data-label="Strict"><strong>58.33%</strong><span>random 1.67%</span><small>+56.67 pp</small></td>
+                  <td data-label="Moderate"><strong>83.00%</strong><span>random 6.67%</span><small>+76.33 pp</small></td>
+                  <td data-label="Strict"><strong>51.33%</strong><span>random 1.67%</span><small>+49.67 pp</small></td>
                 </tr>
               </tbody>
             </table>
           </div>
-          <p class="table-note">Main values are official LeWM SR; secondary values are paired random and excess over random. Full per-seed JSON records are checked into results/v0.5.</p>
+          <p class="table-note">Main values are official LeWM SR; secondary values are paired random and excess over random. Full per-seed JSON records are checked into results/v0.8.</p>
         </div>
       </section>
 
@@ -429,7 +429,7 @@
             </p>
             <div class="resource-links">
               <a href="https://github.com/DavidSunok/CLEAR-LeWM#quick-start">Quick start guide</a>
-              <a href="https://github.com/DavidSunok/CLEAR-LeWM/blob/main/EVALUATION_SPEC.md">v0.5 specification</a>
+              <a href="https://github.com/DavidSunok/CLEAR-LeWM/blob/main/EVALUATION_SPEC_V08.md">v0.8 specification</a>
               <a href="https://github.com/DavidSunok/CLEAR-LeWM/blob/main/docs/RUNTIME_REPRODUCIBILITY.md">Reproduction guide</a>
             </div>
           </div>

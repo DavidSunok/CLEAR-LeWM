@@ -110,6 +110,31 @@ function comparisonModels(registry) {
   ];
 }
 
+function v08ComparisonRegistry(summary) {
+  const modelSpecs = [
+    ["official-lewm", "Official LeWM"],
+    ["dinov2-no-proprio-lewm", "DINOv2 No-Proprio LeWM"],
+    ["gcbc-joint-lewm", "GCBC Joint LeWM"],
+  ];
+  const model = (key, label) => ({
+    method: label,
+    results: summary.rows
+      .filter((row) => row.model === key)
+      .map((row) => ({
+        task: row.task,
+        protocol: row.protocol,
+        success_rate_percent: row.success_rate_mean_percent,
+        random_success_rate_percent: row.random_rate_mean_percent,
+        excess_over_random_pp: row.mean_excess_over_random_pp,
+      })),
+  });
+  const models = modelSpecs.map(([key, label]) => model(key, label));
+  return {
+    matched_official_reference: models[0],
+    submissions: models.slice(1),
+  };
+}
+
 function comparisonPanel(protocol, models) {
   const panel = document.createElement("section");
   panel.className = "comparison-panel";
@@ -160,7 +185,7 @@ function comparisonPanel(protocol, models) {
       stack.title = `${model.label}: ${formatRate(value)}`;
       const valueLabel = document.createElement("span");
       valueLabel.className = "comparison-bar-value";
-      valueLabel.textContent = value;
+      valueLabel.textContent = Number.isInteger(value) ? value : value.toFixed(1);
       const bar = document.createElement("span");
       bar.className = `comparison-bar ${model.className}`;
       stack.append(valueLabel, bar);
@@ -286,7 +311,12 @@ async function loadCommunityResults() {
     const response = await fetch("submissions/leaderboard.json");
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
     const registry = await response.json();
-    renderModelComparison(registry);
+    const summaryResponse = await fetch("results/v0.8/summary.json");
+    if (summaryResponse.ok) {
+      renderModelComparison(v08ComparisonRegistry(await summaryResponse.json()));
+    } else {
+      renderModelComparison(registry);
+    }
     communityResults.replaceChildren(
       ...registry.submissions.map(communityCard),
     );
