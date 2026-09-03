@@ -315,6 +315,29 @@ def test_paired_random_result_accepts_an_identical_run_identity(tmp_path):
     assert trace == [False, True]
 
 
+def test_paired_random_result_requires_the_manifest_result_schema(tmp_path):
+    result = {
+        "schema_version": "clear-lewm-result-v2",
+        "manifest_sha256": "same",
+        "task": "reacher",
+        "protocol": {"name": "moderate"},
+        "policy_seed": 42,
+        "checkpoint": None,
+        "episode_successes": [True],
+    }
+    path = tmp_path / "random.json"
+    path.write_text(json.dumps(result))
+    trace = _load_paired_random_trace(
+        path,
+        manifest_sha256="same",
+        task="reacher",
+        protocol_name="moderate",
+        policy_seed=42,
+        result_schema="clear-lewm-result-v2",
+    )
+    assert trace == [True]
+
+
 def test_actor_warmstart_cli_is_explicit_and_defaults_to_auto():
     parser = build_parser()
     common = ["evaluate", "--manifest", "manifest.json", "--output", "out.json"]

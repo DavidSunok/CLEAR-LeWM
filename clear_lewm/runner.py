@@ -13,7 +13,13 @@ import numpy as np
 
 from .datasets import file_sha256, metadata_fingerprint
 from .environment import collect_environment, require_official_stable_worldmodel
-from .manifests import load_manifest
+from .history import (
+    build_online_history_policy,
+    install_history_cost,
+    install_transition_observer,
+)
+from .initialization import prepare_initialization
+from .manifests import evaluation_contract, load_manifest, result_schema_version
 from .metrics import load_success_trace, summarize_success
 from .protocols import ProtocolSpec, normalize_task, protocol_from_dict
 from .runtime import audit_hydra_targets, configure_import_paths
@@ -30,8 +36,6 @@ OFFICIAL_DATASETS = {
     "tworoom": "tworoom",
     "cube": "ogbench/cube_single_expert",
 }
-
-BENCHMARK_VERSION = "v0.8"
 
 
 def _json_safe(value):
@@ -164,13 +168,14 @@ def _load_paired_random_trace(
     task: str,
     protocol_name: str,
     policy_seed: int,
+    result_schema: str = "clear-lewm-result-v1",
 ):
     path = Path(path)
     payload = json.loads(path.read_text())
     if not isinstance(payload, dict):
         raise ValueError("Paired random results must be a CLEAR result JSON object")
     expected = {
-        "schema_version": "clear-lewm-result-v1",
+        "schema_version": result_schema,
         "manifest_sha256": manifest_sha256,
         "task": task,
         "policy_seed": policy_seed,
@@ -496,6 +501,9 @@ def evaluate_manifest(
     manifest_sha256 = hashlib.sha256(manifest_path.read_bytes()).hexdigest()
     task = normalize_task(manifest["task"])
     protocol = protocol_from_dict(manifest["protocol"])
+    benchmark_version, initialization = evaluation_contract(manifest)
+    initialization_mode = initialization["mode"]
+    result_schema = result_schema_version(manifest)
     upstream_dir = Path(
         upstream_dir or Path(__file__).resolve().parents[1] / "third_party" / "le-wm"
     ).resolve()
@@ -537,6 +545,7 @@ def evaluate_manifest(
             task=task,
             protocol_name=protocol.name,
             policy_seed=seed,
+            result_schema=result_schema,
         )
         if random_results
         else None
@@ -551,6 +560,14 @@ def evaluate_manifest(
         cfg.eval.eval_budget = int(protocol.eval_budget)
         cfg.world.num_envs = len(manifest["pairs"])
         cfg.world.max_episode_steps = 2 * int(protocol.eval_budget)
+        if initialization_mode == "rest-start":
+            history_stride = int(initialization["history_stride"])
+            if int(cfg.plan_config.action_block) != history_stride:
+                raise ValueError(
+                    "Rest-start history stride must match plan_config.action_block: "
+                    f"{history_stride} != {cfg.plan_config.action_block}"
+                )
+            cfg.plan_config.history_len = int(initialization["history_len"])
         cfg.seed = seed
         cfg.policy = policy
         if cache_dir is not None:
@@ -598,6 +615,10 @@ def evaluate_manifest(
             f"{actual_fingerprint} != {expected_fingerprint['value']}"
         )
 
+    evaluation_dataset, initialization_audit = prepare_initialization(
+        dataset, task, initialization_mode
+    )
+
     process = {}
     for column in cfg.dataset.keys_to_cache:
         if column == "pixels":
@@ -612,6 +633,7 @@ def evaluate_manifest(
 
     requested_actor_warmstart = actor_warmstart
     actor_warmstart_effective = None
+    online_history_adapter = False
     if policy == "random":
         attached_policy = swm.policy.RandomPolicy(seed=seed)
         checkpoint = None
@@ -648,6 +670,9 @@ def evaluate_manifest(
         if int(cfg.solver.batch_size) > 1 and canonical_lewm:
             _install_batched_lewm_criterion(model)
             batched_criterion_patch = True
+        if initialization_mode == "rest-start":
+            install_history_cost(model)
+            online_history_adapter = True
         checkpoint = _checkpoint_record(policy, data_root)
         checkpoint["target_audit"] = target_audit
         checkpoint["state_dict_audit"] = _audit_checkpoint_state(
@@ -655,11 +680,17 @@ def evaluate_manifest(
         )
         plan_config = swm.PlanConfig(**cfg.plan_config)
         solver = hydra.utils.instantiate(cfg.solver, model=model)
-        attached_policy = swm.policy.WorldModelPolicy(
-            solver=solver,
-            config=plan_config,
-            process=process,
-            transform=transform,
+        policy_class = swm.policy.WorldModelPolicy
+        policy_kwargs = {
+            "solver": solver,
+            "config": plan_config,
+            "process": process,
+            "transform": transform,
+        }
+        attached_policy = (
+            build_online_history_policy(policy_class, **policy_kwargs)
+            if online_history_adapter
+            else policy_class(**policy_kwargs)
         )
 
     episodes = [pair["episode_id"] for pair in manifest["pairs"]]
@@ -678,9 +709,11 @@ def evaluate_manifest(
                 symmetry_aware=protocol.cube_symmetry_aware,
             )
         world.set_policy(attached_policy)
+        if online_history_adapter:
+            install_transition_observer(world, attached_policy)
         evaluation_started = time.perf_counter()
         raw_metrics = world.evaluate(
-            dataset=dataset,
+            dataset=evaluation_dataset,
             start_steps=start_steps,
             goal_offset=protocol.goal_offset,
             eval_budget=protocol.eval_budget,
@@ -707,9 +740,16 @@ def evaluate_manifest(
     summary.pop("final_state_success_rate_percent", None)
     summary.pop("sustained_success_rate_percent", None)
     summary.pop("sustained_steps", None)
+    initialization_audit.update(
+        {key: value for key, value in initialization.items() if key != "mode"}
+    )
+    initialization_audit["policy_history_applied"] = online_history_adapter
+    initialization_audit["max_history_frames"] = (
+        int(attached_policy._clear_history_max_frames) if online_history_adapter else 1
+    )
     result = {
-        "schema_version": "clear-lewm-result-v1",
-        "benchmark_version": BENCHMARK_VERSION,
+        "schema_version": result_schema,
+        "benchmark_version": benchmark_version,
         "task": task,
         "protocol": protocol.to_dict(),
         "policy": policy_label or policy,
@@ -798,12 +838,15 @@ def evaluate_manifest(
             "evaluation_seconds": evaluation_seconds,
             "float32_matmul_precision": torch.get_float32_matmul_precision(),
             "modified_stable_worldmodel_allowed": (allow_modified_stable_worldmodel),
+            "online_history_adapter": online_history_adapter,
             "reacher_task_termination_gate": (
                 task == "reacher" and protocol.success_mode == "task-sustained"
             ),
             "total_before_serialization_seconds": time.perf_counter() - run_started,
         },
     }
+    if manifest.get("initialization") is not None:
+        result["initialization"] = initialization_audit
     output = Path(output)
     output.parent.mkdir(parents=True, exist_ok=True)
     temporary = output.with_name(f".{output.name}.{os.getpid()}.tmp")
