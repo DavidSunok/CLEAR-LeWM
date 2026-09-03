@@ -7,11 +7,11 @@
 <h1 align="center">CLEAR-LeWM</h1>
 
 <p align="center">
-  <a href="pyproject.toml"><img src="https://img.shields.io/badge/version-0.8.0-f26b5e" alt="v0.8.0"></a>
+  <a href="pyproject.toml"><img src="https://img.shields.io/badge/version-0.9.0-f26b5e" alt="v0.9.0"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-101828" alt="MIT License"></a>
   <a href=".github/workflows/ci.yml"><img src="https://img.shields.io/badge/CI-pytest%20%2B%20ruff-15803d" alt="pytest and ruff CI"></a>
-  <a href="results/v0.8"><img src="https://img.shields.io/badge/protocol-v0.8-e5b94f" alt="v0.8 protocol"></a>
-  <a href="manifests/v0.8"><img src="https://img.shields.io/badge/modes-Moderate%20%7C%20Strict-65ae6e" alt="Moderate and Strict"></a>
+  <a href="manifests/v0.9"><img src="https://img.shields.io/badge/protocol-v0.9-e5b94f" alt="v0.9 protocol"></a>
+  <a href="manifests/v0.9"><img src="https://img.shields.io/badge/modes-Moderate%20%7C%20Strict-65ae6e" alt="Moderate and Strict"></a>
 </p>
 
 <p align="center">
@@ -36,7 +36,7 @@
   <a href="https://github.com/DavidSunok/CLEAR-LeWM/releases"><strong>Releases</strong></a> &middot;
   <a href="#reference-results"><strong>Results</strong></a> &middot;
   <a href="#two-auditable-modes"><strong>Modes</strong></a> &middot;
-  <a href="EVALUATION_SPEC_V08.md"><strong>Specification</strong></a> &middot;
+  <a href="EVALUATION_SPEC.md"><strong>Specification</strong></a> &middot;
   <a href="docs/SUBMITTING_RESULTS.md"><strong>Submit Results</strong></a> &middot;
   <a href="checkpoints/official-v0.5.json"><strong>Checkpoints</strong></a>
 </p>
@@ -53,6 +53,14 @@
 > their provenance. Official LeWM and paired random define the reference table;
 > related public checkpoints are reported separately as independently rerun
 > comparisons.
+
+> [!NOTE]
+> v0.9 uses rest-start initialization: it preserves the recorded configuration
+> and goal but zeros dynamic velocity before the first policy observation.
+> Replanning then uses up to three real observations and their intervening
+> action blocks from the executed rollout; no dataset prefix is replayed.
+> Published v0.8 results use the prior recorded-state initialization and remain
+> historical rather than being relabeled.
 
 > [!NOTE]
 > v0.8 closes a Reacher evaluator leak: dm-control task termination is disabled
@@ -80,8 +88,9 @@ The historical stack mixes genuinely difficult control with evaluator effects:
 initially solved start-goal pairs, incorrect Reacher angle topology, early
 dm-control termination before CLEAR can score the rollout, and a TwoRoom
 rewrite whose endpoint-only collision check can admit an invalid wall crossing.
-Cube also has a high random floor because many sampled windows do not move the
-cube.
+It also restores moving mid-trajectory states even though their velocity is not
+observable in the first image. Cube has a high random floor because many
+sampled windows do not move the cube.
 
 CLEAR-LeWM separates two scientific questions instead of forcing one rule to
 answer both.
@@ -103,7 +112,7 @@ answer both.
 Moderate is the closest corrected continuation of the released benchmark.
 Strict is the stronger semantic claim. They must be reported as separate
 columns. Exact inequalities and runtime gates are normative in
-[`EVALUATION_SPEC_V08.md`](EVALUATION_SPEC_V08.md).
+[`EVALUATION_SPEC.md`](EVALUATION_SPEC.md).
 
 ## Reference results
 
@@ -187,29 +196,30 @@ pip install -e '.[dev,lewm]'
 python scripts/prepare_official_checkpoints.py --cache-dir "$STABLEWM_HOME"
 ```
 
-Evaluate the identical Strict pair set with random and official LeWM:
+Evaluate the v0.9 Strict pair set with random and official LeWM:
 
 ```bash
 clear-lewm evaluate \
-  --manifest manifests/v0.8/tworoom/strict-seed42-n100.json \
+  --manifest manifests/v0.9/tworoom/strict-seed42-n100.json \
   --policy random --cache-dir "$STABLEWM_HOME" \
   --dataset-path /path/to/tworoom.h5 \
   --solver-batch-size 1 \
-  --output results/tworoom-v08-strict-random.json
+  --output results/tworoom-v09-strict-random.json
 
 clear-lewm evaluate \
-  --manifest manifests/v0.8/tworoom/strict-seed42-n100.json \
+  --manifest manifests/v0.9/tworoom/strict-seed42-n100.json \
   --policy official/tworoom/weights.pt --policy-label official-lewm \
   --cache-dir "$STABLEWM_HOME" \
   --dataset-path /path/to/tworoom.h5 \
   --num-samples 300 --n-steps 30 --topk 30 \
   --solver-batch-size 1 --strict-checkpoint \
-  --random-results results/tworoom-v08-strict-random.json \
-  --output results/tworoom-v08-strict-lewm.json
+  --random-results results/tworoom-v09-strict-random.json \
+  --output results/tworoom-v09-strict-lewm.json
 ```
 
-Canonical v0.8 reference runs use pure CEM with `--actor-warmstart off`; no
-alternative inference contract is mixed into the reference table.
+Reference planning comparisons use pure CEM with `--actor-warmstart off`; no
+alternative inference contract is mixed into a reference table. The published
+table above remains v0.8 until v0.9 reference runs are released.
 
 ## Audited FAST training I/O
 
@@ -296,6 +306,7 @@ method card and is not mixed into this table.
 | Path | Purpose |
 |---|---|
 | [`clear_lewm/`](clear_lewm) | evaluator, manifests, task metrics, topology, submissions |
+| [`manifests/v0.9/`](manifests/v0.9) | default rest-start Moderate/Strict manifests |
 | [`manifests/v0.8/`](manifests/v0.8) | canonical Moderate/Strict manifests |
 | [`results/v0.8/`](results/v0.8) | audited RTX 4090 reference and related-checkpoint results |
 | [`results/v0.5/`](results/v0.5) | immutable historical H200 archive |

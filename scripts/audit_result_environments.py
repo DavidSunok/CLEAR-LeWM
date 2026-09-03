@@ -8,6 +8,8 @@ import json
 from collections import defaultdict
 from pathlib import Path
 
+RESULT_SCHEMAS = {"clear-lewm-result-v1", "clear-lewm-result-v2"}
+
 
 def result_files(inputs: list[Path]) -> list[Path]:
     files = set()
@@ -53,7 +55,7 @@ def main() -> int:
             payload = json.loads(path.read_text())
         except (OSError, json.JSONDecodeError):
             continue
-        if payload.get("schema_version") != "clear-lewm-result-v1":
+        if payload.get("schema_version") not in RESULT_SCHEMAS:
             continue
         parsed += 1
         environment = payload.get("environment")

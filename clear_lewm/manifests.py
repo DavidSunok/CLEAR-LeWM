@@ -15,6 +15,7 @@ from .datasets import (
     split_episode_ids,
     valid_pairs,
 )
+from .initialization import INITIALIZATION_MODES, RECORDED_STATE, REST_START
 from .protocols import ProtocolSpec, get_protocol, normalize_task
 from .tasks import (
     pair_diagnostics,
@@ -22,7 +23,29 @@ from .tasks import (
     tworoom_source_window_clean,
 )
 
-SCHEMA_VERSION = "clear-lewm-manifest-v1"
+SCHEMA_VERSION = "clear-lewm-manifest-v2"
+LEGACY_SCHEMA_VERSION = "clear-lewm-manifest-v1"
+BENCHMARK_VERSION = "v0.9"
+LEGACY_BENCHMARK_VERSION = "v0.8"
+RESULT_SCHEMA_VERSION = "clear-lewm-result-v2"
+LEGACY_RESULT_SCHEMA_VERSION = "clear-lewm-result-v1"
+REST_START_HISTORY_LEN = 3
+REST_START_HISTORY_STRIDE = 5
+
+
+def initialization_spec(mode: str) -> dict:
+    if mode == REST_START:
+        return {
+            "mode": REST_START,
+            "history_source": "executed-rollout",
+            "history_len": REST_START_HISTORY_LEN,
+            "history_stride": REST_START_HISTORY_STRIDE,
+        }
+    return {
+        "mode": RECORDED_STATE,
+        "history_source": "single-observation",
+        "history_len": 1,
+    }
 
 
 def _criterion_initial_success(diagnostics, task: str, spec: ProtocolSpec):
@@ -90,10 +113,21 @@ def generate_manifest(
     seed: int,
     split: str | None = None,
     full_sha256: bool = False,
+    initialization_mode: str | None = None,
 ) -> dict:
     dataset_path = Path(dataset_path).resolve()
     task = normalize_task(task)
     spec = get_protocol(protocol) if isinstance(protocol, str) else protocol
+    if initialization_mode is None:
+        initialization_mode = (
+            REST_START if spec.name in {"moderate", "strict"} else RECORDED_STATE
+        )
+    if initialization_mode not in INITIALIZATION_MODES:
+        choices = ", ".join(INITIALIZATION_MODES)
+        raise ValueError(
+            f"Unknown initialization mode {initialization_mode!r}. "
+            f"Choose one of: {choices}"
+        )
     selected_split = split or spec.split
     if selected_split not in {"all", "train", "heldout"}:
         raise ValueError("split must be one of: all, train, heldout")
@@ -195,7 +229,9 @@ def generate_manifest(
 
     return {
         "schema_version": SCHEMA_VERSION,
+        "benchmark_version": BENCHMARK_VERSION,
         "created_utc": datetime.now(timezone.utc).isoformat(),
+        "initialization": initialization_spec(initialization_mode),
         "task": task,
         "protocol": spec.to_dict(),
         "seed": seed,
@@ -232,6 +268,32 @@ def save_manifest(manifest: dict, output: str | Path) -> Path:
 
 def load_manifest(path: str | Path) -> dict:
     data = json.loads(Path(path).read_text())
-    if data.get("schema_version") != SCHEMA_VERSION:
+    schema_version = data.get("schema_version")
+    if schema_version not in {LEGACY_SCHEMA_VERSION, SCHEMA_VERSION}:
         raise ValueError(f"Unsupported manifest schema: {data.get('schema_version')!r}")
+    if schema_version == SCHEMA_VERSION:
+        if data.get("benchmark_version") != BENCHMARK_VERSION:
+            raise ValueError(
+                f"Manifest v2 must declare benchmark_version={BENCHMARK_VERSION!r}"
+            )
+        initialization = data.get("initialization")
+        mode = initialization.get("mode") if isinstance(initialization, dict) else None
+        if mode not in INITIALIZATION_MODES:
+            raise ValueError(f"Unsupported initialization mode: {mode!r}")
+        if initialization != initialization_spec(mode):
+            raise ValueError(
+                f"Invalid {mode!r} initialization contract: {initialization!r}"
+            )
     return data
+
+
+def evaluation_contract(manifest: dict) -> tuple[str, dict]:
+    if manifest.get("schema_version") == LEGACY_SCHEMA_VERSION:
+        return LEGACY_BENCHMARK_VERSION, initialization_spec(RECORDED_STATE)
+    return manifest["benchmark_version"], manifest["initialization"]
+
+
+def result_schema_version(manifest: dict) -> str:
+    if manifest.get("schema_version") == LEGACY_SCHEMA_VERSION:
+        return LEGACY_RESULT_SCHEMA_VERSION
+    return RESULT_SCHEMA_VERSION
