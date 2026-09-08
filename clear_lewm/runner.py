@@ -32,6 +32,7 @@ OFFICIAL_DATASETS = {
 }
 
 BENCHMARK_VERSION = "v0.8"
+PLANNERS = ("cem", "adam")
 
 
 def _json_safe(value):
@@ -223,12 +224,17 @@ def _image_transform(image_size: int):
     )
 
 
-def _compose_config(task: str, upstream_dir: Path):
+def _compose_config(task: str, upstream_dir: Path, planner: str = "cem"):
     from hydra import compose, initialize_config_dir
 
+    if planner not in PLANNERS:
+        raise ValueError(
+            f"Unknown planner: {planner}. Expected one of: {', '.join(PLANNERS)}"
+        )
     config_dir = upstream_dir / "config" / "eval"
+    overrides = [] if planner == "cem" else [f"solver={planner}"]
     with initialize_config_dir(version_base=None, config_dir=str(config_dir.resolve())):
-        return compose(config_name=task)
+        return compose(config_name=task, overrides=overrides)
 
 
 def _install_cube_success(
@@ -482,10 +488,19 @@ def evaluate_manifest(
     matmul_precision: str | None = None,
     strict_checkpoint: bool = False,
     allow_modified_stable_worldmodel: bool = False,
+    planner: str = "cem",
 ) -> dict:
     run_started = time.perf_counter()
     if inference_mode not in {"cem", "direct"}:
         raise ValueError(f"Unknown inference mode: {inference_mode}")
+    if planner not in PLANNERS:
+        raise ValueError(
+            f"Unknown planner: {planner}. Expected one of: {', '.join(PLANNERS)}"
+        )
+    if inference_mode == "direct" and planner != "cem":
+        raise ValueError("--planner only applies to world-model planning")
+    if planner != "cem" and topk is not None:
+        raise ValueError("--topk is only supported by the CEM planner")
     if direct_target_mode not in {"query", "goal", "query_horizon"}:
         raise ValueError(f"Unknown direct target mode: {direct_target_mode}")
     if inference_mode == "direct" and actor_warmstart is False:
@@ -544,7 +559,7 @@ def evaluate_manifest(
     _seed_everything(seed, cpu_threads=cpu_threads)
     if matmul_precision is not None:
         torch.set_float32_matmul_precision(matmul_precision)
-    cfg = _compose_config(task, upstream_dir)
+    cfg = _compose_config(task, upstream_dir, planner=planner)
     with open_dict(cfg):
         cfg.eval.num_eval = len(manifest["pairs"])
         cfg.eval.goal_offset_steps = int(protocol.goal_offset)
@@ -750,11 +765,11 @@ def evaluate_manifest(
             "mode": (
                 "direct"
                 if inference_mode == "direct"
-                else "pure-cem"
+                else f"pure-{planner}"
                 if actor_warmstart_effective is False
-                else "prior-initialized-cem"
+                else f"prior-initialized-{planner}"
                 if actor_warmstart_effective is True
-                else "cem"
+                else planner
             ),
             "actor_warmstart_requested": requested_actor_warmstart,
             "actor_warmstart_effective": actor_warmstart_effective,

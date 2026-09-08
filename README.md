@@ -211,6 +211,11 @@ clear-lewm evaluate \
 Canonical v0.8 reference runs use pure CEM with `--actor-warmstart off`; no
 alternative inference contract is mixed into the reference table.
 
+The upstream LeWM Adam planner can be selected explicitly with
+`--planner adam`. Omitting `--planner` preserves the canonical CEM default.
+Alternative planners are useful for robustness studies but are not canonical
+v0.8 reference runs.
+
 ## Audited FAST training I/O
 
 FAST is an optional derived reader, not a new dataset. It decodes once into

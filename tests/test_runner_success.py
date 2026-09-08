@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import sys
 from dataclasses import replace
+from pathlib import Path
 from types import SimpleNamespace
 
 import numpy as np
@@ -13,12 +14,14 @@ from clear_lewm.protocols import get_protocol
 from clear_lewm.runner import (
     _audit_checkpoint_state,
     _checkpoint_record,
+    _compose_config,
     _install_batched_lewm_criterion,
     _install_pusht_success,
     _install_reacher_success,
     _install_tworoom_success,
     _load_paired_random_trace,
     _portable_manifest_path,
+    evaluate_manifest,
 )
 from clear_lewm.runtime import audit_hydra_targets, configure_import_paths
 
@@ -323,6 +326,35 @@ def test_actor_warmstart_cli_is_explicit_and_defaults_to_auto():
         parser.parse_args([*common, "--actor-warmstart", "off"]).actor_warmstart
         == "off"
     )
+
+
+def test_planner_cli_defaults_to_cem_and_accepts_adam():
+    parser = build_parser()
+    common = ["evaluate", "--manifest", "manifest.json", "--output", "out.json"]
+    assert parser.parse_args(common).planner == "cem"
+    assert parser.parse_args([*common, "--planner", "adam"]).planner == "adam"
+
+
+def test_compose_config_selects_upstream_planner():
+    pytest.importorskip("hydra")
+    upstream = Path(__file__).resolve().parents[1] / "third_party" / "le-wm"
+    cem = _compose_config("pusht", upstream, planner="cem")
+    adam = _compose_config("pusht", upstream, planner="adam")
+    assert cem.solver._target_ == "stable_worldmodel.solver.CEMSolver"
+    assert adam.solver._target_ == "stable_worldmodel.solver.GradientSolver"
+
+
+def test_non_cem_planner_rejects_cem_only_options(tmp_path):
+    common = {
+        "manifest_path": tmp_path / "missing.json",
+        "policy": "random",
+        "output": tmp_path / "out.json",
+        "planner": "adam",
+    }
+    with pytest.raises(ValueError, match="world-model planning"):
+        evaluate_manifest(**common, inference_mode="direct")
+    with pytest.raises(ValueError, match="only supported by the CEM"):
+        evaluate_manifest(**common, topk=30)
 
 
 def test_direct_cli_records_an_explicit_target_mode():
