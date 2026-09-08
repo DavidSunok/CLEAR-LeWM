@@ -178,12 +178,21 @@ class DINOWMGDPlanner(torch.nn.Module):
             raise RuntimeError("configure() must be called before solve()")
 
         started = time.perf_counter()
-        initial = self._initialize(self.n_envs, init_action)
+        if init_action is not None:
+            total_envs = int(init_action.shape[0])
+        else:
+            try:
+                total_envs = len(info_dict["pixels"])
+            except (KeyError, TypeError) as exc:
+                raise ValueError(
+                    "info_dict['pixels'] must expose the current batch size"
+                ) from exc
+        initial = self._initialize(total_envs, init_action)
         selected = []
         histories = []
 
-        for start in range(0, self.n_envs, self.batch_size):
-            end = min(start + self.batch_size, self.n_envs)
+        for start in range(0, total_envs, self.batch_size):
+            end = min(start + self.batch_size, total_envs)
             actions = initial[start:end].clone().detach().requires_grad_(True)
             optimizer = torch.optim.SGD([actions], lr=self.lr)
             batch_info = self._expand_info(info_dict, start, end)

@@ -667,11 +667,14 @@ def evaluate_manifest(
             type(model).__module__ == "stable_worldmodel.wm.lewm.lewm"
             and type(model).__name__ == "LeWM"
         )
+        legacy_lewm = (
+            type(model).__module__ == "jepa" and type(model).__name__ == "JEPA"
+        )
         if planner == "dinowm-gd":
             from .dinowm_gd import install_terminal_latent_mean_criterion
 
             install_terminal_latent_mean_criterion(model)
-        elif int(cfg.solver.batch_size) > 1 and canonical_lewm:
+        elif int(cfg.solver.batch_size) > 1 and (canonical_lewm or legacy_lewm):
             _install_batched_lewm_criterion(model)
             batched_criterion_patch = True
         checkpoint = _checkpoint_record(policy, data_root)

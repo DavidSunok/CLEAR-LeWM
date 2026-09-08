@@ -395,6 +395,30 @@ def test_dinowm_manual_sgd_matches_paper_update():
     assert torch.allclose(result["actions"], expected)
 
 
+def test_dinowm_solver_uses_the_current_active_environment_count():
+    torch = pytest.importorskip("torch")
+    from clear_lewm.dinowm_gd import DINOWMGDPlanner
+
+    class QuadraticModel(torch.nn.Module):
+        def get_cost(self, info_dict, actions):
+            return actions.pow(2).mean(dim=(2, 3))
+
+    planner = DINOWMGDPlanner(
+        QuadraticModel(),
+        n_steps=1,
+        batch_size=2,
+        action_noise=0.0,
+        device="cpu",
+    )
+    planner.configure(
+        action_space=SimpleNamespace(shape=(4, 1)),
+        n_envs=4,
+        config=SimpleNamespace(horizon=2, action_block=1),
+    )
+    result = planner.solve({"pixels": torch.zeros(3, 1)})
+    assert result["actions"].shape == (3, 2, 1)
+
+
 def test_dinowm_profile_uses_published_defaults():
     pytest.importorskip("torch")
     from clear_lewm.dinowm_gd import solver_config
