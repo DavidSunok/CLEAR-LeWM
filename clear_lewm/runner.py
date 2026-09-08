@@ -32,7 +32,7 @@ OFFICIAL_DATASETS = {
 }
 
 BENCHMARK_VERSION = "v0.8"
-PLANNERS = ("cem", "adam")
+PLANNERS = ("cem", "adam", "dinowm-gd")
 
 
 def _json_safe(value):
@@ -226,15 +226,22 @@ def _image_transform(image_size: int):
 
 def _compose_config(task: str, upstream_dir: Path, planner: str = "cem"):
     from hydra import compose, initialize_config_dir
+    from omegaconf import OmegaConf, open_dict
 
     if planner not in PLANNERS:
         raise ValueError(
             f"Unknown planner: {planner}. Expected one of: {', '.join(PLANNERS)}"
         )
     config_dir = upstream_dir / "config" / "eval"
-    overrides = [] if planner == "cem" else [f"solver={planner}"]
+    overrides = [f"solver={planner}"] if planner == "adam" else []
     with initialize_config_dir(version_base=None, config_dir=str(config_dir.resolve())):
-        return compose(config_name=task, overrides=overrides)
+        cfg = compose(config_name=task, overrides=overrides)
+    if planner == "dinowm-gd":
+        from .dinowm_gd import solver_config as dinowm_gd_solver_config
+
+        with open_dict(cfg):
+            cfg.solver = OmegaConf.create(dinowm_gd_solver_config())
+    return cfg
 
 
 def _install_cube_success(
@@ -660,7 +667,11 @@ def evaluate_manifest(
             type(model).__module__ == "stable_worldmodel.wm.lewm.lewm"
             and type(model).__name__ == "LeWM"
         )
-        if int(cfg.solver.batch_size) > 1 and canonical_lewm:
+        if planner == "dinowm-gd":
+            from .dinowm_gd import install_terminal_latent_mean_criterion
+
+            install_terminal_latent_mean_criterion(model)
+        elif int(cfg.solver.batch_size) > 1 and canonical_lewm:
             _install_batched_lewm_criterion(model)
             batched_criterion_patch = True
         checkpoint = _checkpoint_record(policy, data_root)
@@ -722,6 +733,24 @@ def evaluate_manifest(
     summary.pop("final_state_success_rate_percent", None)
     summary.pop("sustained_success_rate_percent", None)
     summary.pop("sustained_steps", None)
+    solver_record = {
+        "batch_size": OmegaConf.select(cfg, "solver.batch_size"),
+        "num_samples": OmegaConf.select(cfg, "solver.num_samples"),
+        "n_steps": OmegaConf.select(cfg, "solver.n_steps"),
+        "topk": OmegaConf.select(cfg, "solver.topk"),
+    }
+    if planner == "dinowm-gd":
+        from .dinowm_gd import DINO_WM_SOURCE
+
+        solver_record.update(
+            {
+                "action_noise": OmegaConf.select(cfg, "solver.action_noise"),
+                "learning_rate": OmegaConf.select(cfg, "solver.lr"),
+                "objective": "terminal_visual_latent_mse_mean",
+                "source": DINO_WM_SOURCE,
+                "update": "manual-sgd",
+            }
+        )
     result = {
         "schema_version": "clear-lewm-result-v1",
         "benchmark_version": BENCHMARK_VERSION,
@@ -755,12 +784,7 @@ def evaluate_manifest(
             "tworoom_collision_mode": protocol.tworoom_collision_mode,
             "sustained_steps": protocol.hold_steps(task),
         },
-        "solver": {
-            "batch_size": OmegaConf.select(cfg, "solver.batch_size"),
-            "num_samples": OmegaConf.select(cfg, "solver.num_samples"),
-            "n_steps": OmegaConf.select(cfg, "solver.n_steps"),
-            "topk": OmegaConf.select(cfg, "solver.topk"),
-        },
+        "solver": solver_record,
         "inference": {
             "mode": (
                 "direct"

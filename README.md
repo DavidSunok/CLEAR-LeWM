@@ -216,6 +216,12 @@ The upstream LeWM Adam planner can be selected explicitly with
 Alternative planners are useful for robustness studies but are not canonical
 v0.8 reference runs.
 
+`--planner dinowm-gd` reproduces DINO-WM's action optimization profile: random
+normal initialization, 1,000 manual SGD updates at learning rate 1, Gaussian
+action noise 0.003, and terminal visual-latent MSE with mean reduction. LeWM has
+no separate DINO-WM proprioceptive latent head, so this adapter applies the
+paper's visual term only. Use `--n-steps` for shorter diagnostic runs.
+
 ## Audited FAST training I/O
 
 FAST is an optional derived reader, not a new dataset. It decodes once into

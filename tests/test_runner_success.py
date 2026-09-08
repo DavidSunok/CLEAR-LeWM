@@ -328,20 +328,88 @@ def test_actor_warmstart_cli_is_explicit_and_defaults_to_auto():
     )
 
 
-def test_planner_cli_defaults_to_cem_and_accepts_adam():
+def test_planner_cli_defaults_to_cem_and_accepts_alternatives():
     parser = build_parser()
     common = ["evaluate", "--manifest", "manifest.json", "--output", "out.json"]
     assert parser.parse_args(common).planner == "cem"
     assert parser.parse_args([*common, "--planner", "adam"]).planner == "adam"
+    assert parser.parse_args([*common, "--planner", "dinowm-gd"]).planner == "dinowm-gd"
 
 
 def test_compose_config_selects_upstream_planner():
     pytest.importorskip("hydra")
+    pytest.importorskip("torch")
     upstream = Path(__file__).resolve().parents[1] / "third_party" / "le-wm"
     cem = _compose_config("pusht", upstream, planner="cem")
     adam = _compose_config("pusht", upstream, planner="adam")
+    dinowm_gd = _compose_config("pusht", upstream, planner="dinowm-gd")
     assert cem.solver._target_ == "stable_worldmodel.solver.CEMSolver"
     assert adam.solver._target_ == "stable_worldmodel.solver.GradientSolver"
+    assert dinowm_gd.solver._target_ == "clear_lewm.dinowm_gd.DINOWMGDPlanner"
+    assert dinowm_gd.solver.n_steps == 1000
+    assert dinowm_gd.solver.lr == 1.0
+    assert dinowm_gd.solver.action_noise == 0.003
+
+
+def test_dinowm_objective_means_over_terminal_latent_dimensions():
+    torch = pytest.importorskip("torch")
+    from clear_lewm.dinowm_gd import _terminal_latent_mean_cost
+
+    predicted = torch.ones(2, 3, 4, 192)
+    goal = torch.zeros(2, 4, 192)
+    cost = _terminal_latent_mean_cost(predicted, goal)
+    assert cost.shape == (2, 3)
+    assert torch.equal(cost, torch.ones(2, 3))
+
+
+def test_dinowm_manual_sgd_matches_paper_update():
+    torch = pytest.importorskip("torch")
+    from clear_lewm.dinowm_gd import DINOWMGDPlanner
+
+    class QuadraticModel(torch.nn.Module):
+        def __init__(self):
+            super().__init__()
+            self.anchor = torch.nn.Parameter(torch.zeros(()))
+
+        def get_cost(self, info_dict, actions):
+            return (actions - 1.0).pow(2).mean(dim=(2, 3))
+
+    model = QuadraticModel()
+    planner = DINOWMGDPlanner(
+        model,
+        n_steps=1,
+        batch_size=2,
+        action_noise=0.0,
+        device="cpu",
+        seed=7,
+        lr=0.1,
+    )
+    planner.configure(
+        action_space=SimpleNamespace(shape=(2, 1)),
+        n_envs=2,
+        config=SimpleNamespace(horizon=2, action_block=1),
+    )
+    expected_initial = torch.randn(2, 2, 1, generator=torch.Generator().manual_seed(7))
+    expected = expected_initial - 0.1 * (expected_initial - 1.0)
+    result = planner.solve({"pixels": torch.zeros(2, 1)})
+    assert torch.allclose(result["actions"], expected)
+
+
+def test_dinowm_profile_uses_published_defaults():
+    pytest.importorskip("torch")
+    from clear_lewm.dinowm_gd import solver_config
+
+    assert solver_config() == {
+        "_target_": "clear_lewm.dinowm_gd.DINOWMGDPlanner",
+        "model": "???",
+        "n_steps": 1000,
+        "batch_size": 1,
+        "num_samples": 1,
+        "action_noise": 0.003,
+        "device": "cuda",
+        "seed": "${seed}",
+        "lr": 1.0,
+    }
 
 
 def test_non_cem_planner_rejects_cem_only_options(tmp_path):
