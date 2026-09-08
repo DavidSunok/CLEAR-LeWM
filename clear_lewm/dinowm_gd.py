@@ -1,4 +1,4 @@
-"""DINO-WM's manual-SGD action planner for the CLEAR solver interface."""
+"""DINO-WM optimizer profile adapted to LeWM visual latents."""
 
 from __future__ import annotations
 
@@ -64,7 +64,12 @@ def install_terminal_latent_mean_criterion(model: Any) -> None:
 
 
 class DINOWMGDPlanner(torch.nn.Module):
-    """Adapt DINO-WM's manual SGD update to stable-worldmodel's Solver API."""
+    """Apply DINO-WM's manual SGD update to a LeWM-compatible model.
+
+    This is an optimizer-profile adapter, not a reproduction of the DINO-WM
+    model. It has neither DINO-WM's encoder contract nor its proprioceptive
+    objective.
+    """
 
     def __init__(
         self,
@@ -99,6 +104,10 @@ class DINOWMGDPlanner(torch.nn.Module):
         except (AttributeError, StopIteration):
             self._dtype = torch.float32
         self._configured = False
+        self._solve_calls = 0
+        self._total_solve_time_s = 0.0
+        self._finite_actions = True
+        self._finite_costs = True
 
     def configure(self, *, action_space: Any, n_envs: int, config: Any) -> None:
         shape = tuple(action_space.shape)
@@ -224,10 +233,29 @@ class DINOWMGDPlanner(torch.nn.Module):
             selected.append(actions.detach()[:, 0].cpu())
             histories.append(history)
 
+        actions_out = torch.cat(selected, dim=0)
+        solve_time_s = time.perf_counter() - started
+        self._solve_calls += 1
+        self._total_solve_time_s += solve_time_s
+        self._finite_actions = self._finite_actions and bool(
+            torch.isfinite(actions_out).all()
+        )
+        self._finite_costs = self._finite_costs and bool(
+            np.isfinite(np.asarray(histories, dtype=np.float64)).all()
+        )
         return {
-            "actions": torch.cat(selected, dim=0),
+            "actions": actions_out,
             "cost": histories,
-            "solve_time_s": time.perf_counter() - started,
+            "solve_time_s": solve_time_s,
+        }
+
+    def diagnostics(self) -> dict[str, Any]:
+        """Return compact finite-value and timing telemetry for provenance."""
+        return {
+            "solve_calls": self._solve_calls,
+            "total_solve_time_s": self._total_solve_time_s,
+            "finite_actions": self._finite_actions,
+            "finite_costs": self._finite_costs,
         }
 
 

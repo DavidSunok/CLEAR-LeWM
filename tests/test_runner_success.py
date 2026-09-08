@@ -336,15 +336,21 @@ def test_planner_cli_defaults_to_cem_and_accepts_alternatives():
     assert parser.parse_args([*common, "--planner", "dinowm-gd"]).planner == "dinowm-gd"
 
 
-def test_compose_config_selects_upstream_planner():
+def test_compose_config_preserves_default_cem_and_selects_alternatives():
     pytest.importorskip("hydra")
     pytest.importorskip("torch")
+    from omegaconf import OmegaConf
+
     upstream = Path(__file__).resolve().parents[1] / "third_party" / "le-wm"
-    cem = _compose_config("pusht", upstream, planner="cem")
+    default_cem = _compose_config("pusht", upstream)
+    explicit_cem = _compose_config("pusht", upstream, planner="cem")
     adam = _compose_config("pusht", upstream, planner="adam")
     dinowm_gd = _compose_config("pusht", upstream, planner="dinowm-gd")
-    assert cem.solver._target_ == "stable_worldmodel.solver.CEMSolver"
-    assert adam.solver._target_ == "stable_worldmodel.solver.GradientSolver"
+    assert OmegaConf.to_container(default_cem, resolve=True) == OmegaConf.to_container(
+        explicit_cem, resolve=True
+    )
+    assert explicit_cem.solver._target_ == "stable_worldmodel.solver.CEMSolver"
+    assert adam.solver._target_ == "clear_lewm.adam.DeviceSafeGradientSolver"
     assert dinowm_gd.solver._target_ == "clear_lewm.dinowm_gd.DINOWMGDPlanner"
     assert dinowm_gd.solver.n_steps == 1000
     assert dinowm_gd.solver.lr == 1.0
@@ -393,6 +399,47 @@ def test_dinowm_manual_sgd_matches_paper_update():
     expected = expected_initial - 0.1 * (expected_initial - 1.0)
     result = planner.solve({"pixels": torch.zeros(2, 1)})
     assert torch.allclose(result["actions"], expected)
+    assert np.isfinite(result["cost"]).all()
+    assert result["solve_time_s"] >= 0.0
+    assert planner.diagnostics() == {
+        "solve_calls": 1,
+        "total_solve_time_s": result["solve_time_s"],
+        "finite_actions": True,
+        "finite_costs": True,
+    }
+
+
+def test_dinowm_manual_sgd_is_deterministic_for_a_fixed_seed():
+    torch = pytest.importorskip("torch")
+    from clear_lewm.dinowm_gd import DINOWMGDPlanner
+
+    class QuadraticModel(torch.nn.Module):
+        def get_cost(self, info_dict, actions):
+            return (actions - 0.25).pow(2).mean(dim=(2, 3))
+
+    def run_once():
+        planner = DINOWMGDPlanner(
+            QuadraticModel(),
+            n_steps=3,
+            batch_size=2,
+            action_noise=0.003,
+            device="cpu",
+            seed=17,
+            lr=0.1,
+        )
+        planner.configure(
+            action_space=SimpleNamespace(shape=(2, 1)),
+            n_envs=2,
+            config=SimpleNamespace(horizon=2, action_block=1),
+        )
+        return planner.solve({"pixels": torch.zeros(2, 1)})
+
+    first = run_once()
+    second = run_once()
+    assert torch.equal(first["actions"], second["actions"])
+    assert first["cost"] == second["cost"]
+    assert torch.isfinite(first["actions"]).all()
+    assert np.isfinite(first["cost"]).all()
 
 
 def test_dinowm_solver_uses_the_current_active_environment_count():
@@ -436,6 +483,40 @@ def test_dinowm_profile_uses_published_defaults():
     }
 
 
+def test_adam_full_horizon_initialization_stays_on_the_solver_device():
+    torch = pytest.importorskip("torch")
+    pytest.importorskip("stable_worldmodel")
+    if not torch.cuda.is_available():
+        pytest.skip("CUDA is required to exercise the upstream device mismatch")
+
+    from clear_lewm.adam import DeviceSafeGradientSolver
+
+    model = torch.nn.Linear(1, 1, bias=False).to("cuda")
+    planner = DeviceSafeGradientSolver(
+        model,
+        n_steps=1,
+        batch_size=1,
+        num_samples=2,
+        var_scale=1.0,
+        device="cuda",
+        seed=11,
+    )
+    planner.configure(
+        action_space=SimpleNamespace(shape=(2, 1)),
+        n_envs=2,
+        config=SimpleNamespace(horizon=2, action_block=1),
+    )
+    full_horizon_cpu = torch.zeros(2, 2, 1, device="cpu")
+
+    with torch.no_grad():
+        planner.init_action(2, full_horizon_cpu)
+
+    assert planner.init.device.type == "cuda"
+    assert planner.init.shape == (2, 2, 2, 1)
+    assert torch.equal(planner.init[:, 0].cpu(), full_horizon_cpu)
+    assert torch.isfinite(planner.init).all()
+
+
 def test_non_cem_planner_rejects_cem_only_options(tmp_path):
     common = {
         "manifest_path": tmp_path / "missing.json",
@@ -447,6 +528,17 @@ def test_non_cem_planner_rejects_cem_only_options(tmp_path):
         evaluate_manifest(**common, inference_mode="direct")
     with pytest.raises(ValueError, match="only supported by the CEM"):
         evaluate_manifest(**common, topk=30)
+
+
+def test_dinowm_planner_rejects_actor_prior_initialization(tmp_path):
+    with pytest.raises(ValueError, match="does not support actor-prior"):
+        evaluate_manifest(
+            manifest_path=tmp_path / "missing.json",
+            policy="official/pusht",
+            output=tmp_path / "out.json",
+            planner="dinowm-gd",
+            actor_warmstart=True,
+        )
 
 
 def test_direct_cli_records_an_explicit_target_mode():

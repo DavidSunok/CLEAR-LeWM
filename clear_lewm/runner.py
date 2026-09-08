@@ -236,7 +236,10 @@ def _compose_config(task: str, upstream_dir: Path, planner: str = "cem"):
     overrides = [f"solver={planner}"] if planner == "adam" else []
     with initialize_config_dir(version_base=None, config_dir=str(config_dir.resolve())):
         cfg = compose(config_name=task, overrides=overrides)
-    if planner == "dinowm-gd":
+    if planner == "adam":
+        with open_dict(cfg):
+            cfg.solver._target_ = "clear_lewm.adam.DeviceSafeGradientSolver"
+    elif planner == "dinowm-gd":
         from .dinowm_gd import solver_config as dinowm_gd_solver_config
 
         with open_dict(cfg):
@@ -508,6 +511,13 @@ def evaluate_manifest(
         raise ValueError("--planner only applies to world-model planning")
     if planner != "cem" and topk is not None:
         raise ValueError("--topk is only supported by the CEM planner")
+    if policy == "random" and planner != "cem":
+        raise ValueError("--planner requires a world-model policy")
+    if planner == "dinowm-gd" and actor_warmstart is True:
+        raise ValueError(
+            "--planner dinowm-gd does not support actor-prior initialization; "
+            "use --actor-warmstart off"
+        )
     if direct_target_mode not in {"query", "goal", "query_horizon"}:
         raise ValueError(f"Unknown direct target mode: {direct_target_mode}")
     if inference_mode == "direct" and actor_warmstart is False:
@@ -649,11 +659,12 @@ def evaluate_manifest(
         model = model.to("cuda").eval()
         model.requires_grad_(False)
         model.interpolate_pos_encoding = True
-        requested_actor_warmstart = (
-            True
-            if inference_mode == "direct" and actor_warmstart is None
-            else actor_warmstart
-        )
+        if inference_mode == "direct" and actor_warmstart is None:
+            requested_actor_warmstart = True
+        elif planner == "dinowm-gd" and actor_warmstart is None:
+            requested_actor_warmstart = False
+        else:
+            requested_actor_warmstart = actor_warmstart
         if requested_actor_warmstart is not None:
             if hasattr(model, "set_actor_warmstart"):
                 model.set_actor_warmstart(requested_actor_warmstart)
@@ -662,6 +673,10 @@ def evaluate_manifest(
         actor_warmstart_effective = getattr(model, "actor_warmstart", None)
         if actor_warmstart_effective is not None:
             actor_warmstart_effective = bool(actor_warmstart_effective)
+        if planner == "dinowm-gd":
+            # This solver initializes its own action tensor and never invokes
+            # the model's action head, even when the model exposes one.
+            actor_warmstart_effective = False
         batched_criterion_patch = False
         canonical_lewm = (
             type(model).__module__ == "stable_worldmodel.wm.lewm.lewm"
@@ -742,7 +757,11 @@ def evaluate_manifest(
         "n_steps": OmegaConf.select(cfg, "solver.n_steps"),
         "topk": OmegaConf.select(cfg, "solver.topk"),
     }
-    if planner == "dinowm-gd":
+    if planner == "adam":
+        from .adam import solver_provenance
+
+        solver_record.update(solver_provenance())
+    elif planner == "dinowm-gd":
         from .dinowm_gd import DINO_WM_SOURCE
 
         solver_record.update(
@@ -752,6 +771,10 @@ def evaluate_manifest(
                 "objective": "terminal_visual_latent_mse_mean",
                 "source": DINO_WM_SOURCE,
                 "update": "manual-sgd",
+                "initialization": "random-normal",
+                "actor_prior_initialization": False,
+                "model_scope": "LeWM visual latents",
+                "diagnostics": solver.diagnostics(),
             }
         )
     result = {
