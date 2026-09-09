@@ -41,6 +41,16 @@
   <a href="checkpoints/official-v0.5.json"><strong>Checkpoints</strong></a>
 </p>
 
+## News
+
+- **2026-09-09** - Merged [PR #7](https://github.com/DavidSunok/CLEAR-LeWM/pull/7) from [@ma-kjh](https://github.com/ma-kjh), adding configurable Adam and DINO-WM optimizer profiles, device-safe `stable-worldmodel==0.1.0` support, and deterministic planner regression tests while keeping CEM canonical.
+- **2026-08-28** - Released [v0.8.0](https://github.com/DavidSunok/CLEAR-LeWM/releases/tag/v0.8.0), closing the Reacher action-repeat termination leak and publishing an audited 84-run RTX 4090 reference matrix with corrected documentation and media.
+- **2026-07-24** - Accepted the first community result submission in [PR #1](https://github.com/DavidSunok/CLEAR-LeWM/pull/1) from [@zerotul782231](https://github.com/zerotul782231), covering DINOv2 No-Proprio and GCBC Joint LeWM checkpoints under the frozen v0.5 protocol.
+- **2026-07-23** - Released [v0.5.1](https://github.com/DavidSunok/CLEAR-LeWM/releases/tag/v0.5.1) with the complete three-seed, 48-run reference matrix after [v0.5.0](https://github.com/DavidSunok/CLEAR-LeWM/releases/tag/v0.5.0) unified the benchmark around separate Moderate and Strict modes.
+- **2026-07-22** - Released [v0.3.0](https://github.com/DavidSunok/CLEAR-LeWM/releases/tag/v0.3.0), introducing task-semantic completion rules, deterministic manifests, matched random controls, and task-specific audit guides.
+- **2026-07-21** - Released [v0.2.1](https://github.com/DavidSunok/CLEAR-LeWM/releases/tag/v0.2.1) with audited FAST loading and explicit runtime modes after [v0.2.0](https://github.com/DavidSunok/CLEAR-LeWM/releases/tag/v0.2.0) established the reproducible three-tier evaluation standard.
+- **2026-07-21** - Published [v0.1.0](https://github.com/DavidSunok/CLEAR-LeWM/releases/tag/v0.1.0), the initial four-task CLEAR-LeWM evaluation release with deterministic manifests, initial-success filtering, and paired random baselines.
+
 <p align="center">
   <a href="assets/showcase/clear_lewm_v08_overview_1080p.mp4">
     <img src="assets/showcase/clear_lewm_v08_overview_preview.gif" width="100%" alt="CLEAR-LeWM v0.8 Moderate and Strict overview">
