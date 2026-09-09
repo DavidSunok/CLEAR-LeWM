@@ -32,6 +32,7 @@ OFFICIAL_DATASETS = {
 }
 
 BENCHMARK_VERSION = "v0.8"
+PLANNERS = ("cem", "adam", "dinowm-gd")
 
 
 def _json_safe(value):
@@ -223,12 +224,27 @@ def _image_transform(image_size: int):
     )
 
 
-def _compose_config(task: str, upstream_dir: Path):
+def _compose_config(task: str, upstream_dir: Path, planner: str = "cem"):
     from hydra import compose, initialize_config_dir
+    from omegaconf import OmegaConf, open_dict
 
+    if planner not in PLANNERS:
+        raise ValueError(
+            f"Unknown planner: {planner}. Expected one of: {', '.join(PLANNERS)}"
+        )
     config_dir = upstream_dir / "config" / "eval"
+    overrides = [f"solver={planner}"] if planner == "adam" else []
     with initialize_config_dir(version_base=None, config_dir=str(config_dir.resolve())):
-        return compose(config_name=task)
+        cfg = compose(config_name=task, overrides=overrides)
+    if planner == "adam":
+        with open_dict(cfg):
+            cfg.solver._target_ = "clear_lewm.adam.DeviceSafeGradientSolver"
+    elif planner == "dinowm-gd":
+        from .dinowm_gd import solver_config as dinowm_gd_solver_config
+
+        with open_dict(cfg):
+            cfg.solver = OmegaConf.create(dinowm_gd_solver_config())
+    return cfg
 
 
 def _install_cube_success(
@@ -482,10 +498,26 @@ def evaluate_manifest(
     matmul_precision: str | None = None,
     strict_checkpoint: bool = False,
     allow_modified_stable_worldmodel: bool = False,
+    planner: str = "cem",
 ) -> dict:
     run_started = time.perf_counter()
     if inference_mode not in {"cem", "direct"}:
         raise ValueError(f"Unknown inference mode: {inference_mode}")
+    if planner not in PLANNERS:
+        raise ValueError(
+            f"Unknown planner: {planner}. Expected one of: {', '.join(PLANNERS)}"
+        )
+    if inference_mode == "direct" and planner != "cem":
+        raise ValueError("--planner only applies to world-model planning")
+    if planner != "cem" and topk is not None:
+        raise ValueError("--topk is only supported by the CEM planner")
+    if policy == "random" and planner != "cem":
+        raise ValueError("--planner requires a world-model policy")
+    if planner == "dinowm-gd" and actor_warmstart is True:
+        raise ValueError(
+            "--planner dinowm-gd does not support actor-prior initialization; "
+            "use --actor-warmstart off"
+        )
     if direct_target_mode not in {"query", "goal", "query_horizon"}:
         raise ValueError(f"Unknown direct target mode: {direct_target_mode}")
     if inference_mode == "direct" and actor_warmstart is False:
@@ -544,7 +576,7 @@ def evaluate_manifest(
     _seed_everything(seed, cpu_threads=cpu_threads)
     if matmul_precision is not None:
         torch.set_float32_matmul_precision(matmul_precision)
-    cfg = _compose_config(task, upstream_dir)
+    cfg = _compose_config(task, upstream_dir, planner=planner)
     with open_dict(cfg):
         cfg.eval.num_eval = len(manifest["pairs"])
         cfg.eval.goal_offset_steps = int(protocol.goal_offset)
@@ -627,11 +659,12 @@ def evaluate_manifest(
         model = model.to("cuda").eval()
         model.requires_grad_(False)
         model.interpolate_pos_encoding = True
-        requested_actor_warmstart = (
-            True
-            if inference_mode == "direct" and actor_warmstart is None
-            else actor_warmstart
-        )
+        if inference_mode == "direct" and actor_warmstart is None:
+            requested_actor_warmstart = True
+        elif planner == "dinowm-gd" and actor_warmstart is None:
+            requested_actor_warmstart = False
+        else:
+            requested_actor_warmstart = actor_warmstart
         if requested_actor_warmstart is not None:
             if hasattr(model, "set_actor_warmstart"):
                 model.set_actor_warmstart(requested_actor_warmstart)
@@ -640,12 +673,23 @@ def evaluate_manifest(
         actor_warmstart_effective = getattr(model, "actor_warmstart", None)
         if actor_warmstart_effective is not None:
             actor_warmstart_effective = bool(actor_warmstart_effective)
+        if planner == "dinowm-gd":
+            # This solver initializes its own action tensor and never invokes
+            # the model's action head, even when the model exposes one.
+            actor_warmstart_effective = False
         batched_criterion_patch = False
         canonical_lewm = (
             type(model).__module__ == "stable_worldmodel.wm.lewm.lewm"
             and type(model).__name__ == "LeWM"
         )
-        if int(cfg.solver.batch_size) > 1 and canonical_lewm:
+        legacy_lewm = (
+            type(model).__module__ == "jepa" and type(model).__name__ == "JEPA"
+        )
+        if planner == "dinowm-gd":
+            from .dinowm_gd import install_terminal_latent_mean_criterion
+
+            install_terminal_latent_mean_criterion(model)
+        elif int(cfg.solver.batch_size) > 1 and (canonical_lewm or legacy_lewm):
             _install_batched_lewm_criterion(model)
             batched_criterion_patch = True
         checkpoint = _checkpoint_record(policy, data_root)
@@ -707,6 +751,32 @@ def evaluate_manifest(
     summary.pop("final_state_success_rate_percent", None)
     summary.pop("sustained_success_rate_percent", None)
     summary.pop("sustained_steps", None)
+    solver_record = {
+        "batch_size": OmegaConf.select(cfg, "solver.batch_size"),
+        "num_samples": OmegaConf.select(cfg, "solver.num_samples"),
+        "n_steps": OmegaConf.select(cfg, "solver.n_steps"),
+        "topk": OmegaConf.select(cfg, "solver.topk"),
+    }
+    if planner == "adam":
+        from .adam import solver_provenance
+
+        solver_record.update(solver_provenance())
+    elif planner == "dinowm-gd":
+        from .dinowm_gd import DINO_WM_SOURCE
+
+        solver_record.update(
+            {
+                "action_noise": OmegaConf.select(cfg, "solver.action_noise"),
+                "learning_rate": OmegaConf.select(cfg, "solver.lr"),
+                "objective": "terminal_visual_latent_mse_mean",
+                "source": DINO_WM_SOURCE,
+                "update": "manual-sgd",
+                "initialization": "random-normal",
+                "actor_prior_initialization": False,
+                "model_scope": "LeWM visual latents",
+                "diagnostics": solver.diagnostics(),
+            }
+        )
     result = {
         "schema_version": "clear-lewm-result-v1",
         "benchmark_version": BENCHMARK_VERSION,
@@ -740,21 +810,16 @@ def evaluate_manifest(
             "tworoom_collision_mode": protocol.tworoom_collision_mode,
             "sustained_steps": protocol.hold_steps(task),
         },
-        "solver": {
-            "batch_size": OmegaConf.select(cfg, "solver.batch_size"),
-            "num_samples": OmegaConf.select(cfg, "solver.num_samples"),
-            "n_steps": OmegaConf.select(cfg, "solver.n_steps"),
-            "topk": OmegaConf.select(cfg, "solver.topk"),
-        },
+        "solver": solver_record,
         "inference": {
             "mode": (
                 "direct"
                 if inference_mode == "direct"
-                else "pure-cem"
+                else f"pure-{planner}"
                 if actor_warmstart_effective is False
-                else "prior-initialized-cem"
+                else f"prior-initialized-{planner}"
                 if actor_warmstart_effective is True
-                else "cem"
+                else planner
             ),
             "actor_warmstart_requested": requested_actor_warmstart,
             "actor_warmstart_effective": actor_warmstart_effective,

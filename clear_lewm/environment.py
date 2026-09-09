@@ -134,7 +134,7 @@ def collect_environment(torch_module=None, task: str | None = None) -> dict:
         import mujoco
 
         mujoco_runtime = mujoco.mj_versionString()
-    except (ImportError, OSError):
+    except (AttributeError, ImportError, OSError):
         mujoco_runtime = None
 
     physics = {

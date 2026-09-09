@@ -8,7 +8,7 @@ from .audit import audit_dataset
 from .manifests import generate_manifest, save_manifest
 from .metrics import load_success_trace, summarize_success
 from .protocols import PROTOCOLS, TASKS
-from .runner import evaluate_manifest
+from .runner import PLANNERS, evaluate_manifest
 from .submissions import validate_submission
 
 
@@ -88,12 +88,18 @@ def build_parser() -> argparse.ArgumentParser:
     evaluate.add_argument("--n-steps", type=int)
     evaluate.add_argument("--topk", type=int)
     evaluate.add_argument(
+        "--planner",
+        choices=PLANNERS,
+        default="cem",
+        help="world-model planner configuration (default: cem)",
+    )
+    evaluate.add_argument(
         "--actor-warmstart",
         choices=("auto", "on", "off"),
         default="auto",
         help=(
-            "control action-prior initialization for CEM; use 'off' for "
-            "audited pure-CEM"
+            "control action-prior initialization for planning; use 'off' for "
+            "planning without a learned action prior"
         ),
     )
     evaluate.add_argument(
@@ -111,7 +117,7 @@ def build_parser() -> argparse.ArgumentParser:
     evaluate.add_argument(
         "--solver-batch-size",
         type=int,
-        help="CEM environments per GPU batch; default 1 reproduces upstream",
+        help="planning environments per GPU batch; default 1 reproduces upstream",
     )
     evaluate.add_argument(
         "--cpu-threads",
@@ -200,6 +206,7 @@ def main(argv: list[str] | None = None) -> int:
             actor_warmstart=(
                 None if args.actor_warmstart == "auto" else args.actor_warmstart == "on"
             ),
+            planner=args.planner,
             inference_mode=args.inference_mode,
             direct_target_mode=args.direct_target_mode,
             random_results=args.random_results,

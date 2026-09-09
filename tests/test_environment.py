@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+import sys
+from types import SimpleNamespace
+
 import pytest
 
 from clear_lewm import environment
@@ -24,6 +27,12 @@ def test_environment_record_covers_task_physics_and_numerics():
         "policy",
         "world",
     }
+
+
+def test_environment_record_survives_broken_optional_mujoco_import(monkeypatch):
+    monkeypatch.setitem(sys.modules, "mujoco", SimpleNamespace())
+    record = collect_environment(task="pusht")
+    assert record["physics"]["mujoco_runtime"] is None
 
 
 def test_official_runtime_audit_rejects_source_drift(monkeypatch):

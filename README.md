@@ -211,6 +211,24 @@ clear-lewm evaluate \
 Canonical v0.8 reference runs use pure CEM with `--actor-warmstart off`; no
 alternative inference contract is mixed into the reference table.
 
+The upstream LeWM Adam planner can be selected explicitly with
+`--planner adam`. CLEAR applies a narrow compatibility adapter for
+`stable-worldmodel==0.1.0`: a full-horizon initialization is moved to the
+solver device before CUDA sample noise is added. Omitting `--planner` preserves
+the canonical CEM default. Alternative planners are experimental/non-reference
+profiles for robustness studies, not canonical v0.8 reference runs.
+
+`--planner dinowm-gd` applies DINO-WM's **optimizer profile to LeWM visual
+latents**: random-normal initialization, 1,000 manual SGD updates at learning
+rate 1, Gaussian action noise 0.003, and terminal visual-latent MSE with mean
+reduction. It does not reproduce the DINO-WM model: the adapter has neither the
+DINO encoder contract nor DINO-WM's proprioceptive objective. Actor-prior
+initialization is unsupported; an explicit `--actor-warmstart on` is rejected.
+The default `auto` setting resolves to `off` for this planner. Use `--n-steps`
+for shorter diagnostic runs. Result JSON records the initialization, source
+revision, model scope, finite-value checks, and aggregate solver runtime. No
+performance advantage is claimed.
+
 ## Audited FAST training I/O
 
 FAST is an optional derived reader, not a new dataset. It decodes once into
