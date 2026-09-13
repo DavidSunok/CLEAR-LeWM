@@ -43,6 +43,7 @@
 
 ## News
 
+- **2026-09-13** - Added the [INTACT paper](https://arxiv.org/abs/2607.26056) citation for researchers building on CLEAR-LeWM's auditable evaluation.
 - **2026-09-09** - Merged [PR #7](https://github.com/DavidSunok/CLEAR-LeWM/pull/7) from [@ma-kjh](https://github.com/ma-kjh), adding configurable Adam and DINO-WM optimizer profiles, device-safe `stable-worldmodel==0.1.0` support, and deterministic planner regression tests while keeping CEM canonical.
 - **2026-08-28** - Released [v0.8.0](https://github.com/DavidSunok/CLEAR-LeWM/releases/tag/v0.8.0), closing the Reacher action-repeat termination leak and publishing an audited 84-run RTX 4090 reference matrix with corrected documentation and media.
 - **2026-07-24** - Accepted the first community result submission in [PR #1](https://github.com/DavidSunok/CLEAR-LeWM/pull/1) from [@zerotul782231](https://github.com/zerotul782231), covering DINOv2 No-Proprio and GCBC Joint LeWM checkpoints under the frozen v0.5 protocol.
@@ -331,6 +332,22 @@ method card and is not mixed into this table.
 | [`docs/tasks/`](docs/tasks) | task objectives, gates, and reproduction commands |
 | [`scripts/build_v08_media.py`](scripts/build_v08_media.py) | synchronized GIF and 1080p overview generator |
 | [`tests/`](tests) | protocol, manifest, runtime, result, and submission regressions |
+
+## Citation
+
+If you find CLEAR-LeWM useful, please consider citing our
+[INTACT paper](https://arxiv.org/abs/2607.26056):
+
+```bibtex
+@misc{sun2026intact,
+  title         = {INTACT: Isomorphic Intent-to-Action Learning for Search-Free World Models},
+  author        = {Sun, Junhan and Zhao, Hao and Zhang, Guofeng},
+  year          = {2026},
+  eprint        = {2607.26056},
+  archivePrefix = {arXiv},
+  url           = {https://arxiv.org/abs/2607.26056}
+}
+```
 
 ## License and attribution
 
