@@ -43,6 +43,7 @@
 
 ## News
 
+- **2026-09-14** - Added [public INTACT Direct and Guarded A results](#independently-rerun-v08-checkpoints) on the frozen CLEAR v0.8 Moderate/Strict manifests (RTX 4090, three training seeds and three evaluation seeds).
 - **2026-09-13** - Added the [INTACT paper](https://arxiv.org/abs/2607.26056) citation for researchers building on CLEAR-LeWM's auditable evaluation.
 - **2026-09-09** - Merged [PR #7](https://github.com/DavidSunok/CLEAR-LeWM/pull/7) from [@ma-kjh](https://github.com/ma-kjh), adding configurable Adam and DINO-WM optimizer profiles, device-safe `stable-worldmodel==0.1.0` support, and deterministic planner regression tests while keeping CEM canonical.
 - **2026-08-28** - Released [v0.8.0](https://github.com/DavidSunok/CLEAR-LeWM/releases/tag/v0.8.0), closing the Reacher action-repeat termination leak and publishing an audited 84-run RTX 4090 reference matrix with corrected documentation and media.
@@ -275,21 +276,32 @@ and topology. It does not imply independent reproduction or endorsement.
 
 ### Independently rerun v0.8 checkpoints
 
-The following related public checkpoints were rerun on the same RTX 4090
-stack as official LeWM. Values are mean +/- sample standard deviation over
-seeds 0, 1, and 42, with 100 episodes per seed. Neither release includes a
-Reacher checkpoint.
+This table compares **published models with their stated inference methods** on the same RTX 4090 CLEAR v0.8 Moderate/Strict manifests; it is not an actor-off, matched-compute model ablation. Official LeWM, DINOv2 No-Proprio LeWM, and GCBC Joint LeWM use pure CEM `300 x 30` (no actor prior). The three [public INTACT checkpoint families](https://huggingface.co/INTACT-JEPA/INTACT) use either Direct action prediction (no sampled search) or actor-guided **Guarded A `128 x 3`**. Each evaluation seed 0/1/42 contributes 100 episodes. LeWM/DINOv2/GCBC use the published checkpoint for each task; INTACT additionally averages training seeds 0/42/3072, with all three evaluation seeds per training seed.
 
-| Method | Task | Moderate | Strict |
-|---|---|---:|---:|
-| **DINOv2 No-Proprio LeWM** | PushT | 7.00 +/- 3.61% | 8.67 +/- 1.53% |
-|  | Cube | 44.67 +/- 2.52% | 13.00 +/- 3.00% |
-|  | TwoRoom | 43.67 +/- 8.96% | 25.67 +/- 2.08% |
-| **GCBC Joint LeWM** | PushT | 5.33 +/- 3.51% | 7.33 +/- 1.53% |
-|  | Cube | 17.67 +/- 6.43% | 3.67 +/- 2.08% |
-|  | TwoRoom | 16.00 +/- 3.00% | 6.67 +/- 1.15% |
+All entries are success rates (%). The macro is an equal-weight four-task mean, shown only for models with all four tasks. INTACT's +/- is the sample standard deviation across its three training-seed macro means; it is **not** the episode-level uncertainty or directly comparable to the three-evaluation-seed variation of the other models. DINOv2 and GCBC do not have released Reacher checkpoints.
 
-Full traces and hashes are included under [`results/v0.8/runs/`](results/v0.8/runs/).
+| Public checkpoint | Inference | Mode | PushT | Cube | Reacher | TwoRoom | Four-task macro |
+|---|---|---|---:|---:|---:|---:|---:|
+| Official LeWM | CEM 300 x 30 | Moderate | 86.67 | 50.33 | 79.67 | 83.00 | 74.92 |
+|  |  | Strict | 70.67 | 21.67 | 87.00 | 51.33 | 57.67 |
+| DINOv2 No-Proprio LeWM | CEM 300 x 30 | Moderate | 7.00 | 44.67 | - | 43.67 | - |
+|  |  | Strict | 8.67 | 13.00 | - | 25.67 | - |
+| GCBC Joint LeWM | CEM 300 x 30 | Moderate | 5.33 | 17.67 | - | 16.00 | - |
+|  |  | Strict | 7.33 | 3.67 | - | 6.67 | - |
+| [INTACT, task-specific E1 (history)](https://huggingface.co/INTACT-JEPA/INTACT/tree/main/INTACT) | Direct | Moderate | 89.56 | 100.00 | 98.22 | 96.89 | **96.17 +/- 0.60** |
+|  |  | Strict | 79.67 | 87.33 | 97.67 | 93.00 | **89.42 +/- 0.96** |
+|  | Guarded A 128 x 3 | Moderate | 93.89 | 99.22 | 95.89 | 96.78 | **96.44 +/- 0.50** |
+|  |  | Strict | 85.22 | 86.78 | 96.33 | 94.44 | **90.69 +/- 1.00** |
+| [INTACT, task-specific E1 (no previous action)](https://huggingface.co/INTACT-JEPA/INTACT/tree/main/INTACT-no-previous-action) | Direct | Moderate | 89.56 | 98.78 | 93.67 | 98.11 | **95.03 +/- 0.69** |
+|  |  | Strict | 76.33 | 84.33 | 96.11 | 96.67 | **88.36 +/- 0.46** |
+|  | Guarded A 128 x 3 | Moderate | 94.22 | 98.56 | 94.00 | 98.11 | **96.22 +/- 0.32** |
+|  |  | Strict | 82.11 | 83.44 | 96.89 | 96.00 | **89.61 +/- 0.84** |
+| [INTACT, unified E5](https://huggingface.co/INTACT-JEPA/INTACT/tree/main/INTACT-unified) | Direct | Moderate | 89.00 | 99.89 | 98.22 | 79.44 | **91.64 +/- 0.88** |
+|  |  | Strict | 76.00 | 91.67 | 98.78 | 53.00 | **79.86 +/- 2.96** |
+|  | Guarded A 128 x 3 | Moderate | 88.22 | 98.44 | 97.78 | 78.00 | **90.61 +/- 1.55** |
+|  |  | Strict | 70.33 | 91.11 | 98.33 | 73.11 | **83.22 +/- 1.13** |
+
+Direct uses a five-action receding horizon and the checkpoint-matched actor. The history-enabled actor receives only actions before the sampled start, then its own executed actions; the no-previous-action actor ignores that history channel. No current or future expert action is supplied. These are **CLEAR v0.8** scores, not Official Direct scores. Per-task variation and training-seed means for INTACT are in [the INTACT evaluation record](results/v0.8/intact-inference.md); the official/DINOv2/GCBC per-evaluation-seed variation, hashes, and episode traces are under [`results/v0.8/`](results/v0.8/).
 
 ### Historical v0.5 submissions
 
