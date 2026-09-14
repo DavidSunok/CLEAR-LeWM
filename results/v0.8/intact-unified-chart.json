@@ -1,0 +1,23 @@
+{
+  "checkpoint": "INTACT unified E5 (shared encoder, task-specific heads)",
+  "checkpoint_url": "https://huggingface.co/INTACT-JEPA/INTACT/tree/main/INTACT-unified",
+  "aggregation": "Mean and sample standard deviation across training seeds 0/42/3072; each pools evaluation seeds 0/1/42 at 100 episodes per seed.",
+  "rows": [
+    {"model": "intact-direct", "task": "pusht", "protocol": "moderate", "success_rate_mean_percent": 89.00, "success_rate_sample_std_percent": 1.15},
+    {"model": "intact-direct", "task": "cube", "protocol": "moderate", "success_rate_mean_percent": 99.89, "success_rate_sample_std_percent": 0.19},
+    {"model": "intact-direct", "task": "reacher", "protocol": "moderate", "success_rate_mean_percent": 98.22, "success_rate_sample_std_percent": 0.84},
+    {"model": "intact-direct", "task": "tworoom", "protocol": "moderate", "success_rate_mean_percent": 79.44, "success_rate_sample_std_percent": 5.19},
+    {"model": "intact-direct", "task": "pusht", "protocol": "strict", "success_rate_mean_percent": 76.00, "success_rate_sample_std_percent": 1.53},
+    {"model": "intact-direct", "task": "cube", "protocol": "strict", "success_rate_mean_percent": 91.67, "success_rate_sample_std_percent": 1.45},
+    {"model": "intact-direct", "task": "reacher", "protocol": "strict", "success_rate_mean_percent": 98.78, "success_rate_sample_std_percent": 0.51},
+    {"model": "intact-direct", "task": "tworoom", "protocol": "strict", "success_rate_mean_percent": 53.00, "success_rate_sample_std_percent": 10.27},
+    {"model": "intact-guarded-a", "task": "pusht", "protocol": "moderate", "success_rate_mean_percent": 88.22, "success_rate_sample_std_percent": 3.37},
+    {"model": "intact-guarded-a", "task": "cube", "protocol": "moderate", "success_rate_mean_percent": 98.44, "success_rate_sample_std_percent": 0.96},
+    {"model": "intact-guarded-a", "task": "reacher", "protocol": "moderate", "success_rate_mean_percent": 97.78, "success_rate_sample_std_percent": 0.38},
+    {"model": "intact-guarded-a", "task": "tworoom", "protocol": "moderate", "success_rate_mean_percent": 78.00, "success_rate_sample_std_percent": 7.33},
+    {"model": "intact-guarded-a", "task": "pusht", "protocol": "strict", "success_rate_mean_percent": 70.33, "success_rate_sample_std_percent": 7.80},
+    {"model": "intact-guarded-a", "task": "cube", "protocol": "strict", "success_rate_mean_percent": 91.11, "success_rate_sample_std_percent": 2.41},
+    {"model": "intact-guarded-a", "task": "reacher", "protocol": "strict", "success_rate_mean_percent": 98.33, "success_rate_sample_std_percent": 0.33},
+    {"model": "intact-guarded-a", "task": "tworoom", "protocol": "strict", "success_rate_mean_percent": 73.11, "success_rate_sample_std_percent": 7.40}
+  ]
+}

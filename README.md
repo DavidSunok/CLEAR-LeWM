@@ -41,6 +41,22 @@
   <a href="checkpoints/official-v0.5.json"><strong>Checkpoints</strong></a>
 </p>
 
+## Results at a glance
+
+<p align="center">
+  <a href="assets/community_model_comparison_v08.png">
+    <img src="assets/community_model_comparison_v08.png" width="100%" alt="CLEAR v0.8 four-task comparison: task-specific INTACT E1 Direct and Guarded A alongside LeWM, DINOv2, and GCBC pure-CEM references in Moderate and Strict modes">
+  </a>
+</p>
+<p align="center"><sub>Single-task training: published INTACT E1 (history), evaluated on its four tasks. Direct has no search; Guarded A uses 128 x 3. LeWM, DINOv2, and GCBC use pure CEM 300 x 30; training epochs are not matched.</sub></p>
+
+<p align="center">
+  <a href="assets/intact_unified_comparison_v08.png">
+    <img src="assets/intact_unified_comparison_v08.png" width="100%" alt="CLEAR v0.8 four-task comparison: unified shared-encoder INTACT E5 Direct and Guarded A alongside labeled single-task pure-CEM references in Moderate and Strict modes">
+  </a>
+</p>
+<p align="center"><sub>Four-task joint training: published INTACT unified E5 with task-specific heads, evaluated on all four tasks. The CEM references are unchanged single-task checkpoints, not jointly trained baselines. Both figures use the same 0-100% scale; error bars have different seed-aggregation units, detailed <a href="results/v0.8/intact-inference.md">here</a>.</sub></p>
+
 ## News
 
 - **2026-09-14** - Added [public INTACT Direct and Guarded A results](#independently-rerun-v08-checkpoints) on the frozen CLEAR v0.8 Moderate/Strict manifests (RTX 4090, three training seeds and three evaluation seeds).
@@ -77,14 +93,6 @@
 > Published comparisons use **solver batch size 1**. Batch 16 changes CEM
 > random-number ordering and is a development throughput mode, not a matched
 > reference setting.
-
-<p align="center">
-  <a href="https://davidsunok.github.io/CLEAR-LeWM/#results">
-    <img src="assets/community_model_comparison_v08.png" width="100%" alt="Matched v0.8 Moderate and Strict success rates for Official LeWM, DINOv2 No-Proprio LeWM, and GCBC Joint LeWM">
-  </a>
-</p>
-
-<p align="center"><sub>RTX 4090, seeds 0/1/42, 100 episodes each, pure CEM 300 x 30. Shared released tasks only.</sub></p>
 
 ## Why CLEAR-LeWM
 
