@@ -14,14 +14,14 @@ FIGURES = (
     (
         ROOT / "results" / "v0.8" / "intact-e1-chart.json",
         ROOT / "assets" / "community_model_comparison_v08.png",
-        "01  /  SINGLE-TASK TRAINING",
-        "Task-specific E1 checkpoints  /  four tasks evaluated separately",
+        "01 / SINGLE-TASK E1",
+        "Each task trained separately",
     ),
     (
         ROOT / "results" / "v0.8" / "intact-unified-chart.json",
         ROOT / "assets" / "intact_unified_comparison_v08.png",
-        "02  /  SHARED-ENCODER TRAINING",
-        "Unified E5 checkpoint  /  shared encoder, four task heads",
+        "02 / UNIFIED E5",
+        "Four tasks, one encoder",
     ),
 )
 TASKS = (
@@ -31,16 +31,16 @@ TASKS = (
     ("tworoom", "TwoRoom"),
 )
 MODELS = (
-    ("official-lewm", "Official LeWM", "CEM 300 x 30", "#E45D52"),
-    ("dinov2-no-proprio-lewm", "DINOv2 no-proprio", "CEM 300 x 30", "#3778B5"),
-    ("gcbc-joint-lewm", "GCBC Joint", "CEM 300 x 30", "#269477"),
-    ("intact-direct", "INTACT", "Direct / no search", "#B77321"),
-    ("intact-guarded-a", "INTACT", "Guarded A 128 x 3", "#8561B1"),
+    ("official-lewm", "LeWM / CEM", "#E45D52"),
+    ("dinov2-no-proprio-lewm", "DINOv2 / CEM", "#3778B5"),
+    ("gcbc-joint-lewm", "GCBC / CEM", "#269477"),
+    ("intact-direct", "INTACT / Direct", "#B77321"),
+    ("intact-guarded-a", "INTACT / Guarded A", "#8561B1"),
 )
-SIZE = (2048, 1180)
-PANEL_TOP = 296
+SIZE = (2048, 1110)
+PANEL_TOP = 240
 PANEL_WIDTH = 962
-PANEL_HEIGHT = 796
+PANEL_HEIGHT = 824
 
 
 def font(size: int, bold: bool = False) -> ImageFont.FreeTypeFont:
@@ -81,22 +81,26 @@ def draw_panel(
         outline="#D8E0DF",
         width=2,
     )
-    draw.text((x0 + 30, y0 + 20), mode.upper(), fill="#1C2B31", font=font(26, True))
-    draw.text((x0 + 30, y0 + 56), "Success rate (%)", fill="#627276", font=font(17))
-    draw.text((x0 + 752, y0 + 32), "RED = BEST SR", fill="#B4232B", font=font(15, True))
+    draw.text(
+        (x0 + 30, y0 + 20),
+        f"{mode.upper()}  |  SR (%)",
+        fill="#1C2B31",
+        font=font(30, True),
+    )
+    draw.text((x0 + 752, y0 + 25), "BEST SR", fill="#B4232B", font=font(20, True))
 
     plot_left = x0 + 111
     plot_right = x0 + 708
     plot_span = plot_right - plot_left
     value_x = x0 + 752
-    group_top = y0 + 128
-    group_height = 158
+    group_top = y0 + 130
+    group_height = 170
 
     for task_index in range(len(TASKS)):
         top = group_top + task_index * group_height
         if task_index % 2 == 1:
             draw.rectangle(
-                (x0 + 18, top - 10, x0 + PANEL_WIDTH - 18, top + 146),
+                (x0 + 18, top - 10, x0 + PANEL_WIDTH - 18, top + 160),
                 fill="#F5F8F7",
             )
         if task_index:
@@ -106,15 +110,17 @@ def draw_panel(
                 width=2,
             )
 
-    for tick in (0, 25, 50, 75, 100):
+    for tick in (0, 50, 100):
         x = plot_left + round(plot_span * tick / 100)
         label = str(tick)
-        draw.line((x, y0 + 111, x, y0 + 745), fill="#E1E8E6", width=2)
+        for task_index in range(len(TASKS)):
+            top = group_top + task_index * group_height
+            draw.line((x, top + 36, x, top + 152), fill="#E1E8E6", width=2)
         draw.text(
-            (x - draw.textlength(label, font=font(15)) / 2, y0 + 90),
+            (x - draw.textlength(label, font=font(20)) / 2, y0 + 86),
             label,
             fill="#66767B",
-            font=font(15),
+            font=font(20),
         )
 
     for task_index, (task, label) in enumerate(TASKS):
@@ -124,12 +130,12 @@ def draw_panel(
             for model, *_ in MODELS
             if (model, task, mode) in rows
         )
-        draw.text((x0 + 30, top), label, fill="#172930", font=font(21, True))
-        for model_index, (model, _, _, color) in enumerate(MODELS):
-            row_y = top + 42 + model_index * 22
+        draw.text((x0 + 30, top), label, fill="#172930", font=font(26, True))
+        for model_index, (model, _, color) in enumerate(MODELS):
+            row_y = top + 44 + model_index * 27
             row = rows.get((model, task, mode))
             if row is None:
-                draw.text((value_x, row_y - 10), "n/a", fill="#94A3A2", font=font(16))
+                draw.text((value_x, row_y - 14), "n/a", fill="#94A3A2", font=font(21))
                 continue
 
             mean = float(row["success_rate_mean_percent"])
@@ -137,71 +143,50 @@ def draw_panel(
             center = plot_left + round(plot_span * mean / 100)
             lower = plot_left + round(plot_span * max(0, mean - deviation) / 100)
             upper = plot_left + round(plot_span * min(100, mean + deviation) / 100)
-            draw.line((plot_left, row_y, center, row_y), fill=color, width=7)
+            draw.line((plot_left, row_y, center, row_y), fill=color, width=10)
             draw.line((lower, row_y, upper, row_y), fill="#24343E", width=2)
             draw.line((lower, row_y - 5, lower, row_y + 5), fill="#24343E", width=2)
             draw.line((upper, row_y - 5, upper, row_y + 5), fill="#24343E", width=2)
             draw.ellipse(
-                (center - 6, row_y - 6, center + 6, row_y + 6),
+                (center - 8, row_y - 8, center + 8, row_y + 8),
                 fill=color,
                 outline="#FFFFFF",
                 width=2,
             )
             color_value = "#B4232B" if abs(mean - best) < 1e-8 else "#1A2C33"
             draw.text(
-                (value_x, row_y - 11),
+                (value_x, row_y - 15),
                 f"{mean:.1f}",
                 fill=color_value,
-                font=font(18, True),
+                font=font(24, True),
             )
 
 
-def render(source: Path, output: Path, heading: str, subtitle: str) -> None:
+def render(source: Path, output: Path, heading: str, title: str) -> None:
     rows = load_rows(source)
     canvas = Image.new("RGB", SIZE, "#F2F6F5")
     draw = ImageDraw.Draw(canvas)
 
-    draw.rectangle((0, 0, SIZE[0], 158), fill="#121D29")
-    draw.text((52, 25), heading, fill="#91E1D9", font=font(19, True))
-    draw.text(
-        (52, 62),
-        "Five model-policy variants. One evaluation protocol.",
-        fill="#FFFFFF",
-        font=font(39, True),
-    )
-    draw.text((52, 121), subtitle, fill="#C6D2D7", font=font(18))
+    draw.rectangle((0, 0, SIZE[0], 128), fill="#121D29")
+    draw.text((52, 18), heading, fill="#91E1D9", font=font(23, True))
+    draw.text((52, 58), title, fill="#FFFFFF", font=font(45, True))
 
-    draw.rectangle((0, 158, SIZE[0], 259), fill="#E9F0EE")
-    for x, (_, label, method, color) in zip((52, 393, 797, 1148, 1520), MODELS):
-        draw.line((x, 199, x + 23, 199), fill=color, width=8)
-        draw.ellipse((x + 6, 192, x + 20, 206), fill=color, outline="#FFFFFF", width=2)
-        draw.text((x + 35, 175), label, fill="#172930", font=font(19, True))
-        draw.text((x + 35, 206), method, fill="#56686B", font=font(16))
+    draw.rectangle((0, 128, SIZE[0], 211), fill="#E9F0EE")
+    for x, (_, label, color) in zip((52, 385, 787, 1148, 1518), MODELS):
+        draw.line((x, 170, x + 29, 170), fill=color, width=10)
+        draw.ellipse((x + 8, 162, x + 24, 178), fill=color, outline="#FFFFFF", width=2)
+        draw.text((x + 42, 151), label, fill="#172930", font=font(23, True))
 
     draw_panel(draw, rows, 52, "moderate")
     draw_panel(draw, rows, 1034, "strict")
-    draw.text(
-        (52, 1110),
-        "CEM references are single-task and not epoch-matched; "
-        "DINOv2 / GCBC have no Reacher checkpoint.",
-        fill="#455B5E",
-        font=font(17),
-    )
-    draw.text(
-        (52, 1142),
-        "Whiskers: s.d. across 3 eval seeds (CEM) or 3 training-seed means, "
-        "each pooled over 3 eval seeds (INTACT).",
-        fill="#607276",
-        font=font(16),
-    )
     output.parent.mkdir(parents=True, exist_ok=True)
     canvas.save(output, optimize=True)
     print(output)
 
 
 def main() -> int:
-    for source, output, heading, subtitle in FIGURES:
-        render(source, output, heading, subtitle)
+    for source, output, heading, title in FIGURES:
+        render(source, output, heading, title)
     return 0
 
 

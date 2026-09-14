@@ -48,14 +48,14 @@
     <img src="assets/community_model_comparison_v08.png" width="100%" alt="CLEAR v0.8 four-task comparison: task-specific INTACT E1 Direct and Guarded A alongside LeWM, DINOv2, and GCBC pure-CEM references in Moderate and Strict modes">
   </a>
 </p>
-<p align="center"><sub>Single-task training: published INTACT E1 (history), evaluated on its four tasks. Direct has no search; Guarded A uses 128 x 3. LeWM, DINOv2, and GCBC use pure CEM 300 x 30; training epochs are not matched.</sub></p>
+<p align="center">Single-task INTACT E1 (history). Red marks the best SR for each task and mode.</p>
 
 <p align="center">
   <a href="assets/intact_unified_comparison_v08.png">
     <img src="assets/intact_unified_comparison_v08.png" width="100%" alt="CLEAR v0.8 four-task comparison: unified shared-encoder INTACT E5 Direct and Guarded A alongside labeled single-task pure-CEM references in Moderate and Strict modes">
   </a>
 </p>
-<p align="center"><sub>Four-task joint training: published INTACT unified E5 with task-specific heads, evaluated on all four tasks. The CEM references are unchanged single-task checkpoints, not jointly trained baselines. Both figures use the same 0-100% scale; error bars have different seed-aggregation units, detailed <a href="results/v0.8/intact-inference.md">here</a>.</sub></p>
+<p align="center">Unified INTACT E5. CEM references are single-task, not epoch-matched. <a href="results/v0.8/intact-inference.md">Protocol and seed statistics</a>.</p>
 
 ## News
 
