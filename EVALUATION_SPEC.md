@@ -137,3 +137,19 @@ or aggregation requires a new benchmark version.
 
 Previous public protocols remain reproducible from their Git release tags;
 their numbers are not relabeled as v0.5 results.
+
+### Normalization statistics
+
+By default the evaluator fits the action, proprioception, and state
+normalizers on every finite row of the evaluation dataset, including the
+episodes that the manifest draws its query and goal frames from. This matches
+the upstream LeWM protocol and every published CLEAR-LeWM number.
+
+`clear-lewm evaluate --normalization-episodes <json>` restricts the fit to the
+listed episode ids (a JSON list, or `{"episodes": [...]}`), for example the
+training episodes of a held-out split so that no evaluation-episode statistics
+enter the policy input scale. The result records the choice under
+`normalization` (`scope`, source file name and SHA-256, episode column, and the
+number of episodes and rows used). Results produced with a restricted scope
+change the policy inputs and are therefore not comparable to the reference
+numbers; report them with the `normalization` record and label them as such.

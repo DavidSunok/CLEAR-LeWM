@@ -188,6 +188,61 @@ def _load_paired_random_trace(
     return load_success_trace(path)
 
 
+def _load_normalization_episodes(path: str | Path) -> np.ndarray:
+    """Read the episode ids whose rows fit the normalization statistics.
+
+    Accepts a JSON list of integers or an object with an ``episodes`` list.
+    """
+    payload = json.loads(Path(path).read_text())
+    if isinstance(payload, dict):
+        payload = payload.get("episodes")
+    if not isinstance(payload, list) or not payload:
+        raise ValueError(
+            "normalization episodes must be a non-empty JSON list of episode ids "
+            'or an object {"episodes": [...]}'
+        )
+    return np.asarray(sorted({int(episode) for episode in payload}))
+
+
+def _normalization_row_mask(dataset, episodes: np.ndarray) -> tuple[str, np.ndarray]:
+    """Return the episode column name and the row mask selecting ``episodes``."""
+    for column in ("episode_idx", "ep_idx"):
+        try:
+            episode_column = np.asarray(dataset.get_col_data(column)).reshape(-1)
+        except KeyError:
+            continue
+        mask = np.isin(episode_column, episodes)
+        if not mask.any():
+            raise ValueError(
+                "No dataset rows belong to the requested normalization episodes"
+            )
+        return column, mask
+    raise ValueError("Dataset has no episode column (episode_idx or ep_idx)")
+
+
+def _fit_normalizers(dataset, columns, scaler_factory, row_mask=None) -> dict:
+    """Fit one scaler per non-pixel column, optionally on a subset of rows.
+
+    ``row_mask`` restricts the fit to the selected rows; ``None`` reproduces the
+    v0.8 behavior of fitting on every finite row of the evaluation dataset.
+    Non-action columns share their scaler with the matching ``goal_`` column.
+    """
+    process = {}
+    for column in columns:
+        if column == "pixels":
+            continue
+        values = np.asarray(dataset.get_col_data(column))
+        keep = ~np.isnan(values).any(axis=1)
+        if row_mask is not None:
+            keep &= np.asarray(row_mask, dtype=bool)
+        scaler = scaler_factory()
+        scaler.fit(values[keep])
+        process[column] = scaler
+        if column != "action":
+            process[f"goal_{column}"] = scaler
+    return process
+
+
 def _install_batched_lewm_criterion(model) -> None:
     """Fix the missing CEM sample axis in canonical LeWM's batched cost."""
     import torch.nn.functional as functional
@@ -499,6 +554,7 @@ def evaluate_manifest(
     strict_checkpoint: bool = False,
     allow_modified_stable_worldmodel: bool = False,
     planner: str = "cem",
+    normalization_episodes: str | Path | None = None,
 ) -> dict:
     run_started = time.perf_counter()
     if inference_mode not in {"cem", "direct"}:
@@ -630,17 +686,26 @@ def evaluate_manifest(
             f"{actual_fingerprint} != {expected_fingerprint['value']}"
         )
 
-    process = {}
-    for column in cfg.dataset.keys_to_cache:
-        if column == "pixels":
-            continue
-        scaler = preprocessing.StandardScaler()
-        values = dataset.get_col_data(column)
-        values = values[~np.isnan(values).any(axis=1)]
-        scaler.fit(values)
-        process[column] = scaler
-        if column != "action":
-            process[f"goal_{column}"] = scaler
+    normalization_record = {"scope": "all"}
+    normalization_mask = None
+    if normalization_episodes is not None:
+        normalization_path = Path(normalization_episodes)
+        episodes = _load_normalization_episodes(normalization_path)
+        episode_column, normalization_mask = _normalization_row_mask(dataset, episodes)
+        normalization_record = {
+            "scope": "episodes",
+            "source": normalization_path.name,
+            "sha256": file_sha256(normalization_path),
+            "episode_column": episode_column,
+            "num_episodes": int(len(episodes)),
+            "num_rows": int(normalization_mask.sum()),
+        }
+    process = _fit_normalizers(
+        dataset,
+        cfg.dataset.keys_to_cache,
+        preprocessing.StandardScaler,
+        normalization_mask,
+    )
 
     requested_actor_warmstart = actor_warmstart
     actor_warmstart_effective = None
@@ -788,6 +853,7 @@ def evaluate_manifest(
         "dataset_name": resolved_dataset_name,
         "dataset_file": (Path(dataset_path).name if dataset_path is not None else None),
         "dataset_fingerprint": expected_fingerprint,
+        "normalization": normalization_record,
         "manifest": _portable_manifest_path(manifest_path),
         "manifest_sha256": manifest_sha256,
         "criterion": {
