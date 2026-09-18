@@ -130,6 +130,13 @@ def build_parser() -> argparse.ArgumentParser:
         help="PyTorch float32 matmul mode; unset preserves the runtime default",
     )
     evaluate.add_argument(
+        "--normalization-episodes",
+        help=(
+            "JSON list of episode ids whose rows fit the action/proprio/state "
+            "normalization statistics; default fits on the whole evaluation dataset"
+        ),
+    )
+    evaluate.add_argument(
         "--strict-checkpoint",
         action="store_true",
         help="fail when checkpoint keys are missing or unexpected",
@@ -217,6 +224,7 @@ def main(argv: list[str] | None = None) -> int:
             matmul_precision=args.matmul_precision,
             strict_checkpoint=args.strict_checkpoint,
             allow_modified_stable_worldmodel=(args.allow_modified_stable_worldmodel),
+            normalization_episodes=args.normalization_episodes,
         )
         print(json.dumps(result["metrics"], indent=2, sort_keys=True))
         return 0
